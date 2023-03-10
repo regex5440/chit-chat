@@ -1,0 +1,38 @@
+@import '@theme-variables'
+.app-container
+    height: 100%
+    width: 100%
+    box-sizing: border-box
+    position: relative
+    &__background
+        position: absolute
+        height: 100%
+        width: 100%
+        background: url('/src/assets/RE4FlaY_1920x1080.jpg')
+        background-size: cover
+        background-blend-mode: soft-light
+    &__app-window
+        background-color: rgba(125,125,125,0.1)
+        backdrop-filter: blur(15px)
+        position: absolute
+        height: 100%
+        width: 100%
+        box-sizing: border-box
+        padding: 18.91px 18.35px 0
+        display: grid
+        grid-template-rows: 140px 1fr
+        grid-template-columns: minmax(320px, 357px) 7.14px 1fr 9.18px 294px
+        grid-row-gap: 8.16px
+        & > div
+            background: $window-background
+            backdrop-filter: blur(10.1948px)
+        .story-container
+            border-top-left-radius: 25.48px
+            grid-area: 1 / 1 / 1 / span 3
+        .profile-container
+            border-top-right-radius: 25.48px
+            grid-area: 1 / 5 / 1 / span 5
+        .chat-list
+            grid-area: 2 / 1 / 2 / span 1
+        .chat-window
+            grid-area: 2 / 3 / 2 / span 5

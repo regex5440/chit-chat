@@ -1,0 +1,24 @@
+@import './variables.sass'
+@mixin profile-name-style-chat-only()
+    font-style: normal
+    font-weight: 600
+    font-size: $name-font-size-chat-only
+    line-height: 22px
+    letter-spacing: 0.02em
+    color: #616161
+@mixin chat-profile-picture()
+    height: 55.31px
+    width: 55.31px
+    border-radius: 50%
+    display: grid
+    align-items: center
+    overflow: hidden
+    .profile-picture
+        height: 100%
+        width: 100%
+        cursor: pointer
+    & > span
+        display: grid
+        place-items: center
+        font-weight: bold
+        font-size: 24px

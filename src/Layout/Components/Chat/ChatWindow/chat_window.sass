@@ -1,0 +1,39 @@
+@import '@theme-variables'
+
+.chat-window-main-container
+    font-family: $frame-font
+    height: 100%
+
+.no-chat-message-container
+    height: 100%
+    width: 100%
+    display: grid
+    place-items: center
+    .no-chat-content
+        text-align: center
+        color: $no-chat-message-color
+
+.chat-area
+    header
+        background-color: $chat-header-background
+        height: 81.56px
+        width: 100%
+        padding: 8.16px 24.47px 8.78px
+        box-sizing: border-box
+        & > div
+            display: flex
+        .profile-container
+            display: flex
+            align-items: center
+            .profile-picture-container
+                @include chat-profile-picture
+                margin-right: 10.19px
+            .profile-details
+                .profile-name
+                    @include profile-name-style-chat-only
+                .profile-status
+                    font-weight: 300
+                    font-size: $subtext-font-size
+                    line-height: 19px
+                    letter-spacing: 0.02em
+                    color: #979797
