@@ -1,10 +1,18 @@
 $window-background: rgba(255, 255, 255, 0.85)
 $person-background: #fff
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap')
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap')
 $frame-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
 $content-font: Montserrat, sans-serif
+$login-page-font: 'Open Sans', sans-serif
 
-//Chat
+$error-message-color: rgb(255 58 58)
+
+//--------------Contact List
+$no-contact-font-color: grey
+
+//--------------Chat
 $name-font-size-chat-only: 16.31px
 $subtext-font-size: 14.27px
 
@@ -12,5 +20,23 @@ $subtext-font-size: 14.27px
 $search-input-background: #E9E9E9
 
 // Chat Window
+$chat-window-header-height: 81.56px
+$chat-window-input-area-height: 72.85px
 $no-chat-message-color: grey
 $chat-header-background: #fff
+
+$my-chat-message-color: #2E9DFB
+$others-chat-message-color: #E9E9EB
+
+$message-date-stamp-font-size: 14px
+
+$message-time-stamp-font-size: 11px
+
+//---------------Profile
+$profile-name-font-size: 18.3507px
+$profile-name-color: #616161
+
+:export
+    othersChatMessageColor: $others-chat-message-color
+    myChatMessageColor: $my-chat-message-color
+    loaderColor: $profile-name-color

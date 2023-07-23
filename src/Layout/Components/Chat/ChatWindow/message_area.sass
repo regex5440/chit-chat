@@ -1,0 +1,71 @@
+@import '@theme-variables'
+.message-area
+    position: absolute
+    left: 0
+    top: 0
+    padding: $chat-window-header-height+10px 0 $chat-window-input-area-height
+    height: 100%
+    width: 100%
+    box-sizing: border-box
+    display: flex
+    align-items: flex-end
+    .messages-container
+        padding-left: 34px
+        padding-right: 34px
+        overflow-x: hidden
+        overflow-y: auto
+        max-height: 100%
+        width: 100%
+        &::-webkit-scrollbar
+            // display: none
+        .message
+            // PopUp animation and margin between messages
+            transform: scale(0.2)
+            transform-origin: left
+            animation: scaleUp 500ms ease forwards
+            margin-bottom: 15px
+        .message-stamp
+            // Supposed to be the timeStamp between different day's messages
+            width: fit-content
+            margin-left: auto
+            margin-right: auto
+            padding: 3px 10px
+            background: linear-gradient(330deg, $my-chat-message-color 50%, rgba(100,100,100,0.6) 10%,$my-chat-message-color)
+            color: transparent
+            -webkit-background-clip: text
+            border-radius: 5px
+            margin-bottom: 15px
+            font-size: $message-date-stamp-font-size
+            box-shadow: 1px 1px 3px rgba(125,125,125,0.5)
+        .message-box
+            // Message container box
+            $message-box-padding: 10px
+            position: relative
+            border-radius: 15.4279px
+            padding: $message-box-padding
+            // min-width: 50px
+            width: fit-content
+            max-width: min(500px,60%)
+            box-sizing: border-box
+            @include message-box-others()
+            & > span.message-time
+                position: absolute
+                left: $message-box-padding
+                bottom: -15px
+                color: #616161
+                font-weight: 400
+                font-size: $message-time-stamp-font-size
+                line-height: 15px
+                letter-spacing: 0.05em
+                white-space: nowrap
+            &[data-mine=true]
+                @include message-box-mine()
+                transform-origin: right
+                span.message-time
+                    left: unset
+                    right: $message-box-padding
+        .message-loading
+
+@keyframes scaleUp
+    100%
+        transform: scale(1)

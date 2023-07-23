@@ -1,49 +1,74 @@
-import React from 'react'
-import { getRandom0To255 } from '../../../../utils';
-import './chat_window.sass';
+import React, { useRef, useState } from "react";
+import ChatInput from "./ChatInput";
+import "./chat_window.sass";
+import MessagesArea from "./MessagesArea";
+import { useSelector } from "react-redux";
+import { getSelectedContact, getSelectedContactProfile } from "../../../../library/redux/selectors";
+import { USER_STATUSES } from "../../../../utils/enums";
+import { getFormattedTime } from "../../../../utils";
 
-const NoChatMessage = () => (<div className='no-chat-message-container'>
-    <div className='no-chat-content'>
-        <h2>Nothing to show here...</h2>
-        <p>👈There, chit-chat starts from there</p>
+const NoChatMessage = () => (
+  <div className="no-chat-message-container">
+    <div className="no-chat-content">
+      <h2>Nothing to show here...</h2>
+      <p>👈There, chit-chat starts from there</p>
     </div>
-</div>)
+  </div>
+);
 
-const ChatArea = () => {
-    const initialName = 'JT'
-    const name = 'Jahanavi Tripathi'
-    const renderProfileStatus = () => {
-        return 'Online'
+const ChatHeader = () => {
+  const ContactProfile = useSelector(getSelectedContactProfile);
+  const renderProfileStatus = () => {
+    // if (authors_typing.includes(ContactProfile.id)) return "Typing...";
+    // else
+    if (ContactProfile.status === USER_STATUSES.ONLINE.code) return "Online";
+    else {
+      let lastActiveParsed = getFormattedTime(Date.parse(ContactProfile.last_active), `hh:mm`);
+      return `Last seen at ${lastActiveParsed}`;
     }
+  };
 
-    const renderProfileDetails = () => (
-        <div className='profile-container'>
-            <div className='profile-picture-container'>
-                <span className="profile-picture" style={{ backgroundColor: `rgba(${getRandom0To255()}, ${getRandom0To255()}, ${getRandom0To255()},0.5)` }}>{initialName}</span>
-            </div>
-            <div className='profile-details'>
-                <div className='profile-name'>{name}</div>
-                <div className='profile-status'>{renderProfileStatus()}</div>
-            </div>
+  const renderProfileDetails = () => {
+    return (
+      <div className="profile-container">
+        <div className="profile-picture-container">
+          <img src={ContactProfile.avatar.url} alt={ContactProfile.firstName} className="profile-picture" />
         </div>
-    )
+        <div className="profile-details">
+          <div className="profile-name">{`${ContactProfile.firstName} ${ContactProfile.lastName}`}</div>
+          <div className="profile-status">{renderProfileStatus()}</div>
+        </div>
+      </div>
+    );
+  };
 
-    return <div className='chat-area'>
-        <header className='chat-area__header-container'>
-            <div className='chat-area__header-content'>
-                {renderProfileDetails()}
-            </div>
-        </header>
-    </div>
-}
+  return (
+    <header className="chat-area__header-container">
+      <div className="chat-area__header-content">
+        {renderProfileDetails()}
+        <div className="contact-options"></div>
+      </div>
+    </header>
+  );
+};
 
 const ChatWindow = () => {
-    const selectedContact = true
+  const selectedContact = useSelector(getSelectedContact);
 
-
-    return <div className='chat-window-main-container'>
-        {selectedContact ? <ChatArea /> : <NoChatMessage />}
+  // @Requirement
+  // Need to add a skeleton loading for data that is not available but required
+  return (
+    <div className="chat-window-main-container">
+      {selectedContact?.isAvailable ? (
+        <div className="chat-area">
+          <ChatHeader />
+          <MessagesArea ContactId={selectedContact.contactId} endOfMessages={selectedContact.fetchedAllMessages} />
+        </div>
+      ) : (
+        <NoChatMessage />
+      )}
     </div>
-}
+  );
+};
 
-export default ChatWindow
+export default ChatWindow;

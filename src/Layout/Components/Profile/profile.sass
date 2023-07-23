@@ -1,0 +1,68 @@
+@import '@theme-variables'
+
+.profile-section
+    height: 100%
+    .profile-section-container
+        display: flex
+        align-items: center
+        padding: 30px 17.21px
+        .profile-picture-container
+            --status-border-color: transparent
+            --status-color: transparent
+            position: relative
+            width: 81.56px
+            height: 81.56px
+            img
+                display: inline-block
+                width: 100%
+                aspect-ratio: 1
+                border-radius: 50%
+                transition: border-color 500ms ease
+                border: 2px solid var(--status-border-color)
+            span.user-online-status
+                position: absolute
+                width: 18.35px
+                aspect-ratio: 1 / 1
+                border-radius: 50%
+                background-color: var(--status-color)
+                transition: background-color 500ms ease
+                border: 3px solid #fff
+                right: 0
+                bottom: 0
+        .profile-name-container
+            margin-left: 11.24px
+            align-self: flex-end
+            span
+                display: inline-block
+                max-width: 150px
+                font-family: $frame-font
+                font-style: normal
+                font-weight: 700
+                font-size: $profile-name-font-size
+                line-height: 24px
+                letter-spacing: 0.02em
+                color: $profile-name-color
+                overflow: hidden
+                text-overflow: ellipsis
+                white-space: break-spaces
+        .profile-options-container
+            margin-left: auto
+            .three-dot
+                width: 17px
+                display: flex
+                flex-direction: column
+                justify-content: space-between
+                span
+                    background-color: #616161
+                    height: 5px
+                    width: 5px
+                    border-radius: 50%
+                    margin-top: 4px
+            .app-settings
+                position: absolute
+                right: 18.92px
+                top: 15.92px
+    .profile-section_loading
+        display: grid
+        place-items: center
+        height: 100%

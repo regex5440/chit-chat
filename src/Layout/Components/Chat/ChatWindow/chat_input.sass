@@ -1,0 +1,39 @@
+@import '@theme-variables'
+.user-chat-option
+    height: $chat-window-input-area-height
+    width: 100%
+    box-sizing: border-box
+    background: #fff
+    padding: 17.33px 30.97px 16.31px 47.92px
+    position: absolute
+    bottom: 0
+    &__container
+        display: flex
+        align-items: center
+        justify-content: space-between
+        height: 100%
+        .option__input
+            width: 76%
+            input
+                background: #E9E9E9
+                backdrop-filter: blur(10.1948px)
+                border-radius: 10.1948px
+                padding: 15.45px 20.7px 13.39px
+                border: none
+                outline: none
+                width: 100%
+                box-sizing: border-box
+                &::placeholder
+                    font-family: $frame-font
+                    font-weight: 300
+                    font-style: italic
+                    line-height: 19px
+                    letter-spacing: 0.02em
+                    color: #000000
+                    opacity: 0.5
+    .click-icon
+        height: 32.62px
+        width: 32.62px
+        display: grid
+        place-items: center
+        cursor: pointer
