@@ -97,7 +97,8 @@ const ImageSelector = ({ currentImageSrc = "", uploadHandler, style = {} }) => {
   );
   const imageSelectHandler = (e) => {
     const [file] = e.target.files;
-    createAndSetImageUrl(file);
+    if (file && ["image/jpeg", "image/png"].includes(file.type)) createAndSetImageUrl(file);
+    else window.alert("Please select a valid image file.");
   };
   const droppedFileHandler = (e) => {
     e.preventDefault();
