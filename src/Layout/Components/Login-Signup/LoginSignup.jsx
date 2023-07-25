@@ -118,6 +118,7 @@ const SignupContent = () => {
         if (response.data.available) {
           setSignupFlags((state) => ({ ...state, usernameAvailable: "available" }));
           setSignupForm((state) => ({ ...state, usernameSelected: e.target.value }));
+          updateError({ showError: false });
         } else {
           setSignupFlags((state) => ({ ...state, usernameAvailable: "unavailable" }));
           setSignupForm((state) => ({ ...state, usernameSelected: "" }));
@@ -163,23 +164,21 @@ const SignupContent = () => {
     const form = e.target;
     switch (form.dataset.name) {
       case "user-info":
-        //Username is handled by above @function usernameChecker
-        if (form.firstname.value && form.username.value && signupFlags.usernameAvailable === "available") {
+        if (form.firstname.value && form.email.value && signupFlags.verifiedEmail) {
           signupSlideHandler("forth");
-          setSignupForm((state) => ({ ...state, firstname: form.firstname.value, lastname: form.lastname.value }));
-        } else {
-          updateError({ showError: true, message: "A valid username is required!" });
+          setSignupForm((state) => ({ ...state, firstname: form.firstname.value, lastname: form.lastname.value, email: form.email.value }));
+        } else if (!signupFlags.verifiedEmail) {
+          updateError({ showError: true, message: "Email verification required!" });
         }
         break;
       case "user-credentials":
-        if (form.password.value !== "" && signupFlags.verifiedEmail) {
-          setSignupForm((state) => ({ ...state, password: form.password.value, email: form.email.value }));
-
+        if (form.password.value !== "" && form.username.value && signupFlags.usernameAvailable === "available") {
           signupSlideHandler("forth");
+          setSignupForm((state) => ({ ...state, password: form.password.value }));
         } else if (form.password.value === "") {
           updateError({ showError: true, message: "Please create a new password" });
-        } else if (!signupFlags.verifiedEmail) {
-          updateError({ showError: true, message: "Email verification required!" });
+        } else {
+          updateError({ showError: true, message: "A valid username is required!" });
         }
         break;
       default:
@@ -234,7 +233,7 @@ const SignupContent = () => {
       </div>
       <div style={{ transition: "transform 0.4s ease", height: "100%", width: "100%", transform: `translateX(-${signupFlags.step * 100}%)` }}>
         <div className="signup-input">
-          <form className={`user-credentials-input ${signupFlags.step === 0 && "active"}`} onSubmit={submitHandler} data-name="user-credentials">
+          <form className={`user-info-input ${signupFlags.step === 0 && "active"}`} onSubmit={submitHandler} data-name="user-info">
             <div>
               <input type="email" name="email" spellCheck={false} placeholder="Your Email address" required autoFocus onBlur={allowVerification} />{" "}
               {showVerification && (
@@ -243,7 +242,9 @@ const SignupContent = () => {
                 </button>
               )}
             </div>
-            <input type="password" name="password" placeholder="Create a new password" />
+            <div className="name-container">
+              <input type="text" name="firstname" spellCheck={false} placeholder="First Name" required /> <input type="text" name="lastname" spellCheck={false} placeholder="Last Name" />
+            </div>
             <div className="route-ctas">{renderNextCTA}</div>
             <dialog
               className="email-verification-modal"
@@ -262,10 +263,7 @@ const SignupContent = () => {
             </div>
           </form>
 
-          <form className={`user-info-input ${signupFlags.step === 1 && "active"}`} onSubmit={submitHandler} data-name="user-info">
-            <div className="name-container">
-              <input type="text" name="firstname" spellCheck={false} placeholder="First Name" autoFocus required /> <input type="text" name="lastname" spellCheck={false} placeholder="Last Name" />
-            </div>
+          <form className={`user-credentials-input ${signupFlags.step === 1 && "active"}`} onSubmit={submitHandler} data-name="user-credentials">
             <div className="username-container">
               <input type="text" name="username" placeholder="Select a username" data-valid={signupFlags.usernameAvailable === "available"} spellCheck={false} onChange={usernameChecker} autoFocus />
               {progressIn.checkingUsername && (
@@ -274,6 +272,8 @@ const SignupContent = () => {
                 </span>
               )}
             </div>
+            <input type="password" name="password" placeholder="Create a new password" />
+
             <div className="route-ctas">
               <div className={`availability  ${signupFlags.usernameAvailable !== null && signupFlags.usernameAvailable}`}>{signupFormState.usernameSelected !== "" && signupFlags.usernameAvailable === "available" ? `Username available!` : signupFlags.usernameAvailable === "unavailable" ? `Username not available!` : ""}</div>
               {renderNextCTA}

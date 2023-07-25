@@ -82,6 +82,7 @@
 
             .login-form
                 margin-top: auto
+                padding-top: 30px
             .error-message
                 font-size: 12px
                 font-style: italic
@@ -149,6 +150,29 @@
                         opacity: 1
                         margin-right: $formSidePadding
                 .user-credentials-input
+                    //Username and password
+                    &>div.username-container
+                        position: relative
+                        input[data-valid='available']
+                            border-color: green
+                        input[data-valid='unavailable']
+                            border-color: $error-message-color
+                        span
+                            position: absolute
+                            right: 2px
+                            top: 0
+                            bottom: 0
+                            margin: auto 0
+                            height: fit-content
+                    div.availability
+                        text-align: left
+                        height: 21px
+                        &.available
+                            color: rgb(48 255 46)
+                        &.unavailable
+                            color: $error-message-color
+
+                .user-info-input
                     &>div:first-child
                         display: flex
                         align-items: center
@@ -167,34 +191,11 @@
                         text-align: right
                         font-size: small
                         color: $error-message-color
-
-                .user-info-input
                     &>div.name-container
                         display: flex
                         justify-content: space-between
                         column-gap: 15px
-                    &>div.username-container
-                        position: relative
-                        input[data-valid='available']
-                            border-color: green
-                        input[data-valid='unavailable']
-                            border-color: $error-message-color
-                        span
-                            position: absolute
-                            right: 2px
-                            top: 0
-                            bottom: 0
-                            margin: auto 0
-                            height: fit-content
-                    input[name='email']
-                        margin-top: 3rem
-                    div.availability
-                        text-align: left
-                        height: 21px
-                        &.available
-                            color: rgb(48 255 46)
-                        &.unavailable
-                            color: $error-message-color
+
                 .user-picture
                     .action-buttons
                         display: none
@@ -207,6 +208,7 @@
                 display: flex
                 margin-top: auto
                 justify-content: space-between
+                user-select: none
                 .travel-button
                     all: unset
                     cursor: pointer
