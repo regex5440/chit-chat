@@ -6,6 +6,7 @@
     width: 100%
     height: 100%
     min-height: 400px
+    dialog
     .login-form-container
         font-family: $frame-font
         max-width: 33.5%
@@ -176,7 +177,7 @@
                     &>div:first-child
                         display: flex
                         align-items: center
-                    .email-verifier-btn
+                    .email-verifier
                         //VERIFY BTN
                         all: unset
                         cursor: pointer
@@ -184,7 +185,8 @@
                         color: $error-message-color
                         font-size: 13px
                         white-space: nowrap
-                        &[data-verified='true']
+                        user-select: none
+                        &.notify
                             color: green
                             pointer-events: none
                     .verification-status
@@ -276,6 +278,15 @@
             font-family: $frame-font
             font-size: x-large
 
+.email-verification-modal
+    border-radius: 20px
+    transition: all 0.5s ease-out
+    input
+        all: initial
+    &__error
+        color: red
+        font-size: 18px
+        font-weight: bold
 @media screen and (max-height: 400px)
     .chit-chat-login-signup .login-form-container .user-form
         max-height: 100%

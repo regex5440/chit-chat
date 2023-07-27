@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { CircularLoader } from "hd-ui";
 import { useDebounce, useUniqueGet } from "../../../utils";
 import ImageSelector from "../Common/ImageSelector";
+import CCSignupPoint, { setSignupAuthToken } from "../../../client/signup_api";
 
 const maxSignupSteps = 3;
-const emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+const emailRegEx = /^[\w.!#$%&'*+/=?^_`{|}~-]+@[\w-]+(\.[\w-]+)+$/;
 
 const LoginContent = () => {
   const [loginProgress, setProgress] = useState(false);
@@ -58,6 +59,7 @@ const LoginContent = () => {
 const SignupContent = () => {
   const [errorState, updateError] = useOutletContext();
   const emailModal = useRef(null);
+  const emailInput = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
     step: 0,
     usernameAvailable: null,
@@ -69,6 +71,7 @@ const SignupContent = () => {
   const [progressIn, setProgress] = useState({
     checkingUsername: false,
     signup: false,
+    emailVerification: false,
   });
 
   const [signupFormState, setSignupForm] = useState({
@@ -78,6 +81,8 @@ const SignupContent = () => {
     email: "",
     password: "",
   });
+
+  const [dialogError, setDialogError] = useState("");
 
   const backButtonOnPicturePage = useRef(null);
   const signupButton = useRef(null);
@@ -101,7 +106,7 @@ const SignupContent = () => {
     }
   }, [signupFlags.allowedSignup]);
 
-  const fetchOnce = useUniqueGet();
+  const fetchOnce = useUniqueGet(CCSignupPoint);
   const usernameChecker = useDebounce(async (e) => {
     const value = e.target.value;
     updateError({ showError: false, message: "" });
@@ -109,12 +114,7 @@ const SignupContent = () => {
     if (/^[a-zA-Z0-\_\.]{3,20}$/.test(value)) {
       try {
         setProgress((state) => ({ ...state, checkingUsername: true }));
-        const response = await fetchOnce(`${import.meta.env.VITE_CC_ServerDomain}/username_checker?username=${value}`, {
-          Headers: {
-            // Authentication: `Bearer ${localStorage.getItem()}`, // TODO: AUTH TOKEN REQUIRED
-          },
-        });
-        console.log(response);
+        const response = await fetchOnce(`/username_checker?username=${value}`, "GET");
         if (response.data.available) {
           setSignupFlags((state) => ({ ...state, usernameAvailable: "available" }));
           setSignupForm((state) => ({ ...state, usernameSelected: e.target.value }));
@@ -191,6 +191,12 @@ const SignupContent = () => {
     let progress = 0;
     //TODO: Remove dummy setInterval
     //TODO: Add a upload function for image
+    /* 
+     TODO: Image upload steps
+      * Send the token for AWS signed URL
+      * Use the signed URL to upload the image to S3
+      * 
+    */
     const timer = setInterval(() => {
       if (progress == 100) {
         setSignupFlags((state) => ({ ...state, allowedSignup: true }));
@@ -209,15 +215,33 @@ const SignupContent = () => {
       setShowVerification(false);
     }
   };
-  const openVerifierModal = () => {
+  const openVerifierModal = (e) => {
+    setProgress((state) => ({ ...state, emailVerification: true }));
+    updateError({ showError: false, message: "" });
+    setDialogError("");
     emailModal.current.showModal();
-    //TODO: For Dialog, Any changes in email value after verification, changes to not verified
-    //TODO: On successful verification, remove the error
+    axios
+      .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, { emailAddress: emailInput.current.value?.trim() })
+      .then((res) => {
+        const { message, valid } = res.data;
+        if (!valid) {
+          updateError({ showError: true, message: message });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        updateError({ showError: true, message: "Unable to verify Email, please try later!" });
+        emailModal.current.close();
+      })
+      .finally(() => {
+        setProgress((state) => ({ ...state, emailVerification: false }));
+      });
   };
 
   const signupHandler = () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
+      //TODO: Combine the signup state and send with Auth
     } catch {
       setProgress((state) => ({ ...state, signup: false }));
       updateError({ showError: true, message: "Something went wrong, please try again!" });
@@ -232,31 +256,67 @@ const SignupContent = () => {
         ))}
       </div>
       <div style={{ transition: "transform 0.4s ease", height: "100%", width: "100%", transform: `translateX(-${signupFlags.step * 100}%)` }}>
+        <dialog className="email-verification-modal" ref={emailModal} aria-modal={true}>
+          {progressIn.emailVerification ? (
+            <CircularLoader width={40} />
+          ) : (
+            <form
+              method="dialog"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (e.target.code.value) {
+                  axios
+                    .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier/code`, {
+                      emailAddress: emailInput.current.value?.trim(),
+                      code: e.target.code.value,
+                    })
+                    .then((res) => {
+                      const { token, verified } = res.data;
+                      if (verified) {
+                        setSignupAuthToken(token);
+                        updateError({ showError: false });
+                        setSignupFlags((state) => ({ ...state, verifiedEmail: true }));
+                        emailModal.current.close(true);
+                      } else {
+                        setDialogError("Invalid OTP!");
+                      }
+                    })
+                    .catch((err) => {
+                      setDialogError("Something went wrong!");
+                      console.log("EmailVerificationError:", err);
+                    });
+                }
+              }}
+            >
+              {/* //TODO: Style this modal*/}
+              {dialogError && <div className="email-verification-modal__error">{dialogError}</div>}
+              <label htmlFor="otp-code">OTP Received on Email:</label>
+              <input id="otp-code" type="text" placeholder="OTP" name="code" autoFocus />
+              <button type="submit">Submit</button>
+            </form>
+          )}
+        </dialog>
         <div className="signup-input">
           <form className={`user-info-input ${signupFlags.step === 0 && "active"}`} onSubmit={submitHandler} data-name="user-info">
             <div>
-              <input type="email" name="email" spellCheck={false} placeholder="Your Email address" required autoFocus onBlur={allowVerification} />{" "}
-              {showVerification && (
-                <button type="button" className="email-verifier-btn" onClick={openVerifierModal} data-verified={signupFlags.verifiedEmail}>
-                  {signupFlags.verifiedEmail ? "Verified" : "Not Verified"}
-                </button>
-              )}
+              <input type="email" name="email" spellCheck={false} placeholder="Your Email address" required autoFocus onBlur={allowVerification} onChange={() => signupFlags.verifiedEmail && setSignupFlags((state) => ({ ...state, verifiedEmail: false }))} ref={emailInput} />{" "}
+              {showVerification &&
+                (signupFlags.verifiedEmail ? (
+                  <span className="email-verifier notify">Verified</span>
+                ) : (
+                  <button type="button" className="email-verifier btn" onClick={openVerifierModal}>
+                    Not Verified
+                  </button>
+                ))}
             </div>
             <div className="name-container">
               <input type="text" name="firstname" spellCheck={false} placeholder="First Name" required /> <input type="text" name="lastname" spellCheck={false} placeholder="Last Name" />
             </div>
             <div className="route-ctas">{renderNextCTA}</div>
-            <dialog
-              className="email-verification-modal"
-              ref={emailModal}
-              aria-modal={true}
-              onClose={() => {
-                setSignupFlags((state) => ({ ...state, verifiedEmail: true }));
-              }}
-            >
-              Dialog
-            </dialog>
             <div className="action-buttons">
+              Already has an account?
+              <br />
+              <br />
               <Link to="/login" className="cta">
                 Login
               </Link>
