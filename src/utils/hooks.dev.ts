@@ -1,14 +1,31 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { useCallback, useRef } from "react";
 
-const useUniqueGet = (): Function => {
+const useUniqueGet = (axios_instance?: AxiosInstance): Function => {
   /* 
   //* Uses axios under the hood, to provide a data fetching machanism
   //* Does not allow duplicate requests, auto-abort of previous request used with same parameters
   */
   const controller = useRef<AbortController>();
+  if (axios_instance) {
+    const callback = useCallback((url_path: string, method: "GET" | "POST" = "GET", data?: {}): Promise<Response> => {
+      if (controller.current) {
+        controller.current.abort();
+      }
+      controller.current = new AbortController();
+      if (method === "GET") {
+        return axios_instance.get(url_path, {
+          signal: controller.current?.signal,
+        });
+      } else {
+        return axios_instance.post(url_path, data, {
+          signal: controller.current?.signal,
+        });
+      }
+    }, []);
+    return callback;
+  }
   const callback = useCallback((url: string, config?: AxiosRequestConfig): Promise<Response> => {
-    console.log("Requsted");
     if (controller.current) {
       controller.current.abort();
     }
