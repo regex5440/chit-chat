@@ -1,9 +1,9 @@
-import { Link, Outlet, useLocation, useNavigate, useNavigation, useOutletContext } from "react-router-dom";
+import { Link, Outlet, redirect, useLocation, useNavigate, useNavigation, useOutletContext } from "react-router-dom";
 import "./login_signup.sass";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { CircularLoader } from "hd-ui";
-import { useDebounce, useUniqueGet } from "../../../utils";
+import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueGet } from "../../../utils";
 import ImageSelector from "../Common/ImageSelector";
 import CCSignupPoint, { setSignupAuthToken } from "../../../client/signup_api";
 
@@ -12,6 +12,7 @@ const emailRegEx = /^[\w.!#$%&'*+/=?^_`{|}~-]+@[\w-]+(\.[\w-]+)+$/;
 
 const LoginContent = () => {
   const [loginProgress, setProgress] = useState(false);
+  const navigate = useNavigate();
   const [errorState, updateError] = useOutletContext();
 
   const loginHandler = async (e) => {
@@ -24,15 +25,16 @@ const LoginContent = () => {
           username,
           password,
         });
-        if (response.status === 202) {
+        if (response.data?.valid) {
           updateError({ showError: false, message: "" });
-          localStorage.setItem(`user.auth.token`, response.data.token);
+          setLoginStateToken(response.data.token);
           navigate("/app");
         } else {
           updateError({ message: response.data, showError: true });
         }
       } catch (e) {
         updateError({ showError: true, message: "Something's wrong!" });
+        console.error("LoginFailed:", e);
       } finally {
         setProgress(false);
       }
@@ -58,6 +60,7 @@ const LoginContent = () => {
 
 const SignupContent = () => {
   const [errorState, updateError] = useOutletContext();
+  const navigate = useNavigate();
   const emailModal = useRef(null);
   const emailInput = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
@@ -76,8 +79,8 @@ const SignupContent = () => {
 
   const [signupFormState, setSignupForm] = useState({
     usernameSelected: "",
-    firstname: "",
-    lastname: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
   });
@@ -166,7 +169,7 @@ const SignupContent = () => {
       case "user-info":
         if (form.firstname.value && form.email.value && signupFlags.verifiedEmail) {
           signupSlideHandler("forth");
-          setSignupForm((state) => ({ ...state, firstname: form.firstname.value, lastname: form.lastname.value, email: form.email.value }));
+          setSignupForm((state) => ({ ...state, firstName: form.firstname.value, lastName: form.lastname.value, email: form.email.value }));
         } else if (!signupFlags.verifiedEmail) {
           updateError({ showError: true, message: "Email verification required!" });
         }
@@ -225,6 +228,7 @@ const SignupContent = () => {
       .then((res) => {
         const { message, valid } = res.data;
         if (!valid) {
+          emailModal.current.close();
           updateError({ showError: true, message: message });
         }
       })
@@ -241,7 +245,15 @@ const SignupContent = () => {
   const signupHandler = () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
-      //TODO: Combine the signup state and send with Auth
+      CCSignupPoint.post("/register", signupFormState).then((res) => {
+        if (res.data?.valid) {
+          setLoginStateToken(res.data.token);
+          navigate("/app");
+        } else {
+          updateError({ showError: true, message: res.data });
+          setProgress((state) => ({ ...state, signup: false }));
+        }
+      });
     } catch {
       setProgress((state) => ({ ...state, signup: false }));
       updateError({ showError: true, message: "Something went wrong, please try again!" });
@@ -266,7 +278,7 @@ const SignupContent = () => {
                 e.preventDefault();
                 if (e.target.code.value) {
                   axios
-                    .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier/code`, {
+                    .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, {
                       emailAddress: emailInput.current.value?.trim(),
                       code: e.target.code.value,
                     })
@@ -395,4 +407,12 @@ const LandingPage = () => {
   );
 };
 
-export { LandingPage, LoginContent, SignupContent };
+const landingPageLoader = () => {
+  const loginToken = getLoginStateToken();
+  if (loginToken) {
+    return redirect("/app");
+  }
+  return null;
+};
+
+export { LandingPage, LoginContent, SignupContent, landingPageLoader };

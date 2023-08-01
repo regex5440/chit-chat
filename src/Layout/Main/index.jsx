@@ -10,9 +10,10 @@ import { getConnections, getMyProfile } from "../../library/redux/reducers";
 import { SocketComponent } from "../../library/socket.io/socket";
 import { redirect } from "react-router-dom";
 import { setAPIHeader } from "../../client/api";
+import { getLoginStateToken } from "../../utils";
 
 export const appLoader = () => {
-  const token = localStorage.getItem("user.auth.token");
+  const token = getLoginStateToken();
   if (!token) {
     return redirect("/login");
   }

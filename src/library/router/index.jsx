@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import { LandingPage, LoginContent, SignupContent } from "../../Layout/Components/Login-Signup/LoginSignup";
+import { LandingPage, LoginContent, SignupContent, landingPageLoader } from "../../Layout/Components/Login-Signup/LoginSignup";
 import React from "react";
 import { appLoader } from "../../Layout/Main";
 
@@ -9,6 +9,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
+    loader: landingPageLoader,
     children: [
       {
         path: "login",

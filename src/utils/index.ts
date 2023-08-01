@@ -205,8 +205,15 @@ const dateDifference = (dateA: DateParam | undefined = new Date(), dateB: DatePa
   return msToDays((dateAObject as any) - (dateBObject as any));
 };
 
+function setLoginStateToken(token: string) {
+  localStorage.setItem(`user.auth.token`, token);
+}
+function getLoginStateToken() {
+  return localStorage.getItem("user.auth.token");
+}
+
 // Common Utils
-export { debounce, capitalize, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference };
+export { debounce, capitalize, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken };
 
 // Hooks
 export { useUniqueGet, useDebounce };
