@@ -407,12 +407,6 @@ const LandingPage = () => {
     updateError({ showError: false, message: "" });
   }, [location.pathname]);
 
-  const signupHandler = async (e) => {
-    e.preventDefault();
-    console.log("Signup");
-    //TODO: Send the signup POST and configure the server to handle the same
-  };
-
   return (
     <div className="chit-chat-login-signup">
       <section className="chit-chat-info">
