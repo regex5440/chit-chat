@@ -212,16 +212,7 @@
                 justify-content: space-between
                 user-select: none
                 .travel-button
-                    all: unset
-                    cursor: pointer
-                    border-radius: 8px
-                    box-shadow: 0.5px 1px 3px rgba(0,0,0,0.4)
-                    padding: 10px 35px
-                    background: rgba(0, 0, 0, 0.4)
-                    backdrop-filter: blur(1px)
-                    &:disabled
-                        cursor: auto
-                        background: transparent
+                    @include secondary-button()
 
         .action-buttons
             display: flex
@@ -235,28 +226,7 @@
                 flex-direction: column-reverse
             .cta
                 // Button
-                all: unset
-                min-width: 180px
-                height: 45px
-                display: grid
-                place-items: center
-                text-align: center
-                // box-shadow: 1px 2px 7px rgba(101, 101, 101, 0.5)
-                border-radius: 10px
-                cursor: pointer
-                background-color: rgb(0, 123, 255)
-                border: 2px solid rgb(0, 123, 255)
-                color: white
-                font-family: $login-page-font
-                font-size: 18px
-                margin-bottom: 5px
-                box-sizing: border-box
-                transition: all 0.2s ease
-                &:hover
-                    background-color: white
-                    color: rgb(0, 123, 255)
-                &[data-hidden='true']
-                    opacity: 0
+                @include primary-button()
                 .hdui-circular-loader.loader-container
                     display: flex
     .chit-chat-info
@@ -279,14 +249,57 @@
             font-size: x-large
 
 .email-verification-modal
-    border-radius: 20px
-    transition: all 0.5s ease-out
-    input
-        all: initial
-    &__error
-        color: red
-        font-size: 18px
-        font-weight: bold
+    border-radius: 10px
+    width: 40%
+    min-width: 350px
+    &[open]
+        animation: open-modal 0.3s ease-out forwards
+    &__container
+        width: 100%
+        display: grid
+        place-items: center
+        padding: 20px
+        box-sizing: border-box
+        position: relative
+        .modal-heading
+            font-size: 28px
+            font-weight: 400
+            text-align: left
+        hr
+            width: 35%
+            height: 3px
+            background: black
+            border-radius: 3px
+            margin: 0 auto 0 0
+        .verification__error
+            color: $error-message-color
+            font-weight: bold
+            text-align: right
+            text-transform: capitalize
+        input[data-error="true"]
+            border-color: $error-message-color
+        .action-button
+            display: flex
+            justify-content: space-between
+            align-items: flex-end
+            margin-top: 20px
+            button[type="submit"]
+                @include secondary-button()
+                font-family: $frame-font
+                font-weight: 500
+            button.resend-otp
+                all: unset
+                cursor: pointer
+                &:hover
+                    text-decoration: underline
+
+@keyframes open-modal
+    0%
+        opacity: 0
+        transform: translate3d(0,-100px, -100px) scaleY(0.7)
+    100%
+        opacity: 1
+        transform: translate3d(0, 0, 0) scaleY(1)
 @media screen and (max-height: 400px)
     .chit-chat-login-signup .login-form-container .user-form
         max-height: 100%

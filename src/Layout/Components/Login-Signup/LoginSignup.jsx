@@ -148,6 +148,13 @@ const SignupContent = () => {
     }
   }
 
+  const openDialog = () => {
+    emailModal.current.showModal();
+  };
+  const closeDialog = () => {
+    emailModal.current.close();
+  };
+
   const renderNextCTA = (
     // @attr disabled is used for the first form [disabled button till username validates]
     <button type="submit" style={{ marginLeft: "auto" }} className="travel-button">
@@ -219,23 +226,23 @@ const SignupContent = () => {
     }
   };
   const openVerifierModal = (e) => {
+    openDialog();
     setProgress((state) => ({ ...state, emailVerification: true }));
     updateError({ showError: false, message: "" });
     setDialogError("");
-    emailModal.current.showModal();
     axios
-      .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, { emailAddress: emailInput.current.value?.trim() })
+      .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, { emailAddress: emailInput.current.value?.trim(), resend: e.resend || false })
       .then((res) => {
         const { message, valid } = res.data;
         if (!valid) {
-          emailModal.current.close();
+          closeDialog();
           updateError({ showError: true, message: message });
         }
       })
       .catch((err) => {
         console.error(err);
         updateError({ showError: true, message: "Unable to verify Email, please try later!" });
-        emailModal.current.close();
+        closeDialog();
       })
       .finally(() => {
         setProgress((state) => ({ ...state, emailVerification: false }));
@@ -269,49 +276,65 @@ const SignupContent = () => {
       </div>
       <div style={{ transition: "transform 0.4s ease", height: "100%", width: "100%", transform: `translateX(-${signupFlags.step * 100}%)` }}>
         <dialog className="email-verification-modal" ref={emailModal} aria-modal={true}>
-          {progressIn.emailVerification ? (
-            <CircularLoader width={40} />
-          ) : (
-            <form
-              method="dialog"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (e.target.code.value) {
-                  axios
-                    .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, {
-                      emailAddress: emailInput.current.value?.trim(),
-                      code: e.target.code.value,
-                    })
-                    .then((res) => {
-                      const { token, verified } = res.data;
-                      if (verified) {
-                        setSignupAuthToken(token);
-                        updateError({ showError: false });
-                        setSignupFlags((state) => ({ ...state, verifiedEmail: true }));
-                        emailModal.current.close(true);
-                      } else {
-                        setDialogError("Invalid OTP!");
-                      }
-                    })
-                    .catch((err) => {
-                      setDialogError("Something went wrong!");
-                      console.log("EmailVerificationError:", err);
-                    });
-                }
-              }}
-            >
-              {/* //TODO: Style this modal*/}
-              {dialogError && <div className="email-verification-modal__error">{dialogError}</div>}
-              <label htmlFor="otp-code">OTP Received on Email:</label>
-              <input id="otp-code" type="text" placeholder="OTP" name="code" autoFocus />
-              <button type="submit">Submit</button>
-            </form>
-          )}
+          <div className="email-verification-modal__container">
+            {progressIn.emailVerification ? (
+              <CircularLoader width={40} />
+            ) : (
+              <form
+                method="dialog"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (e.target.code.value) {
+                    axios
+                      .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, {
+                        emailAddress: emailInput.current.value?.trim(),
+                        code: e.target.code.value,
+                      })
+                      .then((res) => {
+                        const { token, verified } = res.data;
+                        if (verified) {
+                          setSignupAuthToken(token);
+                          updateError({ showError: false });
+                          setSignupFlags((state) => ({ ...state, verifiedEmail: true }));
+                          emailModal.current.close(true);
+                        } else {
+                          setDialogError("Invalid OTP!");
+                        }
+                      })
+                      .catch((err) => {
+                        setDialogError("Something went wrong!");
+                        console.log("EmailVerificationError:", err);
+                      });
+                  }
+                }}
+              >
+                <div className="modal-heading">Email Authentication</div>
+                <hr />
+                <p>
+                  Enter the OTP from the email{" "}
+                  <strong>
+                    <em>{emailInput.current?.value}</em>
+                  </strong>
+                  .
+                  <br />
+                  If not received, check spam/junk folder.
+                </p>
+                {dialogError && <div className="verification__error">{dialogError}</div>}
+                <input id="otp-code" type="text" placeholder="OTP" name="code" autoFocus data-error={dialogError && true} />
+                <div className="action-button">
+                  <button type="submit">Submit</button>
+                  <button className="resend-otp" onClick={() => openVerifierModal({ resend: true })}>
+                    Resend OTP
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </dialog>
         <div className="signup-input">
           <form className={`user-info-input ${signupFlags.step === 0 && "active"}`} onSubmit={submitHandler} data-name="user-info">
             <div>
-              <input type="email" name="email" spellCheck={false} placeholder="Your Email address" required autoFocus onBlur={allowVerification} onChange={() => signupFlags.verifiedEmail && setSignupFlags((state) => ({ ...state, verifiedEmail: false }))} ref={emailInput} />{" "}
+              <input type="email" name="email" spellCheck={false} placeholder="Your Email address" required autoFocus onBlur={allowVerification} onChange={() => !signupFlags.verifiedEmail && setSignupFlags((state) => ({ ...state, verifiedEmail: false }))} ref={emailInput} disabled={signupFlags.verifiedEmail} />{" "}
               {showVerification &&
                 (signupFlags.verifiedEmail ? (
                   <span className="email-verifier notify">Verified</span>

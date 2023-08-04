@@ -40,3 +40,39 @@
     line-height: 110.66%
     color: #FFFFFF
     margin-left: auto
+
+@mixin secondary-button()
+    all: unset
+    cursor: pointer
+    border-radius: 4px
+    box-shadow: 0.5px 1px 3px $seconday-button-color
+    padding: 10px 35px
+    background: $seconday-button-color
+    backdrop-filter: blur(1px)
+    color: white
+    &:disabled
+        cursor: auto
+        background: transparent
+
+@mixin primary-button()
+    all: unset
+    min-width: 180px
+    height: 45px
+    display: grid
+    place-items: center
+    text-align: center
+    border-radius: 10px
+    cursor: pointer
+    background-color: $primary-button-color
+    border: 2px solid $primary-button-color
+    color: white
+    font-family: $login-page-font
+    font-size: 18px
+    margin-bottom: 5px
+    box-sizing: border-box
+    transition: all 0.2s ease
+    &:hover
+        background-color: white
+        color: $primary-button-color
+    &[data-hidden='true']
+        opacity: 0
