@@ -75,6 +75,7 @@ const SignupContent = () => {
     checkingUsername: false,
     signup: false,
     emailVerification: false,
+    codeVerification: false,
   });
 
   const [signupFormState, setSignupForm] = useState({
@@ -285,6 +286,7 @@ const SignupContent = () => {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (e.target.code.value) {
+                    setProgress((state) => ({ ...state, codeVerification: true }));
                     axios
                       .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, {
                         emailAddress: emailInput.current.value?.trim(),
@@ -304,6 +306,9 @@ const SignupContent = () => {
                       .catch((err) => {
                         setDialogError("Something went wrong!");
                         console.log("EmailVerificationError:", err);
+                      })
+                      .finally(() => {
+                        setProgress((state) => ({ ...state, codeVerification: false }));
                       });
                   }
                 }}
@@ -322,7 +327,7 @@ const SignupContent = () => {
                 {dialogError && <div className="verification__error">{dialogError}</div>}
                 <input id="otp-code" type="text" placeholder="OTP" name="code" autoFocus data-error={dialogError && true} />
                 <div className="action-button">
-                  <button type="submit">Submit</button>
+                  <button type="submit">{progressIn.codeVerification ? <CircularLoader width={20} loaderColor="white" /> : "Submit"}</button>
                   <button className="resend-otp" onClick={() => openVerifierModal({ resend: true })}>
                     Resend OTP
                   </button>
