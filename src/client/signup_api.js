@@ -2,7 +2,7 @@ import axios from "axios";
 
 const CCSignupPoint = axios.create({
   baseURL: import.meta.env.VITE_CC_ServerDomain + "/signup/api",
-  withCredentials: true,
+  withCredentials: false, //TODO: To be updated when app is deployed
 });
 
 export const setSignupAuthToken = (authToken) => {
