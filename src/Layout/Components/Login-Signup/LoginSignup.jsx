@@ -64,7 +64,7 @@ const SignupContent = () => {
   const emailModal = useRef(null);
   const emailInput = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
-    step: 0,
+    step: 2,
     usernameAvailable: null,
     verifiedEmail: false,
     allowedSignup: false, // Changes based on upload status of profile picture
@@ -84,31 +84,10 @@ const SignupContent = () => {
     lastName: "",
     email: "",
     password: "",
+    image: null,
   });
 
   const [dialogError, setDialogError] = useState("");
-
-  const backButtonOnPicturePage = useRef(null);
-  const signupButton = useRef(null);
-
-  useEffect(() => {
-    if (signupFlags.allowedSignup) {
-      backButtonOnPicturePage.current.style = `transition: transform 0.3s ease-in, opacity 0.3s ease-in; transform: translate(0, -10px) rotate3d(1, 0, 0, 30deg); opacity: 0`;
-      new Promise((resolve) => {
-        setTimeout(() => {
-          backButtonOnPicturePage.current.style.display = "none";
-          signupButton.current.style.display = "block";
-          resolve();
-        }, 300);
-      })
-        .then(() => {
-          signupButton.current.style.opacity = `1`;
-        })
-        .then(() => {
-          signupButton.current.style.transform = `translateY(-36px)`;
-        });
-    }
-  }, [signupFlags.allowedSignup]);
 
   const fetchOnce = useUniqueGet(CCSignupPoint);
   const usernameChecker = useDebounce(async (e) => {
@@ -163,12 +142,6 @@ const SignupContent = () => {
     </button>
   );
 
-  const renderBackCTA = (
-    <button type="button" onClick={() => signupSlideHandler("back")} className="travel-button">
-      Back
-    </button>
-  );
-
   const submitHandler = (e) => {
     e.preventDefault();
     updateError({ showError: false, message: "" });
@@ -198,23 +171,8 @@ const SignupContent = () => {
     }
   };
 
-  const imageUploadHandler = (imageBlob, setProgress) => {
-    let progress = 0;
-    //TODO: Remove dummy setInterval
-    //TODO: Add a upload function for image
-    /* 
-     TODO: Image upload steps
-      * Send the token for AWS signed URL
-      * Use the signed URL to upload the image to S3
-      * 
-    */
-    const timer = setInterval(() => {
-      if (progress == 100) {
-        setSignupFlags((state) => ({ ...state, allowedSignup: true }));
-        clearInterval(timer);
-      }
-      setProgress(progress++);
-    }, 50);
+  const imageBlobHandler = (imageBlob) => {
+    setSignupForm((state) => ({ ...state, image: imageBlob }));
   };
 
   const allowVerification = (e) => {
@@ -265,6 +223,8 @@ const SignupContent = () => {
     } catch {
       setProgress((state) => ({ ...state, signup: false }));
       updateError({ showError: true, message: "Something went wrong, please try again!" });
+    } finally {
+      setProgress((state) => ({ ...state, signup: false }));
     }
   };
 
@@ -381,13 +341,9 @@ const SignupContent = () => {
           </form>
 
           <form className={`user-picture ${signupFlags.step === 2 && "active"}`} data-name="user-picture">
-            <ImageSelector style={{ margin: "auto", height: "400px", width: "400px" }} uploadHandler={imageUploadHandler} />
+            <ImageSelector style={{ margin: "auto", height: "fit-content", width: "100%" }} blobHandler={imageBlobHandler} />
 
-            <div className="route-ctas" ref={backButtonOnPicturePage}>
-              {renderBackCTA}
-            </div>
-
-            <div className="action-buttons" ref={signupButton}>
+            <div className="action-buttons">
               <div className="cta" style={(progressIn.signup && { pointerEvents: "none" }) || {}} onClick={signupHandler}>
                 {progressIn.signup ? <CircularLoader width={30} loaderColor="#fff" /> : "Signup"}
               </div>
