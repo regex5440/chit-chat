@@ -20,7 +20,7 @@ const getBGSize = (elem) => {
 const resolution = { height: 400, width: 400 }; // For canvas container
 const INPUT_ID = window.crypto.randomUUID();
 
-const ImageSelector = ({ currentImageSrc = "", uploadHandler, style = {} }) => {
+const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {} }) => {
   const fileSelectInput = useRef(null);
   const selectedImageContainer = useRef(null);
   const previewerDivRef = useRef(null);
@@ -29,7 +29,6 @@ const ImageSelector = ({ currentImageSrc = "", uploadHandler, style = {} }) => {
   const [dragCursorOver, setDragCursorOver] = useState(false);
   const [imageSelected, setImageStatus] = useState("");
   const [initialBGSize, setBGSize] = useState({ width: 100, height: 100 });
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const imageSizeAfterMagnification = { width: 0, height: 0 }; // Used for setting positioning of image
 
@@ -63,12 +62,6 @@ const ImageSelector = ({ currentImageSrc = "", uploadHandler, style = {} }) => {
 
     createCanvas();
   }, [previewerDivRef.current]);
-
-  useEffect(() => {
-    if (uploadProgress === 100) {
-      setImageStatus("uploaded");
-    }
-  }, [uploadProgress]);
 
   //* IMAGE SELECT FUNCTIONS
   const createAndSetImageUrl = useCallback(
@@ -242,11 +235,7 @@ const ImageSelector = ({ currentImageSrc = "", uploadHandler, style = {} }) => {
           )}
         </label>
       ) : (
-        <div className={`image-preview ${imageSelected === "selected" ? "selected" : imageSelected === "uploaded" ? "finished" : ""}`} onMouseDown={moveStartHandler} onMouseMove={moveHandler} onMouseLeave={moveEndHandler} onMouseUp={moveEndHandler} ref={previewerDivRef}>
-          <div className="image-preview__progress top" style={{ transform: `scaleX(${0 <= uploadProgress && uploadProgress <= 25 ? (uploadProgress * 4) / 100 : 1})` }} />
-          <div className="image-preview__progress right" style={{ transform: `scaleY(${25 < uploadProgress && uploadProgress <= 50 ? ((uploadProgress - 25) * 4) / 100 : uploadProgress <= 25 ? 0 : 1})` }} />
-          <div className="image-preview__progress bottom" style={{ transform: `scaleX(${50 < uploadProgress && uploadProgress <= 75 ? ((uploadProgress - 50) * 4) / 100 : uploadProgress <= 50 ? 0 : 1})` }} />
-          <div className="image-preview__progress left" style={{ transform: `scaleY(${75 < uploadProgress && uploadProgress <= 100 ? ((uploadProgress - 75) * 4) / 100 : uploadProgress <= 75 ? 0 : 1})` }} />
+        <div className={`image-preview ${imageSelected === "selected" ? "selected" : ""}`} onMouseDown={moveStartHandler} onMouseMove={moveHandler} onMouseLeave={moveEndHandler} onMouseUp={moveEndHandler} ref={previewerDivRef}>
           <div style={{ backgroundImage: `url(${profilePicSrc}`, backgroundSize: `${initialBGSize.width}% ${initialBGSize.height}%` }} data-type="profile-pic" ref={selectedImageContainer}></div>
 
           <div className="preview-controls">
@@ -269,7 +258,7 @@ const ImageSelector = ({ currentImageSrc = "", uploadHandler, style = {} }) => {
                 canvas.toBlob(
                   (blob) => {
                     if (blob) {
-                      uploadHandler(blob, setUploadProgress);
+                      blobHandler(blob);
                     } else {
                       setImageStatus("");
                       window.alert("Something went wrong! Please try later");
