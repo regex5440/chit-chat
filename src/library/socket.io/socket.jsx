@@ -4,7 +4,7 @@ import { addTypingAuthors, updateChat } from "../redux/reducers/user_appData";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 
-const socket = io(import.meta.env.VITE_CC_ServerDomain, {
+const socket = io(import.meta.env.CC_ServerDomain, {
   extraHeaders: {
     Authorization: localStorage.getItem("accessToken"),
   },

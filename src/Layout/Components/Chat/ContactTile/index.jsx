@@ -38,7 +38,7 @@ const ContactTile = ({ id, firstName, lastName, avatar, unseen_messages_count, c
     <div className="contact-tile-container">
       <div className="contact-tile-content" data-active={isSelected} onClick={updateSelectedContact}>
         <div className="contact-picture-container">
-          <img src={avatar.url} alt={firstName} className="profile-picture" />
+          <img src={avatar.url || avatar.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${avatar.key}` : ""} alt={firstName} className="profile-picture" />
         </div>
         <div className="contact-name">{getProfileName()}</div>
         <div className="contact-message">{typing ? <span className="status-typing">typing...</span> : last_message.text}</div>

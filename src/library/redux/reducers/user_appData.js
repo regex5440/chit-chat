@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
 import { sendMessage, updateTyping } from "../../socket.io/socket";
 import { contactsChat, getUserData } from "../selectors";
+import { setLoginStateToken } from "../../../utils";
 
 const appDataInitialState = {
   user: {
@@ -23,8 +24,9 @@ const appDataInitialState = {
 };
 
 export const getMyProfile = createAsyncThunk("fetchMyData", async (authToken) => {
-  let { data } = await ChitChatServer.get(SERVER_GET_PATHS.my_profile);
-  if (Object.keys(data).length > 0) return { ...data, authToken };
+  let response = await ChitChatServer.get(SERVER_GET_PATHS.my_profile);
+  if (response.data) return { ...response.data, authToken };
+  setLoginStateToken("");
   return {};
 });
 

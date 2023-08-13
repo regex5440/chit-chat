@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const ChitChatServer = axios.create({
-  baseURL: import.meta.env.VITE_CC_ServerDomain + "/api/",
+  baseURL: import.meta.env.CC_ServerDomain + "/api/",
   withCredentials: true,
 });
 

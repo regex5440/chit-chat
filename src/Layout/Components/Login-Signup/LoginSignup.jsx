@@ -6,6 +6,7 @@ import { CircularLoader } from "hd-ui";
 import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueGet } from "../../../utils";
 import ImageSelector from "../Common/ImageSelector";
 import CCSignupPoint, { setSignupAuthToken } from "../../../client/signup_api";
+import ChitChatServer from "../../../client/api";
 
 const maxSignupSteps = 3;
 const emailRegEx = /^[\w.!#$%&'*+/=?^_`{|}~-]+@[\w-]+(\.[\w-]+)+$/;
@@ -21,7 +22,7 @@ const LoginContent = () => {
     if (username.length > 3 && password.length > 0) {
       try {
         setProgress(true);
-        const response = await axios.post(`${import.meta.env.VITE_CC_ServerDomain}/login`, {
+        const response = await axios.post(`${import.meta.env.CC_ServerDomain}/login`, {
           username,
           password,
         });
@@ -63,8 +64,9 @@ const SignupContent = () => {
   const navigate = useNavigate();
   const emailModal = useRef(null);
   const emailInput = useRef(null);
+  const imageBlob = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
-    step: 2,
+    step: 0,
     usernameAvailable: null,
     verifiedEmail: false,
     allowedSignup: false, // Changes based on upload status of profile picture
@@ -84,7 +86,6 @@ const SignupContent = () => {
     lastName: "",
     email: "",
     password: "",
-    image: null,
   });
 
   const [dialogError, setDialogError] = useState("");
@@ -171,8 +172,8 @@ const SignupContent = () => {
     }
   };
 
-  const imageBlobHandler = (imageBlob) => {
-    setSignupForm((state) => ({ ...state, image: imageBlob }));
+  const imageBlobHandler = (blob) => {
+    imageBlob.current = blob;
   };
 
   const allowVerification = (e) => {
@@ -190,7 +191,7 @@ const SignupContent = () => {
     updateError({ showError: false, message: "" });
     setDialogError("");
     axios
-      .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, { emailAddress: emailInput.current.value?.trim(), resend: e.resend || false })
+      .post(`${import.meta.env.CC_ServerDomain}/email_verifier`, { emailAddress: emailInput.current.value?.trim(), resend: e.resend || false })
       .then((res) => {
         const { message, valid } = res.data;
         if (!valid) {
@@ -211,9 +212,17 @@ const SignupContent = () => {
   const signupHandler = () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
-      CCSignupPoint.post("/register", signupFormState).then((res) => {
+      CCSignupPoint.post("/register", signupFormState).then(async (res) => {
         if (res.data?.valid) {
           setLoginStateToken(res.data.token);
+          if (imageBlob.current) {
+            await ChitChatServer.post("/imageUploader", imageBlob.current, {
+              headers: {
+                "Content-Type": "application/octet-stream",
+                Authorization: `Bearer ${res.data.token}`,
+              },
+            });
+          }
           navigate("/app");
         } else {
           updateError({ showError: true, message: res.data });
@@ -248,7 +257,7 @@ const SignupContent = () => {
                   if (e.target.code.value) {
                     setProgress((state) => ({ ...state, codeVerification: true }));
                     axios
-                      .post(`${import.meta.env.VITE_CC_ServerDomain}/email_verifier`, {
+                      .post(`${import.meta.env.CC_ServerDomain}/email_verifier`, {
                         emailAddress: emailInput.current.value?.trim(),
                         code: e.target.code.value,
                       })

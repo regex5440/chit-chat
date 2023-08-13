@@ -32,7 +32,7 @@ const ChatHeader = () => {
     return (
       <div className="profile-container">
         <div className="profile-picture-container">
-          <img src={ContactProfile.avatar.url} alt={ContactProfile.firstName} className="profile-picture" />
+          <img src={ContactProfile.avatar.url || (ContactProfile.avatar.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${ContactProfile.avatar.key}` : "")} alt={ContactProfile.firstName} className="profile-picture" />
         </div>
         <div className="profile-details">
           <div className="profile-name">{`${ContactProfile.firstName} ${ContactProfile.lastName}`}</div>

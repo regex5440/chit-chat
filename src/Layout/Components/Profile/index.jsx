@@ -28,7 +28,7 @@ const ProfileTab = () => {
         ) : hasData ? (
           <div className="profile-section-container">
             <div className="profile-picture-container" ref={profileContainer}>
-              <img src={user.avatar.url} alt={user.firstName} className="profile-picture" />
+              <img src={user.avatar.url || (user.avatar.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${user.avatar.key}` : "")} alt={user.firstName} className="profile-picture" />
               <span className="user-online-status" data-status={user.status}></span>
             </div>
             <div className="profile-name-container">
