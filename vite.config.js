@@ -9,6 +9,7 @@ const themeVariables = path.resolve(__dirname, "src/Layout/theme/mixins.sass");
 export default ({ mode }) => {
   return defineConfig({
     "process.env": {},
+    envPrefix: "CC",
     plugins: [
       react(),
       svgr({
