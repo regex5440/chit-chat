@@ -10,21 +10,29 @@ import { getConnections, getMyProfile } from "../../library/redux/reducers";
 import { SocketComponent } from "../../library/socket.io/socket";
 import { redirect } from "react-router-dom";
 import { setAPIHeader } from "../../client/api";
-import { getLoginStateToken } from "../../utils";
+import { getLoginStateToken, setLoginStateToken } from "../../utils";
 
-export const appLoader = () => {
+export const appLoader = async () => {
   const token = getLoginStateToken();
   if (!token) {
     return redirect("/login");
   }
   setAPIHeader(token);
-  return true;
+  try {
+    const me = await store.dispatch(getMyProfile()).unwrap();
+    if (me) {
+      return true;
+    }
+  } catch (e) {
+    console.log("UserDataLoadFailed:", e);
+    setLoginStateToken("");
+    return redirect("/login");
+  }
 };
 
 const App = () => {
   useEffect(() => {
     async function getInitialData() {
-      store.dispatch(getMyProfile());
       store.dispatch(getConnections());
     }
     getInitialData();
@@ -33,7 +41,6 @@ const App = () => {
     <Provider store={store}>
       <SocketComponent />
       <div className="app-container">
-        <div className="app-container__background"></div>
         <div className="app-container__app-window">
           <div className="story-container">
             <StoriesContainer />
