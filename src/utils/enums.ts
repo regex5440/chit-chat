@@ -21,6 +21,11 @@ const SOCKET_HANDLERS = {
   },
 };
 
+export enum ContactTileType {
+  CONNECTION,
+  CONTACT,
+}
+
 const THEME_VARIABLES = getExportedVariables(themeVariables);
 
 export { USER_STATUSES, THEME_VARIABLES, SOCKET_HANDLERS };
