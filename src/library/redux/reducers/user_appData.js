@@ -5,6 +5,14 @@ import { contactsChat, getUserData } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
 const appDataInitialState = {
+  search: {
+    query: "",
+    loading: false,
+    hasData: false,
+    data: {
+      users: {},
+    },
+  },
   user: {
     loading: false,
     hasData: false,
@@ -67,6 +75,9 @@ const userAppDataSlice = createSlice({
       state.chats[update.chat_id].last_updated = update.last_updated;
       state.chats[update.chat_id].messages.push(update.message);
     },
+    updateSearchQuery: (state, action) => {
+      state.search.query = action.payload;
+    },
   },
   extraReducers: (builder) => {
     // Get Connections
@@ -114,6 +125,6 @@ const userAppDataSlice = createSlice({
   },
 });
 
-export const { selectContact, addTypingAuthors, updateChat } = userAppDataSlice.actions;
+export const { selectContact, addTypingAuthors, updateChat, updateSearchQuery } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

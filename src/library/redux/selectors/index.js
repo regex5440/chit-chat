@@ -10,6 +10,18 @@ const getContactsListSorted = (state) => {
 
   if (contacts.loading) return contacts;
 
+  const searchQuery = state.appData.search.query;
+  if (searchQuery) {
+    const filteredConnections = Object.values(contacts.data).filter((contact) => {
+      return contact.firstName.includes(searchQuery) || contact.lastName.includes(searchQuery) || contact.username.includes(searchQuery);
+    });
+    return {
+      searchResults: true,
+      hasData: filteredConnections.length > 0,
+      data: filteredConnections,
+    };
+  }
+
   return {
     hasData: contacts.hasData,
     data: Object.values(contacts.data).sort((A, B) => {
