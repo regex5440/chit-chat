@@ -1,10 +1,13 @@
-import { selectContact, getConnections, getMyProfile, addMessageThunk, updateTypingThunk } from "./user_appData";
+import { selectContact, addTypingAuthors, updateChat, updateSearchQuery, getConnections, getMyProfile, addMessageThunk, updateTypingThunk } from "./user_appData";
 
 export {
   // User AppData Slice
   getMyProfile,
   selectContact,
   getConnections,
+  addTypingAuthors,
+  updateChat,
+  updateSearchQuery,
   addMessageThunk,
   updateTypingThunk,
 };

@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addTypingAuthors, updateChat } from "../redux/reducers/user_appData";
+import { addTypingAuthors, updateChat } from "../redux/reducers";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 
