@@ -18,7 +18,6 @@ const Contacts = () => {
       target.dataset.showshadow = false;
     }
   };
-  console.log(contactList);
   return (
     <div className="contact-list-container" data-showshadow={false} onScroll={addShadow}>
       {contactList.loading ? (
@@ -31,16 +30,22 @@ const Contacts = () => {
           {...contactList.data.map((contact) => {
             return (
               <div key={contact.id}>
-                <ContactTile {...contact} />
+                <ContactTile {...contact} isConnection={true} />
               </div>
             );
           })}
         </FlipMove>
       ) : (
         <div className="no-contacts">
-          <h3>No contacts in touch?</h3>
-          Use Search👆 to find a person for chat...
-          <br /> They will be added here.
+          {contactList.searchResults ? (
+            <h2>No results found</h2>
+          ) : (
+            <>
+              <h3>No contacts in touch?</h3>
+              Use Search👆 to find a person for chat...
+              <br /> They will be added here.
+            </>
+          )}
         </div>
       )}
     </div>

@@ -23,7 +23,10 @@
         .contact-name
             grid-area: 1 / 3 / 1 / 4
             @include profile-name-style-chat-only
-        .contact-message
+        .contact-username
+            font-style: italic
+            color: grey
+        .contact-message,.contact-username
             grid-area: 2 / 3 / 2 / 5
             font-size: $subtext-font-size
             font-weight: 600
@@ -67,3 +70,21 @@
                 color: #FFFFFF
                 display: grid
                 place-items: center
+
+.contact-tile-container[data-type='user']
+    animation: align-in 0.2s ease-out forwards
+    .contact-tile-content
+        padding: 7px
+        border-radius: 16px
+        transition: background 0.2s ease-out
+        box-shadow: 0px 4.07794px 12.2338px rgba(0, 0, 0, 0.15)
+    &:hover .contact-tile-content
+        background: rgb(230,230,230)
+
+@keyframes align-in
+    0%
+        transform: translateY(20px)
+        opacity: 0
+    100%
+        transform: translateY(0px)
+        opacity: 1

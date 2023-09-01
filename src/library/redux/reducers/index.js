@@ -1,4 +1,4 @@
-import { selectContact, addTypingAuthors, updateChat, updateSearchQuery, getConnections, getMyProfile, addMessageThunk, updateTypingThunk } from "./user_appData";
+import { selectContact, addTypingAuthors, updateChat, updateSearchQuery, getConnections, getMyProfile, addMessageThunk, updateTypingThunk, userSearchThunk } from "./user_appData";
 
 export {
   // User AppData Slice
@@ -10,4 +10,5 @@ export {
   updateSearchQuery,
   addMessageThunk,
   updateTypingThunk,
+  userSearchThunk,
 };

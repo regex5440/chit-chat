@@ -64,6 +64,8 @@ const contactsChat = createSelector(
   ({ chat_id }, state) => state.appData.chats[chat_id]
 );
 
+const searchState = (state) => state.appData.search;
+
 //---------------------App configuration selector
 
 const getClockHour = (state) => state.config.clockHr;
@@ -78,6 +80,7 @@ export {
   getSelectedContactProfile,
   contactsChat,
   chatInfoForContactTile,
+  searchState,
 
   //AppConfig
   getClockHour,

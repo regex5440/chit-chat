@@ -23,6 +23,7 @@ const ChatHeader = () => {
     // else
     if (ContactProfile.status === USER_STATUSES.ONLINE.code) return "Online";
     else {
+      //TODO: Add date on last seen if date is not the same as today
       let lastActiveParsed = getFormattedTime(Date.parse(ContactProfile.last_active), `hh:mm`);
       return `Last seen at ${lastActiveParsed}`;
     }

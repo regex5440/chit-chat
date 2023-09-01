@@ -10,7 +10,8 @@ const appDataInitialState = {
     loading: false,
     hasData: false,
     data: {
-      users: {},
+      users: [],
+      groups: [],
     },
   },
   user: {
@@ -57,6 +58,16 @@ export const updateTypingThunk = createAsyncThunk("updateTyping", async (isTypin
     data: { id: authorId },
   } = getUserData(getState());
   await updateTyping(chat_id, { authorId, isTyping });
+});
+
+export const userSearchThunk = createAsyncThunk("userSearch", async (query) => {
+  const {
+    data: { success, data },
+  } = await ChitChatServer.get(`findUser?q=${encodeURIComponent(query)}`);
+  if (success) {
+    return data;
+  }
+  return false;
 });
 
 const userAppDataSlice = createSlice({
@@ -121,6 +132,20 @@ const userAppDataSlice = createSlice({
       .addCase(addMessageThunk.fulfilled, (state, action) => {
         console.log("sendMessageConfirmed", action);
         // To add a tick mark, if message is send to server
+      });
+
+    builder
+      .addCase(userSearchThunk.pending, (state) => {
+        state.search.loading = true;
+      })
+      .addCase(userSearchThunk.fulfilled, (state, { payload }) => {
+        state.search.loading = false;
+        state.search.hasData = payload.hasData;
+        state.search.data.users = payload.users;
+        state.search.data.groups = payload.groups;
+      })
+      .addCase(userSearchThunk.rejected, (state) => {
+        state.search.loading = false;
       });
   },
 });
