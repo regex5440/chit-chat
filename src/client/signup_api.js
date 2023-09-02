@@ -5,6 +5,11 @@ const CCSignupPoint = axios.create({
   withCredentials: true,
 });
 
+CCSignupPoint.interceptors.response.use(
+  (response) => response.data,
+  (error) => Promise.reject(error)
+);
+
 export const setSignupAuthToken = (authToken) => {
   CCSignupPoint.defaults.headers.common.Authorization = `Bearer ${authToken}`;
 };

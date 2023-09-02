@@ -33,15 +33,15 @@ const appDataInitialState = {
 };
 
 export const getMyProfile = createAsyncThunk("fetchMyData", async (authToken) => {
-  let response = await ChitChatServer.get(SERVER_GET_PATHS.my_profile);
-  if (response.data) return { ...response.data, authToken };
+  let { success, data } = await ChitChatServer.get(SERVER_GET_PATHS.my_profile);
+  if (success) return { ...data, authToken };
   setLoginStateToken("");
-  return {};
+  return "";
 });
 
 export const getConnections = createAsyncThunk("fetchContacts", async () => {
-  let { data } = await ChitChatServer.get(SERVER_GET_PATHS.my_connections);
-  if (Object.keys(data).length > 0) return data;
+  let { success, data } = await ChitChatServer.get(SERVER_GET_PATHS.my_connections);
+  if (success) return data;
   return "";
 });
 export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObject, { getState }) => {
@@ -61,9 +61,7 @@ export const updateTypingThunk = createAsyncThunk("updateTyping", async (isTypin
 });
 
 export const userSearchThunk = createAsyncThunk("userSearch", async (query) => {
-  const {
-    data: { success, data },
-  } = await ChitChatServer.get(`findUser?q=${encodeURIComponent(query)}`);
+  const { success, data } = await ChitChatServer.get(`findUser?q=${encodeURIComponent(query)}`);
   if (success) {
     return data;
   }
@@ -96,11 +94,11 @@ const userAppDataSlice = createSlice({
       .addCase(getConnections.pending, (state) => {
         state.contacts.loading = true;
       })
-      .addCase(getConnections.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.contacts.hasData = true;
-          state.contacts.data = action.payload.contacts;
-          state.chats = action.payload.chats.reduce((prevChatObj, chatObj) => ({ ...prevChatObj, [chatObj.chat_id]: chatObj }), {});
+      .addCase(getConnections.fulfilled, (state, { payload }) => {
+        if (payload?.hasData) {
+          state.contacts.hasData = payload.hasData;
+          state.contacts.data = payload.contacts;
+          state.chats = payload.chats.reduce((prevChatObj, chatObj) => ({ ...prevChatObj, [chatObj.chat_id]: chatObj }), {});
         }
         state.contacts.loading = false;
       })

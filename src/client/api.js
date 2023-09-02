@@ -4,6 +4,10 @@ const ChitChatServer = axios.create({
   baseURL: import.meta.env.CC_ServerDomain + "/api/",
   withCredentials: true,
 });
+ChitChatServer.interceptors.response.use(
+  (response) => response.data,
+  (error) => Promise.reject(error)
+);
 
 export const setAPIHeader = (authToken) => {
   ChitChatServer.defaults.headers.common.Authorization = `Bearer ${authToken}`;

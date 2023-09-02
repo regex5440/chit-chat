@@ -26,12 +26,12 @@ const LoginContent = () => {
           username,
           password,
         });
-        if (response.data?.valid) {
+        if (response.data?.success) {
           updateError({ showError: false, message: "" });
-          setLoginStateToken(response.data.token);
+          setLoginStateToken(response.data.data);
           navigate("/app");
         } else {
-          updateError({ message: response.data, showError: true });
+          updateError({ message: response.data.message, showError: true });
         }
       } catch (e) {
         updateError({ showError: true, message: "Something's wrong!" });
@@ -98,8 +98,8 @@ const SignupContent = () => {
     if (/^[a-zA-Z0-\_\.]{3,20}$/.test(value)) {
       try {
         setProgress((state) => ({ ...state, checkingUsername: true }));
-        const response = await fetchOnce(`/username_checker?username=${value}`, "GET");
-        if (response.data.available) {
+        const { success, data, message } = await fetchOnce(`/username_checker?username=${value}`, "GET");
+        if (success && data.available) {
           setSignupFlags((state) => ({ ...state, usernameAvailable: "available" }));
           setSignupForm((state) => ({ ...state, usernameSelected: e.target.value }));
           updateError({ showError: false });
@@ -193,8 +193,8 @@ const SignupContent = () => {
     axios
       .post(`${import.meta.env.CC_ServerDomain}/email_verifier`, { emailAddress: emailInput.current.value?.trim(), resend: e.resend || false })
       .then((res) => {
-        const { message, valid } = res.data;
-        if (!valid) {
+        const { message, error } = res.data;
+        if (error) {
           closeDialog();
           updateError({ showError: true, message: message });
         }
@@ -212,20 +212,20 @@ const SignupContent = () => {
   const signupHandler = () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
-      CCSignupPoint.post("/register", signupFormState).then(async (res) => {
-        if (res.data?.valid) {
-          setLoginStateToken(res.data.token);
+      CCSignupPoint.post("/register", signupFormState).then(async (response) => {
+        if (response.success) {
+          setLoginStateToken(response.data);
           if (imageBlob.current) {
             await ChitChatServer.post("/imageUploader", imageBlob.current, {
               headers: {
                 "Content-Type": "application/octet-stream",
-                Authorization: `Bearer ${res.data.token}`,
+                Authorization: `Bearer ${response.data}`,
               },
             });
           }
           navigate("/app");
         } else {
-          updateError({ showError: true, message: res.data });
+          updateError({ showError: true, message: response.data });
           setProgress((state) => ({ ...state, signup: false }));
         }
       });
@@ -262,9 +262,9 @@ const SignupContent = () => {
                         code: e.target.code.value,
                       })
                       .then((res) => {
-                        const { token, verified } = res.data;
-                        if (verified) {
-                          setSignupAuthToken(token);
+                        const { data, success } = res.data;
+                        if (success) {
+                          setSignupAuthToken(data);
                           updateError({ showError: false });
                           setSignupFlags((state) => ({ ...state, verifiedEmail: true }));
                           emailModal.current.close(true);
