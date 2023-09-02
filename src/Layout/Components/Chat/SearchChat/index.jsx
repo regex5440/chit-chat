@@ -56,7 +56,7 @@ const SearchChat = () => {
           ) : //TODO: Add a loading icon
           hasData ? (
             <>
-              {data.users && (
+              {data.users.length > 0 && (
                 <div className="users">
                   <div className="content">
                     <h3>Users</h3>
@@ -68,7 +68,7 @@ const SearchChat = () => {
                   </div>
                 </div>
               )}
-              {data.groups && (
+              {data.groups.length > 0 && (
                 <div className="groups">
                   <div className="content">
                     <h3>Groups</h3>
