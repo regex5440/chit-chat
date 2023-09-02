@@ -5,7 +5,7 @@ import MessagesArea from "./MessagesArea";
 import { useSelector } from "react-redux";
 import { getSelectedContact, getSelectedContactProfile } from "../../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../../utils/enums";
-import { getFormattedTime } from "../../../../utils";
+import { dateDifference, getFormattedDate, getFormattedTime } from "../../../../utils";
 
 const NoChatMessage = () => (
   <div className="no-chat-message-container">
@@ -23,9 +23,16 @@ const ChatHeader = () => {
     // else
     if (ContactProfile.status === USER_STATUSES.ONLINE.code) return "Online";
     else {
-      //TODO: Add date on last seen if date is not the same as today
-      let lastActiveParsed = getFormattedTime(Date.parse(ContactProfile.last_active), `hh:mm`);
-      return `Last seen at ${lastActiveParsed}`;
+      let parsedDateString = "";
+      const daysDifference = dateDifference(ContactProfile.last_active, new Date());
+      if (daysDifference === 0) {
+        parsedDateString = getFormattedTime(ContactProfile.last_active, "hh:mm");
+      } else if (daysDifference >= -7) {
+        parsedDateString = getFormattedDate(ContactProfile.last_active, "www") + ", " + getFormattedTime(ContactProfile.last_active, "hh:mm");
+      } else {
+        parsedDateString = getFormattedDate(ContactProfile.last_active, "dd-mmm-yy");
+      }
+      return `Last seen ${parsedDateString}`;
     }
   };
 
