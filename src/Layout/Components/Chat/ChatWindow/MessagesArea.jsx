@@ -16,17 +16,16 @@ const MessagesArea = ({ ContactId, endOfMessages }) => {
       messageContainer.current.scrollTo(0, messageContainer.current.scrollHeight);
     }
   }, []);
-  const contactIsTyping = chat.authors_typing?.includes(ContactId);
+  const contactIsTyping = chat?.authors_typing?.includes(ContactId);
 
   useEffect(() => {
     scrollToBottom();
-  }, [contactIsTyping, chat.messages.length]);
+  }, [contactIsTyping, chat?.messages?.length || false]);
 
   useEffect(() => {
     scrollToBottom();
     if (contactIsTyping) scrollToBottom();
-    // @Requirement
-    // Have a look in use case of scrolling down
+    // TODO: Have a look in use case of scrolling down
 
     lastMessageDateDifference.current = null;
   }, [ContactId]);
@@ -75,7 +74,7 @@ const MessagesArea = ({ ContactId, endOfMessages }) => {
               </div>
             }
           />
-          {chat.messages.map((message) => renderMessage(message))}
+          {chat?.messages && chat.messages.map((message) => renderMessage(message))}
           {contactIsTyping && (
             <div className="message message-loading">
               <BouncyBalls containerColor="transparent" />

@@ -18,13 +18,10 @@ const SOCKET_HANDLERS = {
   CHAT: {
     newMessage: "chatUpdate/message",
     typingStatusUpdate: "chatUpdate/typingStatus",
+    newRequest: "newChatRequest",
+    newRequstSuccess: "newChatRequestSuccess",
   },
 };
-
-export enum ContactTileType {
-  CONNECTION,
-  CONTACT,
-}
 
 const THEME_VARIABLES = getExportedVariables(themeVariables);
 

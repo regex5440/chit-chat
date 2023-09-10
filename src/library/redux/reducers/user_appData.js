@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
 import { sendMessage, updateTyping } from "../../socket.io/socket";
-import { contactsChat, getUserData } from "../selectors";
+import { getTempConnection, getUserData, selectedContactChatId } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
 const appDataInitialState = {
@@ -30,6 +30,7 @@ const appDataInitialState = {
     data: {},
   },
   chats: {},
+  temp_contact: null,
 };
 
 export const getMyProfile = createAsyncThunk("fetchMyData", async (authToken) => {
@@ -45,18 +46,28 @@ export const getConnections = createAsyncThunk("fetchContacts", async () => {
   return "";
 });
 export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObject, { getState }) => {
-  const { chat_id } = contactsChat(getState());
+  const chat_id = selectedContactChatId(getState());
   const {
     data: { id: sender_id },
   } = getUserData(getState());
-  await sendMessage(chat_id, Object.assign({}, messageObject, { sender_id }));
+  messageObject.sender_id = sender_id;
+
+  if (!chat_id) {
+    const tempContact = getTempConnection(getState());
+    await sendMessage(tempContact.id, messageObject, true);
+  } else {
+    await sendMessage(chat_id, messageObject);
+  }
 });
 
 export const updateTypingThunk = createAsyncThunk("updateTyping", async (isTyping, { getState }) => {
-  const { chat_id } = contactsChat(getState());
+  const chat_id = selectedContactChatId(getState());
   const {
     data: { id: authorId },
   } = getUserData(getState());
+  if (!chat_id) {
+    return;
+  }
   await updateTyping(chat_id, { authorId, isTyping });
 });
 
@@ -73,6 +84,7 @@ const userAppDataSlice = createSlice({
   initialState: appDataInitialState,
   reducers: {
     selectContact: (state, action) => {
+      if (action.payload !== state.temp_contact?.id) state.temp_contact = null;
       state.selectedContact.contactId = action.payload;
       state.selectedContact.isAvailable = true;
     },
@@ -86,6 +98,18 @@ const userAppDataSlice = createSlice({
     },
     updateSearchQuery: (state, action) => {
       state.search.query = action.payload;
+    },
+    setTempConnection: (state, action) => {
+      state.temp_contact = state.search.data?.users?.find((user) => user.id === action.payload);
+    },
+    removeTempConnection: (state, action) => {
+      state.temp_contact = null;
+    },
+    addNewConnectionRequested: (state, { payload: { chat, connectionProfile } }) => {
+      state.chats[chat.chat_id] = chat;
+      state.contacts.data[connectionProfile.id] = connectionProfile;
+      state.temp_contact = null;
+      state.contacts.hasData = true;
     },
   },
   extraReducers: (builder) => {
@@ -123,13 +147,18 @@ const userAppDataSlice = createSlice({
 
     builder
       .addCase(addMessageThunk.pending, (state, { meta }) => {
-        let chatId = state.contacts.data[state.selectedContact.contactId].chat_id;
-        state.chats[chatId].last_updated = meta.arg.timestamp;
-        state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id }));
+        let chatId = selectedContactChatId({ appData: state });
+        if (chatId) {
+          state.chats[chatId].last_updated = meta.arg.timestamp;
+          state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id }));
+        }
       })
       .addCase(addMessageThunk.fulfilled, (state, action) => {
         console.log("sendMessageConfirmed", action);
         // To add a tick mark, if message is send to server
+      })
+      .addCase(addMessageThunk.rejected, (state, action) => {
+        console.log("Unable to send message", action);
       });
 
     builder
@@ -148,6 +177,6 @@ const userAppDataSlice = createSlice({
   },
 });
 
-export const { selectContact, addTypingAuthors, updateChat, updateSearchQuery } = userAppDataSlice.actions;
+export const { selectContact, addTypingAuthors, updateChat, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

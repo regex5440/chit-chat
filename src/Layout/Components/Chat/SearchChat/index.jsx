@@ -1,17 +1,18 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { PlusIcon, MagnifyIcon } from "../../../../assets/icons";
 import "./search_people.sass";
-import ContactTile from "../ContactTile";
+import ContactTile, { UserTileType } from "../ContactTile";
 import { debounce } from "../../../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { updateSearchQuery, userSearchThunk } from "../../../../library/redux/reducers";
-import { searchState } from "../../../../library/redux/selectors";
+import { getTempConnection, searchState } from "../../../../library/redux/selectors";
 
 const SearchChat = () => {
   const [searchText, setSearchText] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
   const dispatch = useDispatch();
   const { query, loading, hasData, data } = useSelector(searchState);
+  const tempSelectedUser = useSelector(getTempConnection);
   const setSearchQueryInStore = useCallback(
     debounce(
       (value) => {
@@ -22,6 +23,11 @@ const SearchChat = () => {
     ),
     []
   );
+  useEffect(() => {
+    if (tempSelectedUser) {
+      clearSearch();
+    }
+  }, [tempSelectedUser]);
   const handleInputFocus = () => {
     setInputFocused(true);
   };
@@ -33,12 +39,12 @@ const SearchChat = () => {
   const handleInputChange = (e) => {
     const inputText = e.target.value;
     setSearchText(inputText);
-    setSearchQueryInStore(inputText);
+    setSearchQueryInStore(inputText.trim());
   };
   const clearSearch = () => {
     setSearchText("");
     setInputFocused(false);
-    dispatch(setSearchQueryInStore(""));
+    setSearchQueryInStore("");
   };
   return (
     <div className="search-container">
@@ -62,7 +68,7 @@ const SearchChat = () => {
                     <h3>Users</h3>
                     <div className="list">
                       {data.users.map((user, index) => {
-                        return <ContactTile isConnection={false} avatar={{ url: user.url, key: user.key }} firstName={user.firstName} lastName={user.lastName} username={user.username} style={{ opacity: "0", animationDelay: `${index / 50}s` }} />;
+                        return <ContactTile TYPE={UserTileType.USER} isConnection={false} avatar={user.avatar} firstName={user.firstName} lastName={user.lastName} username={user.username} style={{ opacity: "0", animationDelay: `${index / 50}s` }} bio={user.about} id={user.id} />;
                       })}
                     </div>
                   </div>

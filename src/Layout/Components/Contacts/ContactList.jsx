@@ -2,14 +2,15 @@ import React from "react";
 import { SearchChat } from "../Chat";
 import "./contact_list.sass";
 import FlipMove from "react-flip-move";
-import ContactTile from "../Chat/ContactTile";
+import ContactTile, { UserTileType } from "../Chat/ContactTile";
 import { useSelector } from "react-redux";
-import { getContactsListSorted } from "../../../library/redux/selectors";
+import { getContactsListSorted, getTempConnection } from "../../../library/redux/selectors";
 import { CircularLoader } from "hd-ui";
 import { THEME_VARIABLES } from "../../../utils/enums";
 
 const Contacts = () => {
   const contactList = useSelector(getContactsListSorted);
+  const tempContact = useSelector(getTempConnection);
 
   const addShadow = ({ target }) => {
     if (target.scrollTop > 5) {
@@ -25,12 +26,17 @@ const Contacts = () => {
           <CircularLoader width={30} loaderColor={THEME_VARIABLES.loaderColor} />
           Getting your contacts...
         </div>
-      ) : contactList.hasData ? (
+      ) : contactList.hasData || tempContact ? (
         <FlipMove className="flip-wrapper" style={{ paddingBottom: "15px" }}>
+          {tempContact && (
+            <div>
+              <ContactTile TYPE={UserTileType.USER} {...tempContact} />
+            </div>
+          )}
           {...contactList.data.map((contact) => {
             return (
               <div key={contact.id}>
-                <ContactTile {...contact} isConnection={true} />
+                <ContactTile TYPE={UserTileType.CONNECTION} {...contact} />
               </div>
             );
           })}

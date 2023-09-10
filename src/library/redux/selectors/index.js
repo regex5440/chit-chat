@@ -34,10 +34,12 @@ const getContactsListSorted = (state) => {
 const getContactsRaw = (state) => state.appData.contacts.data;
 const getSelectedContact = (state) => state.appData.selectedContact;
 
+const getTempConnection = (state) => state.appData.temp_contact;
+
 const getSelectedContactProfile = createSelector(
   getSelectedContact,
   (state) => state,
-  (selectedContact, state) => state.appData.contacts.data[selectedContact.contactId]
+  (selectedContact, state) => state.appData.contacts.data[selectedContact.contactId] || state.appData.temp_contact
 );
 const chatInfoForContactTile = (contact_id) => {
   return createSelector(
@@ -47,7 +49,7 @@ const chatInfoForContactTile = (contact_id) => {
       const contacts = state.appData.contacts.data;
       const contactsChat = state.appData.chats[contacts[contact_id].chat_id];
 
-      const contacts_messages = contactsChat.messages;
+      const contacts_messages = contactsChat?.messages;
 
       return {
         last_message: contacts_messages[contacts_messages.length - 1],
@@ -61,8 +63,17 @@ const chatInfoForContactTile = (contact_id) => {
 const contactsChat = createSelector(
   getSelectedContactProfile,
   (state) => state,
-  ({ chat_id }, state) => state.appData.chats[chat_id]
+  (contactProfile, state) => {
+    if (!state.appData.temp_contact) {
+      return state.appData.chats[contactProfile?.chat_id];
+    }
+    return {};
+  }
 );
+
+const selectedContactChatId = createSelector(getSelectedContactProfile, (selectedContactProfile) => {
+  return selectedContactProfile.chat_id;
+});
 
 const searchState = (state) => state.appData.search;
 
@@ -78,6 +89,8 @@ export {
   getContactsListSorted,
   getSelectedContact,
   getSelectedContactProfile,
+  selectedContactChatId,
+  getTempConnection,
   contactsChat,
   chatInfoForContactTile,
   searchState,

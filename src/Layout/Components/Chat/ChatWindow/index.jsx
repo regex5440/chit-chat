@@ -22,18 +22,16 @@ const ChatHeader = () => {
     // if (authors_typing.includes(ContactProfile.id)) return "Typing...";
     // else
     if (ContactProfile.status === USER_STATUSES.ONLINE.code) return "Online";
-    else {
-      let parsedDateString = "";
-      const daysDifference = dateDifference(ContactProfile.last_active, new Date());
-      if (daysDifference === 0) {
-        parsedDateString = getFormattedTime(ContactProfile.last_active, "hh:mm");
-      } else if (daysDifference >= -7) {
-        parsedDateString = getFormattedDate(ContactProfile.last_active, "www") + ", " + getFormattedTime(ContactProfile.last_active, "hh:mm");
-      } else {
-        parsedDateString = getFormattedDate(ContactProfile.last_active, "dd-mmm-yy");
-      }
-      return `Last seen ${parsedDateString}`;
+    let parsedDateString = "";
+    const daysDifference = dateDifference(ContactProfile.last_active, new Date());
+    if (daysDifference === 0) {
+      parsedDateString = getFormattedTime(ContactProfile.last_active, "hh:mm");
+    } else if (daysDifference >= -7) {
+      parsedDateString = getFormattedDate(ContactProfile.last_active, "www") + ", " + getFormattedTime(ContactProfile.last_active, "hh:mm");
+    } else {
+      parsedDateString = getFormattedDate(ContactProfile.last_active, "dd-mmm-yy");
     }
+    return `Last seen ${parsedDateString}`;
   };
 
   const renderProfileDetails = () => {

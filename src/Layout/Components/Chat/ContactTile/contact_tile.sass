@@ -1,6 +1,7 @@
 @import @theme-variables
 .contact-tile-container
     user-select: none
+    width: 100%
     .contact-tile-content
         display: grid
         grid-template-columns: 60px 12.23px 1fr 34.74px
@@ -26,7 +27,9 @@
         .contact-username
             font-style: italic
             color: grey
-        .contact-message,.contact-username
+            grid-area: 1 / 4/ 1 / span 5
+            font-size: $subtext-font-size - 2px
+        .contact-message
             grid-area: 2 / 3 / 2 / 5
             font-size: $subtext-font-size
             font-weight: 600
