@@ -40,11 +40,6 @@ export const getMyProfile = createAsyncThunk("fetchMyData", async (authToken) =>
   return "";
 });
 
-export const getConnections = createAsyncThunk("fetchContacts", async () => {
-  let { success, data } = await ChitChatServer.get(SERVER_GET_PATHS.my_connections);
-  if (success) return data;
-  return "";
-});
 export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObject, { getState }) => {
   const chat_id = selectedContactChatId(getState());
   const {
@@ -91,6 +86,14 @@ const userAppDataSlice = createSlice({
     addTypingAuthors: (state, action) => {
       state.chats[action.payload.chat_id].authors_typing = action.payload.authors_typing;
     },
+    addInitialData: (state, { payload: { hasData, chats, connections } }) => {
+      if (hasData) {
+        state.contacts.hasData = hasData;
+        state.contacts.data = connections;
+        state.chats = chats.reduce((prevChatObj, chatObj) => ({ ...prevChatObj, [chatObj.chat_id]: chatObj }), {});
+      }
+      state.contacts.loading = false;
+    },
     updateChat: (state, { payload: update }) => {
       console.log(update);
       state.chats[update.chat_id].last_updated = update.last_updated;
@@ -113,22 +116,6 @@ const userAppDataSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Get Connections
-    builder
-      .addCase(getConnections.pending, (state) => {
-        state.contacts.loading = true;
-      })
-      .addCase(getConnections.fulfilled, (state, { payload }) => {
-        if (payload?.hasData) {
-          state.contacts.hasData = payload.hasData;
-          state.contacts.data = payload.contacts;
-          state.chats = payload.chats.reduce((prevChatObj, chatObj) => ({ ...prevChatObj, [chatObj.chat_id]: chatObj }), {});
-        }
-        state.contacts.loading = false;
-      })
-      .addCase(getConnections.rejected, (state) => {
-        state.contacts.loading = false;
-      });
     // Get User Profile
     builder
       .addCase(getMyProfile.pending, (state) => {
@@ -177,6 +164,6 @@ const userAppDataSlice = createSlice({
   },
 });
 
-export const { selectContact, addTypingAuthors, updateChat, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested } = userAppDataSlice.actions;
+export const { selectContact, addTypingAuthors, addInitialData, updateChat, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

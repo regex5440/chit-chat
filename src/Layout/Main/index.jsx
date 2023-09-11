@@ -6,7 +6,7 @@ import { ChatWindow } from "../Components/Chat";
 import "./app.sass";
 import store from "../../library/redux/store";
 import { Provider } from "react-redux";
-import { getConnections, getMyProfile } from "../../library/redux/reducers";
+import { getMyProfile } from "../../library/redux/reducers";
 import { SocketComponent } from "../../library/socket.io/socket";
 import { redirect } from "react-router-dom";
 import { setAPIHeader } from "../../client/api";
@@ -31,12 +31,6 @@ export const appLoader = async () => {
 };
 
 const App = () => {
-  useEffect(() => {
-    async function getInitialData() {
-      store.dispatch(getConnections());
-    }
-    getInitialData();
-  }, []);
   return (
     <Provider store={store}>
       <SocketComponent />

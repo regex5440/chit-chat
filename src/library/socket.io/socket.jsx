@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addNewConnectionRequested, addTypingAuthors, updateChat } from "../redux/reducers";
+import { addInitialData, addNewConnectionRequested, addTypingAuthors, updateChat } from "../redux/reducers";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { getLoginStateToken } from "../../utils";
@@ -23,6 +23,13 @@ export const SocketComponent = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    // socket.on("message", (x) => console.log(x));
+
+    // Connections Data
+    socket.on(SOCKET_HANDLERS.CONNECTION_DATA, (data) => {
+      dispatch(addInitialData(data));
+    });
+
     // Typing Status update
     socket.on(SOCKET_HANDLERS.CHAT.typingStatusUpdate, (chat_id, authors_typing_array) => {
       dispatch(addTypingAuthors({ chat_id, authors_typing: authors_typing_array }));
