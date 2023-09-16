@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React from "react";
 import ChatInput from "./ChatInput";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";

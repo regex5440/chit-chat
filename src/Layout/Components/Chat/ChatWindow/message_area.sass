@@ -48,6 +48,10 @@
             max-width: min(500px,60%)
             box-sizing: border-box
             @include message-box-others()
+            & > span.message-status
+                position: absolute
+                right: -25px
+                bottom: 2px
             & > span.message-time
                 position: absolute
                 left: $message-box-padding

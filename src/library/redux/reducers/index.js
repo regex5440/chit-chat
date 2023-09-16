@@ -1,4 +1,4 @@
-import { selectContact, addTypingAuthors, addInitialData, updateChat, updateSearchQuery, getMyProfile, setTempConnection, removeTempConnection, addNewConnectionRequested, addMessageThunk, updateTypingThunk, userSearchThunk } from "./user_appData";
+import { selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateSearchQuery, getMyProfile, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData, addMessageThunk, updateTypingThunk, userSearchThunk, sendMessageSeenThunk } from "./user_appData";
 
 export {
   // User AppData Slice
@@ -7,11 +7,14 @@ export {
   selectContact,
   addTypingAuthors,
   updateChat,
+  updateChatSeenStatus,
   updateSearchQuery,
   setTempConnection,
   removeTempConnection,
   addNewConnectionRequested,
+  resetSocketData,
   addMessageThunk,
   updateTypingThunk,
   userSearchThunk,
+  sendMessageSeenThunk,
 };

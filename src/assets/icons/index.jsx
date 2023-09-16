@@ -9,5 +9,8 @@ import MagnifyMinus from "./magnify-minus.svg";
 import Chevron from "./chevron.svg";
 import TickIcon from "./tick.svg";
 import ReloadIcon from "./reload.svg";
+import SentIcon from "./tick-sent.svg";
+import DoubleTickIcon from "./double-tick.svg";
+import ExclamationIcon from "./exclamation.svg";
 
-export { MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon };
+export { ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon };

@@ -77,6 +77,14 @@ const selectedContactChatId = createSelector(getSelectedContactProfile, (selecte
 
 const searchState = (state) => state.appData.search;
 
+const getUnreadMessagesCount = createSelector(
+  getSelectedContact,
+  (state) => state,
+  (selectedContact, state) => {
+    return state.appData.contacts.data?.[selectedContact.contactId]?.unseen_messages_count;
+  }
+);
+
 //---------------------App configuration selector
 
 const getClockHour = (state) => state.config.clockHr;
@@ -91,6 +99,7 @@ export {
   getSelectedContactProfile,
   selectedContactChatId,
   getTempConnection,
+  getUnreadMessagesCount,
   contactsChat,
   chatInfoForContactTile,
   searchState,

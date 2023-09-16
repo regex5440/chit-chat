@@ -16,10 +16,11 @@ const USER_STATUSES = {
 
 const SOCKET_HANDLERS = {
   CHAT: {
-    newMessage: "chatUpdate/message",
-    typingStatusUpdate: "chatUpdate/typingStatus",
-    newRequest: "newChatRequest",
-    newRequstSuccess: "newChatRequestSuccess",
+    NewMessage: "chatUpdate/message",
+    TypingUpdate: "chatUpdate/typingStatus",
+    NewRequest: "newChatRequest",
+    NewRequest_Success: "newChatRequestSuccess",
+    SeenUpdate: "newSeenUpdate",
   },
   CONNECTION_DATA: "connectionsData_from_socket",
 };
