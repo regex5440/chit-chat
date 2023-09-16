@@ -153,8 +153,8 @@ const userAppDataSlice = createSlice({
     builder
       .addCase(addMessageThunk.pending, (state, { meta }) => {
         let chatId = selectedContactChatId({ appData: state });
-        state.chats[chatId].seenByConnection = false;
         if (chatId) {
+          state.chats[chatId].seenByConnection = false;
           state.chats[chatId].last_updated = meta.arg.timestamp;
           state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id, sending: true }));
         }
