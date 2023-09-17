@@ -3,7 +3,7 @@ import "./message_area.sass";
 import { BouncyBalls, CircularLoader, LazyLoader } from "hd-ui";
 import { capitalize, dateComparer, dateDifference, getFormattedDate, getFormattedTime, msToDays } from "../../../../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { contactsChat, getUnreadMessagesCount } from "../../../../library/redux/selectors";
+import { contactsChat, unseenMsgCountSelectedContact } from "../../../../library/redux/selectors";
 import { THEME_VARIABLES } from "../../../../utils/enums";
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
@@ -15,7 +15,7 @@ const MessagesArea = ({ ContactId, endOfMessages }) => {
   const lastMessageDateDifference = useRef(null);
   const chat = useSelector(contactsChat);
   const dispatch = useDispatch();
-  const unseenMessagesCount = useSelector(getUnreadMessagesCount);
+  const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
   const scrollToBottom = useCallback(() => {
     if (messageContainer.current) {
       messageContainer.current.scrollTo(0, messageContainer.current.scrollHeight);
