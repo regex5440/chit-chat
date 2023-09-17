@@ -75,7 +75,7 @@ const MessagesArea = ({ ContactId, endOfMessages }) => {
       <>
         {timeStampMessage}
         <div className="message message-box" data-mine={isMine}>
-          {isMine && <span className="message-status">{chat.seenByConnection ? <DoubleTickIcon height="20px" width="20px" fill="#2E9DFB" /> : <SentIcon height="18px" width="18px" />}</span>}
+          {isMine && <span className="message-status">{message_object.unseen ? <SentIcon height="18px" width="18px" /> : message_object.error ? <ExclamationIcon height="18px" width="18px" /> : <DoubleTickIcon height="20px" width="20px" fill="#2E9DFB" />}</span>}
           <span className="message-text">{message_object.text}</span>
           <span className="message-time">{getFormattedTime(message_object.timestamp, "h:mm")}</span>
         </div>

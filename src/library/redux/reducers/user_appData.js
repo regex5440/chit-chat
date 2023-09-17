@@ -107,6 +107,15 @@ const userAppDataSlice = createSlice({
       state.contacts.data[update.message.sender_id].unseen_messages_count++;
     },
     updateChatSeenStatus: (state, { payload: chat_id }) => {
+      const messages = state.chats[chat_id].messages;
+      for (let i = messages.length - 1; i > 0; i--) {
+        const message = messages[i];
+        if (message.unseen) {
+          delete message.unseen;
+          continue;
+        }
+        break;
+      }
       state.chats[chat_id].seenByConnection = true;
     },
     updateSearchQuery: (state, action) => {
@@ -156,11 +165,15 @@ const userAppDataSlice = createSlice({
         if (chatId) {
           state.chats[chatId].seenByConnection = false;
           state.chats[chatId].last_updated = meta.arg.timestamp;
-          state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id, sending: true }));
+          state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id, unseen: true }));
         }
       })
       .addCase(addMessageThunk.rejected, (state, action) => {
         console.log("Unable to send message", action);
+        // let chatId = selectedContactChatId({ appData: state });
+        // if(chatId){
+        //   state.chats[chatId].messages.at(-1).error = true;
+        // }
       });
 
     builder.addCase(
