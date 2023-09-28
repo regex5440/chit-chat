@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
-import { sendMessage, sendMessageSeenUpdate, updateTyping } from "../../socket.io/socket";
+import { clearChatSocket, removeConnection, sendMessage, sendMessageSeenUpdate, updateTyping } from "../../socket.io/socket";
 import { getSelectedContact, getTempConnection, getUserData, selectedContactChatId } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
@@ -77,6 +77,20 @@ export const userSearchThunk = createAsyncThunk("userSearch", async (query) => {
   return false;
 });
 
+export const clearChatThunk = createAsyncThunk("clearAllMsgs", async ({ chatId, toId }, { getState }) => {
+  const {
+    data: { id: fromContactId },
+  } = getUserData(getState());
+  clearChatSocket(chatId, fromContactId, toId);
+});
+
+export const removeConnectionThunk = createAsyncThunk("connectionRemoval", async ({ chat_id, contactId, blocked }, { getState }) => {
+  const {
+    data: { id },
+  } = getUserData(getState());
+  removeConnection(chat_id, id, contactId, blocked);
+});
+
 const userAppDataSlice = createSlice({
   name: "user_appData",
   initialState: appDataInitialState,
@@ -100,6 +114,20 @@ const userAppDataSlice = createSlice({
         state.chats = chats.reduce((prevChatObj, chatObj) => ({ ...prevChatObj, [chatObj.chat_id]: chatObj }), {});
       }
       state.contacts.loading = false;
+    },
+    clearChat: (state, { payload: { chatId, fromId } }) => {
+      state.chats[chatId].messages = [];
+      if (state.contacts.data[fromId]) {
+        state.contacts.data[fromId].unseen_messages_count = 0;
+      }
+    },
+    deleteContact: (state, { payload: { contactId, chatId } }) => {
+      delete state.contacts.data[contactId];
+      delete state.chats[chatId];
+      if (state.selectedContact.contactId === contactId) {
+        state.selectedContact.contactId = "";
+        state.selectedContact.isAvailable = false;
+      }
     },
     updateChat: (state, { payload: update }) => {
       state.chats[update.chat_id].last_updated = update.last_updated;
@@ -203,9 +231,41 @@ const userAppDataSlice = createSlice({
       .addCase(userSearchThunk.rejected, (state) => {
         state.search.loading = false;
       });
+
+    builder.addCase(
+      clearChatThunk.fulfilled,
+      (
+        state,
+        {
+          meta: {
+            arg: { chatId },
+          },
+        }
+      ) => {
+        state.chats[chatId].messages = [];
+      }
+    );
+    builder.addCase(
+      removeConnectionThunk.fulfilled,
+      (
+        state,
+        {
+          meta: {
+            arg: { contactId, chatId },
+          },
+        }
+      ) => {
+        delete state.contacts.data[contactId];
+        delete state.chats[chatId];
+        if (state.selectedContact.contactId === contactId) {
+          state.selectedContact.contactId = "";
+          state.selectedContact.isAvailable = false;
+        }
+      }
+    );
   },
 });
 
-export const { selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
+export const { clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

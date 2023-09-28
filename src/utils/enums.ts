@@ -1,4 +1,5 @@
 import { getExportedVariables } from ".";
+//@ts-ignore
 import themeVariables from "@theme-variables";
 
 const USER_STATUSES = {
@@ -16,13 +17,20 @@ const USER_STATUSES = {
 
 const SOCKET_HANDLERS = {
   CHAT: {
+    JoinRoom: 'newChatRequestedRoom',
     NewMessage: "chatUpdate/message",
     TypingUpdate: "chatUpdate/typingStatus",
     NewRequest: "newChatRequest",
     NewRequest_Success: "newChatRequestSuccess",
     SeenUpdate: "newSeenUpdate",
+    ClearAll: 'removeAllMessages'
   },
-  CONNECTION_DATA: "connectionsData_from_socket",
+  CONNECTION: {
+    ConnectionData: "connectionsWithChat",
+    RemoveConnection: 'RemoveConnection',
+    StatusUpdate: 'lastSeenUpdate',
+    PictureUpdate: 'profilePicUpdate'
+  }
 };
 
 const THEME_VARIABLES = getExportedVariables(themeVariables);

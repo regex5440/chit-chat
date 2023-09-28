@@ -23,7 +23,7 @@ const Contacts = () => {
     <div className="contact-list-container" data-showshadow={false} onScroll={addShadow}>
       {contactList.loading ? (
         <div className="contacts-loading">
-          <CircularLoader width={30} loaderColor={THEME_VARIABLES.loaderColor} />
+          <CircularLoader size={30} riderColor={THEME_VARIABLES.loaderColor} />
           Getting your contacts...
         </div>
       ) : contactList.hasData || tempContact ? (

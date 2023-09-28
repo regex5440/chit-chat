@@ -49,7 +49,7 @@ const LoginContent = () => {
       <div className="forgot-password-cta">Forgot Password?</div> {/*//TODO: Forgot password popup */}
       <div className="action-buttons">
         <button type="submit" className="cta" style={loginProgress ? { pointerEvents: "none" } : {}}>
-          {loginProgress ? <CircularLoader width={30} loaderColor="#fff" /> : "Login"}
+          {loginProgress ? <CircularLoader size={30} riderColor="#fff" /> : "Login"}
         </button>
         <Link className="cta" to="/signup">
           Signup
@@ -248,7 +248,7 @@ const SignupContent = () => {
         <dialog className="email-verification-modal" ref={emailModal} aria-modal={true}>
           <div className="email-verification-modal__container">
             {progressIn.emailVerification ? (
-              <CircularLoader width={40} />
+              <CircularLoader size={40} />
             ) : (
               <form
                 method="dialog"
@@ -296,7 +296,7 @@ const SignupContent = () => {
                 {dialogError && <div className="verification__error">{dialogError}</div>}
                 <input id="otp-code" type="text" placeholder="OTP" name="code" autoFocus data-error={dialogError && true} />
                 <div className="action-button">
-                  <button type="submit">{progressIn.codeVerification ? <CircularLoader width={20} loaderColor="white" /> : "Submit"}</button>
+                  <button type="submit">{progressIn.codeVerification ? <CircularLoader size={20} riderColor="white" /> : "Submit"}</button>
                   <button className="resend-otp" onClick={() => openVerifierModal({ resend: true })}>
                     Resend OTP
                   </button>
@@ -337,7 +337,7 @@ const SignupContent = () => {
               <input type="text" name="username" placeholder="Select a username" data-valid={signupFlags.usernameAvailable === "available"} spellCheck={false} onChange={usernameChecker} autoFocus />
               {progressIn.checkingUsername && (
                 <span>
-                  <CircularLoader width="15" loaderColor="#fff" />
+                  <CircularLoader size={15} riderColor="#fff" />
                 </span>
               )}
             </div>
@@ -354,7 +354,7 @@ const SignupContent = () => {
 
             <div className="action-buttons">
               <div className="cta" style={(progressIn.signup && { pointerEvents: "none" }) || {}} onClick={signupHandler}>
-                {progressIn.signup ? <CircularLoader width={30} loaderColor="#fff" /> : "Signup"}
+                {progressIn.signup ? <CircularLoader size={30} riderColor="#fff" /> : "Signup"}
               </div>
             </div>
           </form>

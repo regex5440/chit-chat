@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import ChatInput from "./ChatInput";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getSelectedContact, getSelectedContactProfile } from "../../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../../utils/enums";
 import { dateDifference, getFormattedDate, getFormattedTime } from "../../../../utils";
+import ThreeDot from "../../Common/ThreeDot";
+import { Modal } from "hd-ui";
+import { clearChatThunk, removeConnectionThunk } from "../../../../library/redux/reducers";
 
 const NoChatMessage = () => (
   <div className="no-chat-message-container">
@@ -18,6 +21,10 @@ const NoChatMessage = () => (
 
 const ChatHeader = () => {
   const ContactProfile = useSelector(getSelectedContactProfile);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const dispatch = useDispatch();
+  const menuButton = useRef(null);
+
   const renderProfileStatus = () => {
     // if (authors_typing.includes(ContactProfile.id)) return "Typing...";
     // else
@@ -48,11 +55,44 @@ const ChatHeader = () => {
     );
   };
 
+  const closeModal = () => setMenuOpen(false);
+
+  const handleClearChat = () => {
+    dispatch(clearChatThunk({ chatId: ContactProfile.chat_id, toId: ContactProfile.id }));
+    closeModal();
+  };
+
+  const removeHandler = (block = false) => {
+    dispatch(
+      removeConnectionThunk({
+        chat_id: ContactProfile.chat_id,
+        contactId: ContactProfile.id,
+        blocked: block,
+      })
+    );
+    closeModal();
+  };
+
   return (
     <header className="chat-area__header-container">
       <div className="chat-area__header-content">
         {renderProfileDetails()}
-        <div className="contact-options"></div>
+        <div className="contact-options">
+          <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
+          <Modal TransitionStyle="fade" open={menuOpen} closeHandler={() => setMenuOpen(false)} keepModalCentered={false} showBackdrop={false} triggerElement={menuButton} className="options-modal">
+            <div className="options-modal-container">
+              <button className="option" title="Remove all messages" onClick={handleClearChat}>
+                Clear Chat
+              </button>
+              <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
+                Delete Connection
+              </button>
+              <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
+                Delete and Block
+              </button>
+            </div>
+          </Modal>
+        </div>
       </div>
     </header>
   );

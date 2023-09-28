@@ -93,7 +93,7 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
         </div>
         <div className="contact-name">{getProfileName()}</div>
         {prop.TYPE === UserTileType.USER && <span className="contact-username">@{prop.username}</span>}
-        <div className="contact-message">{prop.TYPE === UserTileType.CONNECTION ? typing ? <span className="status-typing">typing...</span> : last_message.text : prop.bio}</div>
+        <div className="contact-message">{prop.TYPE === UserTileType.CONNECTION ? typing ? <span className="status-typing">typing...</span> : last_message?.text || <em>No Message</em> : prop.bio}</div>
         {last_updated && <div className="profile-last-activity">{renderRecentActivityTime()}</div>}
         {prop.TYPE === UserTileType.CONNECTION && (
           <div className="contact-status" data-typing={typing} data-count={prop.unseen_messages_count}>

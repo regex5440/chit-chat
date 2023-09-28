@@ -7,7 +7,6 @@ import { contactsChat, unseenMsgCountSelectedContact } from "../../../../library
 import { THEME_VARIABLES } from "../../../../utils/enums";
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
-import { sendMessageSeenUpdate } from "../../../../library/socket.io/socket";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
 
 const MessagesArea = ({ ContactId, endOfMessages }) => {
@@ -93,7 +92,7 @@ const MessagesArea = ({ ContactId, endOfMessages }) => {
             onVisibleHandler={() => console.log("Hi")}
             Loader={
               <div style={{ textAlign: "center", margin: "20px 0" }}>
-                <CircularLoader width={30} loaderColor={THEME_VARIABLES.loaderColor} />
+                <CircularLoader size={30} riderColor={THEME_VARIABLES.loaderColor} />
               </div>
             }
           />

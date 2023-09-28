@@ -21,14 +21,14 @@ const getContactsListSorted = (state) => {
       data: filteredConnections,
     };
   }
-
+  const data = Object.values(contacts.data).sort((A, B) => {
+    let DateA = Date.parse(chats[A.chat_id].last_updated);
+    let DateB = Date.parse(chats[B.chat_id].last_updated);
+    return DateB > DateA ? 1 : -1;
+  });
   return {
-    hasData: contacts.hasData,
-    data: Object.values(contacts.data).sort((A, B) => {
-      let DateA = Date.parse(chats[A.chat_id].last_updated);
-      let DateB = Date.parse(chats[B.chat_id].last_updated);
-      return DateB > DateA ? 1 : -1;
-    }),
+    hasData: data.length > 0,
+    data,
   };
 };
 const getContactsRaw = (state) => state.appData.contacts.data;

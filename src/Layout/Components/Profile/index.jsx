@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserData } from "../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../utils/enums";
 import { CircularLoader } from "hd-ui";
+import ThreeDot from "../Common/ThreeDot";
 
 const ProfileTab = () => {
   const profileContainer = useRef(null);
@@ -23,7 +24,7 @@ const ProfileTab = () => {
       <div className="profile-section">
         {loading ? (
           <div className="profile-section_loading">
-            <CircularLoader width={50} />{" "}
+            <CircularLoader size={50} />{" "}
           </div>
         ) : hasData ? (
           <div className="profile-section-container">
@@ -36,16 +37,7 @@ const ProfileTab = () => {
             </div>
             <div className="profile-options-container">
               <GearIcon className="app-settings" />
-              <div
-                className="three-dot"
-                onClick={() => {
-                  openProfileModal(true);
-                }}
-              >
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+              <ThreeDot />
             </div>
           </div>
         ) : (

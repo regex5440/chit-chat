@@ -1,5 +1,5 @@
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addInitialData, addNewConnectionRequested, addTypingAuthors, resetSocketData, updateChat, updateChatSeenStatus } from "../redux/reducers";
+import { addInitialData, addNewConnectionRequested, addTypingAuthors, clearChat, deleteContact, resetSocketData, updateChat, updateChatSeenStatus } from "../redux/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getUserData } from "../redux/selectors";
@@ -18,6 +18,14 @@ const updateTyping = async (chat_id, { authorId, isTyping }) => {
 
 const sendMessageSeenUpdate = (chat_id, fromUserId, toUserId) => {
   socket.emit(SOCKET_HANDLERS.CHAT.SeenUpdate, chat_id, fromUserId, toUserId);
+};
+
+const clearChatSocket = async (chatId, fromId, toId) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.ClearAll, { chatId, fromId, toId });
+};
+
+const removeConnection = async (chat_id, fromUserId, toUserId, toBlock = false) => {
+  socket.emit(SOCKET_HANDLERS.CONNECTION.RemoveConnection, chat_id, { fromUserId, toUserId, toBlock });
 };
 
 export const SocketComponent = () => {
@@ -43,12 +51,13 @@ export const SocketComponent = () => {
       dispatch(resetSocketData());
     });
     // Connections Data
-    socket.on(SOCKET_HANDLERS.CONNECTION_DATA, (data) => {
+    socket.on(SOCKET_HANDLERS.CONNECTION.ConnectionData, (data) => {
       dispatch(addInitialData(data));
     });
 
     // New Message Request Sent
     socket.on(SOCKET_HANDLERS.CHAT.NewRequest_Success, (data) => {
+      socket.emit(SOCKET_HANDLERS.CHAT.JoinRoom, data.chat.chat_id);
       dispatch(addNewConnectionRequested(data));
     });
 
@@ -70,6 +79,21 @@ export const SocketComponent = () => {
         dispatch(updateChatSeenStatus(chat_id, fromUserId));
       }
     });
+
+    // Status Update
+    socket.on(SOCKET_HANDLERS.CONNECTION.StatusUpdate, (id, update) => {
+      console.log("Status Updated", id, update);
+    });
+
+    // Clear Chat
+    socket.on(SOCKET_HANDLERS.CHAT.ClearAll, (chatId, fromId) => {
+      dispatch(clearChat({ chatId, fromId }));
+    });
+
+    // Delete Contact
+    socket.on(SOCKET_HANDLERS.CONNECTION.RemoveConnection, (contactId, chatId) => {
+      dispatch(deleteContact({ contactId, chatId }));
+    });
   }, [dispatch]);
 };
-export { sendMessage, updateTyping, sendMessageSeenUpdate };
+export { clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection };

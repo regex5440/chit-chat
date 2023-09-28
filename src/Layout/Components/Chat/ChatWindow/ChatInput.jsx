@@ -51,7 +51,7 @@ const ChatInput = ({ scrollToBottom }) => {
           <PaperClipIcon height="24" width="24" />
         </div>
         <form className="option__input" onSubmit={submitHandler}>
-          <input type="text" placeholder="Type a message or send a voice note" onChange={debouncedInput} onInput={inputHandler} />
+          <input type="text" placeholder="Type a message or send a voice note" onChange={debouncedInput} onInput={inputHandler} autoFocus />
         </form>
         <div className="option__voice-note click-icon" title="Voice Message">
           <MicrophoneIcon height="24" width="24" />
