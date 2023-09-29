@@ -31,7 +31,7 @@ const getContactsListSorted = (state) => {
     data,
   };
 };
-const getContactsRaw = (state) => state.appData.contacts.data;
+const getContactsRaw = (state) => state.appData.contacts;
 const getSelectedContact = (state) => state.appData.selectedContact;
 
 const getTempConnection = (state) => state.appData.temp_contact;
@@ -94,6 +94,7 @@ export {
   getUserData,
 
   // UserAppData
+  getContactsRaw,
   getContactsListSorted,
   getSelectedContact,
   getSelectedContactProfile,

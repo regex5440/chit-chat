@@ -1,5 +1,5 @@
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addInitialData, addNewConnectionRequested, addTypingAuthors, clearChat, deleteContact, resetSocketData, updateChat, updateChatSeenStatus } from "../redux/reducers";
+import { addInitialData, addNewConnectionRequested, addTypingAuthors, clearChat, deleteContact, resetSocketData, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getUserData } from "../redux/selectors";
@@ -26,6 +26,10 @@ const clearChatSocket = async (chatId, fromId, toId) => {
 
 const removeConnection = async (chat_id, fromUserId, toUserId, toBlock = false) => {
   socket.emit(SOCKET_HANDLERS.CONNECTION.RemoveConnection, chat_id, { fromUserId, toUserId, toBlock });
+};
+
+const statusUpdate = (userId, { code, update_type }) => {
+  socket.emit(SOCKET_HANDLERS.CONNECTION.StatusUpdate, userId, { code, update_type });
 };
 
 export const SocketComponent = () => {
@@ -83,6 +87,7 @@ export const SocketComponent = () => {
     // Status Update
     socket.on(SOCKET_HANDLERS.CONNECTION.StatusUpdate, (id, update) => {
       console.log("Status Updated", id, update);
+      dispatch(updateUserStatus({ userId: id, update, self: id === userId }));
     });
 
     // Clear Chat
@@ -94,6 +99,6 @@ export const SocketComponent = () => {
     socket.on(SOCKET_HANDLERS.CONNECTION.RemoveConnection, (contactId, chatId) => {
       dispatch(deleteContact({ contactId, chatId }));
     });
-  }, [dispatch]);
+  }, [dispatch, userId]);
 };
-export { clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection };
+export { clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };

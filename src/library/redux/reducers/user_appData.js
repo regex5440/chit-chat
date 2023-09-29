@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
-import { clearChatSocket, removeConnection, sendMessage, sendMessageSeenUpdate, updateTyping } from "../../socket.io/socket";
+import { clearChatSocket, removeConnection, sendMessage, sendMessageSeenUpdate, statusUpdate, updateTyping } from "../../socket.io/socket";
 import { getSelectedContact, getTempConnection, getUserData, selectedContactChatId } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
@@ -91,6 +91,13 @@ export const removeConnectionThunk = createAsyncThunk("connectionRemoval", async
   removeConnection(chat_id, id, contactId, blocked);
 });
 
+export const updateStatusThunk = createAsyncThunk("statusUpdate", async ({ status, type }, { getState }) => {
+  const {
+    data: { id },
+  } = getUserData(getState());
+  statusUpdate(id, { code: status, update_type: type });
+});
+
 const userAppDataSlice = createSlice({
   name: "user_appData",
   initialState: appDataInitialState,
@@ -148,6 +155,14 @@ const userAppDataSlice = createSlice({
     },
     updateSearchQuery: (state, action) => {
       state.search.query = action.payload;
+    },
+    updateUserStatus: (state, { payload: { userId, update, self } }) => {
+      if (self) {
+        state.user.data.status.code = update.code;
+      } else {
+        state.contacts.data[userId].status = update.code;
+        state.contacts.data[userId].last_active = update.lastActive;
+      }
     },
     setTempConnection: (state, action) => {
       state.temp_contact = state.search.data?.users?.find((user) => user.id === action.payload);
@@ -232,40 +247,55 @@ const userAppDataSlice = createSlice({
         state.search.loading = false;
       });
 
+    builder
+      .addCase(
+        clearChatThunk.fulfilled,
+        (
+          state,
+          {
+            meta: {
+              arg: { chatId },
+            },
+          }
+        ) => {
+          state.chats[chatId].messages = [];
+        }
+      )
+      .addCase(
+        removeConnectionThunk.fulfilled,
+        (
+          state,
+          {
+            meta: {
+              arg: { contactId, chatId },
+            },
+          }
+        ) => {
+          delete state.contacts.data[contactId];
+          delete state.chats[chatId];
+          if (state.selectedContact.contactId === contactId) {
+            state.selectedContact.contactId = "";
+            state.selectedContact.isAvailable = false;
+          }
+        }
+      );
+
     builder.addCase(
-      clearChatThunk.fulfilled,
+      updateStatusThunk.pending,
       (
         state,
         {
           meta: {
-            arg: { chatId },
+            arg: { status, type },
           },
         }
       ) => {
-        state.chats[chatId].messages = [];
-      }
-    );
-    builder.addCase(
-      removeConnectionThunk.fulfilled,
-      (
-        state,
-        {
-          meta: {
-            arg: { contactId, chatId },
-          },
-        }
-      ) => {
-        delete state.contacts.data[contactId];
-        delete state.chats[chatId];
-        if (state.selectedContact.contactId === contactId) {
-          state.selectedContact.contactId = "";
-          state.selectedContact.isAvailable = false;
-        }
+        (state.user.data.status.code = status), (state.user.data.status.update_type = type);
       }
     );
   },
 });
 
-export const { clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
+export const { clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;
