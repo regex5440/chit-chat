@@ -4,9 +4,8 @@ import { GearIcon } from "../../../assets/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { getContactsRaw, getUserData } from "../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../utils/enums";
-import { CircularLoader } from "hd-ui";
+import { CircularLoader, DropDown, Modal } from "hd-ui";
 import ThreeDot from "../Common/ThreeDot";
-import { statusUpdate } from "../../../library/socket.io/socket";
 import { updateStatusThunk } from "../../../library/redux/reducers";
 
 const ProfileTab = () => {
@@ -15,6 +14,7 @@ const ProfileTab = () => {
   const contacts = useSelector(getContactsRaw);
   const dispatch = useDispatch();
   const [profileModalOpen, openProfileModal] = useState(false);
+  const targetForModal = useRef(null);
 
   useEffect(() => {
     if (profileContainer.current) {
@@ -30,6 +30,33 @@ const ProfileTab = () => {
       }
     }
   }, [user, contacts.loading]);
+  const statusChangeHandler = (value) => {
+    let changeType = "manual";
+    if (value === USER_STATUSES.ONLINE.code) {
+      changeType = "auto";
+    }
+    dispatch(updateStatusThunk({ type: changeType, status: value }));
+  };
+
+  const renderProfileModal = () => {
+    return (
+      <Modal
+        open={profileModalOpen}
+        closeHandler={() => {
+          openProfileModal(false);
+        }}
+        keepModalCentered={false}
+        closeOnBlur={true}
+        TransitionStyle="fade"
+        triggerElement={targetForModal}
+        showBackdrop={false}
+      >
+        <div className="option">Update Profile</div>
+        <div className="option">Blocked Contacts</div>
+        <div className="option red">Logout</div>
+      </Modal>
+    );
+  };
 
   return (
     <>
@@ -46,10 +73,23 @@ const ProfileTab = () => {
             </div>
             <div className="profile-name-container">
               <span>{`${user.firstName} ${user.lastName}`}</span>
+              <DropDown id="status-select" onChange={statusChangeHandler} defaultValue={user.status.code} actionType="hover" optionLayerStyle={{ borderRadius: "3px", overflow: "hidden" }} style={{ borderRadius: "3px", width: "80px", height: "30px" }} selectedOptionStyle={{ borderRadius: "3px", background: "transparent", justifyContent: "left" }}>
+                <DropDown.Option value={USER_STATUSES.ONLINE.code}>
+                  <div className="status-option-container">
+                    <span className="status-icon" style={{ backgroundColor: USER_STATUSES.ONLINE.color }}></span>Online
+                  </div>
+                </DropDown.Option>
+                <DropDown.Option value={USER_STATUSES.OFFLINE.code}>
+                  <div className="status-option-container">
+                    <span className="status-icon" style={{ backgroundColor: USER_STATUSES.OFFLINE.color }}></span>Offline
+                  </div>
+                </DropDown.Option>
+              </DropDown>
             </div>
             <div className="profile-options-container">
               <GearIcon className="app-settings" />
-              <ThreeDot />
+              <ThreeDot ref={targetForModal} onClick={() => openProfileModal(true)} />
+              {renderProfileModal()}
             </div>
           </div>
         ) : (

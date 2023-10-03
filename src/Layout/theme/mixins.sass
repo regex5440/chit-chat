@@ -76,3 +76,18 @@
         color: $primary-button-color
     &[data-hidden='true']
         opacity: 0
+
+@mixin options-modal()
+    .option
+        all: unset
+        display: block
+        width: 100%
+        box-sizing: border-box
+        padding: 10px
+        transition: background 100ms ease
+        cursor: pointer
+        box-shadow: 0 0.5px 0 0 rgba(150,150,150,0.2)
+        &.red
+            color: red
+        &:hover
+            background: lightgrey

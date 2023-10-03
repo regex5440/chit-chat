@@ -98,6 +98,7 @@ export const SocketComponent = () => {
     // Delete Contact
     socket.on(SOCKET_HANDLERS.CONNECTION.RemoveConnection, (contactId, chatId) => {
       dispatch(deleteContact({ contactId, chatId }));
+      socket.emit(SOCKET_HANDLERS.CHAT.LeaveRoom, chatId);
     });
   }, [dispatch, userId]);
 };

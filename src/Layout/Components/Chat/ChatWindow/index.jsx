@@ -79,7 +79,17 @@ const ChatHeader = () => {
         {renderProfileDetails()}
         <div className="contact-options">
           <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
-          <Modal TransitionStyle="fade" open={menuOpen} closeHandler={() => setMenuOpen(false)} keepModalCentered={false} showBackdrop={false} triggerElement={menuButton} className="options-modal">
+          <Modal
+            open={menuOpen}
+            closeHandler={() => {
+              setMenuOpen(false);
+            }}
+            keepModalCentered={false}
+            closeOnBlur={true}
+            TransitionStyle="fade"
+            triggerElement={menuButton}
+            showBackdrop={false}
+          >
             <div className="options-modal-container">
               <button className="option" title="Remove all messages" onClick={handleClearChat}>
                 Clear Chat

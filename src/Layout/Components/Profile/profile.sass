@@ -45,12 +45,41 @@
                 overflow: hidden
                 text-overflow: ellipsis
                 white-space: break-spaces
+            #status-select
+                border: none
+                font-family: $frame-font
+
+            [selected]::after
+                content: '<'
+
+                div.status-option-container
+                    display: flex
+                    align-items: center
+                    gap: 7px
+                    pointer-events: none
+                    .status-icon
+                        display: none
+                        height: 10px
+                        width: 10px
+                        border-radius: 50%
         .profile-options-container
             margin-left: auto
+            align-self: flex-end
             .app-settings
                 position: absolute
                 right: 18.92px
                 top: 15.92px
+            .modal-child-container
+                width: fit-content
+                min-width: 200px
+                height: auto
+                box-shadow: 1px 2px 10px var(--option-modal-shadow)
+                font-family: $frame-font
+                margin-top: 50px
+                border-radius: 8px
+                background: white
+                @include options-modal()
+
     .profile-section_loading
         display: grid
         place-items: center
