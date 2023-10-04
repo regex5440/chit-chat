@@ -1,7 +1,8 @@
-import { clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateUserStatus, updateChatSeenStatus, updateSearchQuery, getMyProfile, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData, updateStatusThunk, clearChatThunk, removeConnectionThunk, addMessageThunk, updateTypingThunk, userSearchThunk, sendMessageSeenThunk } from "./user_appData";
+import { addParticipants, clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateUserStatus, updateChatSeenStatus, updateSearchQuery, getMyProfile, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData, acceptRequestThunk, updateStatusThunk, clearChatThunk, removeConnectionThunk, addMessageThunk, updateTypingThunk, userSearchThunk, sendMessageSeenThunk } from "./user_appData";
 
 export {
   // User AppData Slice
+  addParticipants,
   addInitialData,
   clearChat,
   deleteContact,
@@ -16,6 +17,9 @@ export {
   removeTempConnection,
   addNewConnectionRequested,
   resetSocketData,
+
+  //Thunks
+  acceptRequestThunk,
   updateStatusThunk,
   clearChatThunk,
   addMessageThunk,

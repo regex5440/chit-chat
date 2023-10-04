@@ -32,6 +32,7 @@ const ChatInput = ({ scrollToBottom }) => {
         addMessageThunk({
           text: message,
           timestamp: new Date().toISOString(),
+          type: "text",
         })
       );
       // scroll to the bottom

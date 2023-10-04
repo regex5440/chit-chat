@@ -1,5 +1,5 @@
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addInitialData, addNewConnectionRequested, addTypingAuthors, clearChat, deleteContact, resetSocketData, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
+import { addInitialData, addNewConnectionRequested, addParticipants, addTypingAuthors, clearChat, deleteContact, resetSocketData, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getUserData } from "../redux/selectors";
@@ -30,6 +30,10 @@ const removeConnection = async (chat_id, fromUserId, toUserId, toBlock = false) 
 
 const statusUpdate = (userId, { code, update_type }) => {
   socket.emit(SOCKET_HANDLERS.CONNECTION.StatusUpdate, userId, { code, update_type });
+};
+
+const acceptRequest = (chatId, userId) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.NewRequest_Accepted, chatId, userId);
 };
 
 export const SocketComponent = () => {
@@ -100,6 +104,12 @@ export const SocketComponent = () => {
       dispatch(deleteContact({ contactId, chatId }));
       socket.emit(SOCKET_HANDLERS.CHAT.LeaveRoom, chatId);
     });
+
+    socket.on(SOCKET_HANDLERS.CHAT.NewRequest_Accepted, (chatId, id) => {
+      if (id !== userId) {
+        dispatch(addParticipants({ chatId, id }));
+      }
+    });
   }, [dispatch, userId]);
 };
-export { clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };
+export { acceptRequest, clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };

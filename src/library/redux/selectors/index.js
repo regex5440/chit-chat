@@ -75,6 +75,13 @@ const selectedContactChatId = createSelector(getSelectedContactProfile, (selecte
   return selectedContactProfile.chat_id;
 });
 
+const isChatAccepted = createSelector(getSelectedContact, getTempConnection, contactsChat, getUserData, (selectedContact, tempConnection, chat, { data: user }) => {
+  return {
+    byUser: chat?.participants?.includes(user.id) || tempConnection?.id ? true : false,
+    byConnection: chat?.participants?.includes(selectedContact.contactId),
+  };
+});
+
 const searchState = (state) => state.appData.search;
 
 const unseenMsgCountSelectedContact = createSelector(
@@ -100,6 +107,7 @@ export {
   getSelectedContactProfile,
   selectedContactChatId,
   getTempConnection,
+  isChatAccepted,
   unseenMsgCountSelectedContact,
   contactsChat,
   chatInfoForContactTile,

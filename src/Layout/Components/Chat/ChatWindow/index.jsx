@@ -1,14 +1,13 @@
 import React, { useRef, useState } from "react";
-import ChatInput from "./ChatInput";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
 import { useDispatch, useSelector } from "react-redux";
-import { getSelectedContact, getSelectedContactProfile } from "../../../../library/redux/selectors";
+import { getSelectedContact, getSelectedContactProfile, isChatAccepted } from "../../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../../utils/enums";
 import { dateDifference, getFormattedDate, getFormattedTime } from "../../../../utils";
 import ThreeDot from "../../Common/ThreeDot";
 import { Modal } from "hd-ui";
-import { clearChatThunk, removeConnectionThunk } from "../../../../library/redux/reducers";
+import { acceptRequestThunk, clearChatThunk, removeConnectionThunk } from "../../../../library/redux/reducers";
 
 const NoChatMessage = () => (
   <div className="no-chat-message-container">
@@ -19,8 +18,7 @@ const NoChatMessage = () => (
   </div>
 );
 
-const ChatHeader = () => {
-  const ContactProfile = useSelector(getSelectedContactProfile);
+const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useDispatch();
   const menuButton = useRef(null);
@@ -33,6 +31,8 @@ const ChatHeader = () => {
     const daysDifference = dateDifference(ContactProfile.last_active, new Date());
     if (daysDifference === 0) {
       parsedDateString = getFormattedTime(ContactProfile.last_active, "hh:mm");
+    } else if (daysDifference === -1) {
+      parsedDateString = `yesterday, ${getFormattedTime(ContactProfile.last_active, "hh:mm")}`;
     } else if (daysDifference >= -7) {
       parsedDateString = getFormattedDate(ContactProfile.last_active, "www") + ", " + getFormattedTime(ContactProfile.last_active, "hh:mm");
     } else {
@@ -63,13 +63,7 @@ const ChatHeader = () => {
   };
 
   const removeHandler = (block = false) => {
-    dispatch(
-      removeConnectionThunk({
-        chat_id: ContactProfile.chat_id,
-        contactId: ContactProfile.id,
-        blocked: block,
-      })
-    );
+    removeContactHandler(block);
     closeModal();
   };
 
@@ -77,32 +71,34 @@ const ChatHeader = () => {
     <header className="chat-area__header-container">
       <div className="chat-area__header-content">
         {renderProfileDetails()}
-        <div className="contact-options">
-          <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
-          <Modal
-            open={menuOpen}
-            closeHandler={() => {
-              setMenuOpen(false);
-            }}
-            keepModalCentered={false}
-            closeOnBlur={true}
-            TransitionStyle="fade"
-            triggerElement={menuButton}
-            showBackdrop={false}
-          >
-            <div className="options-modal-container">
-              <button className="option" title="Remove all messages" onClick={handleClearChat}>
-                Clear Chat
-              </button>
-              <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
-                Delete Connection
-              </button>
-              <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
-                Delete and Block
-              </button>
-            </div>
-          </Modal>
-        </div>
+        {allowOptions && (
+          <div className="contact-options">
+            <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
+            <Modal
+              open={menuOpen}
+              closeHandler={() => {
+                setMenuOpen(false);
+              }}
+              keepModalCentered={false}
+              closeOnBlur={true}
+              TransitionStyle="fade"
+              triggerElement={menuButton}
+              showBackdrop={false}
+            >
+              <div className="options-modal-container">
+                <button className="option" title="Remove all messages" onClick={handleClearChat}>
+                  Clear Chat
+                </button>
+                <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
+                  Delete Connection
+                </button>
+                <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
+                  Delete and Block
+                </button>
+              </div>
+            </Modal>
+          </div>
+        )}
       </div>
     </header>
   );
@@ -110,15 +106,56 @@ const ChatHeader = () => {
 
 const ChatWindow = () => {
   const selectedContact = useSelector(getSelectedContact);
+  const ContactProfile = useSelector(getSelectedContactProfile);
+  const chatAccepted = useSelector(isChatAccepted);
+  console.log(chatAccepted);
+  const dispatch = useDispatch();
 
+  const deleteChat = (block = false) => {
+    dispatch(
+      removeConnectionThunk({
+        chat_id: ContactProfile.chat_id,
+        contactId: ContactProfile.id,
+        blocked: block,
+      })
+    );
+  };
+
+  const acceptChat = () => {
+    dispatch(acceptRequestThunk(ContactProfile.chat_id));
+  };
   // @Requirement
   // Need to add a skeleton loading for data that is not available but required
   return (
     <div className="chat-window-main-container">
       {selectedContact?.isAvailable ? (
         <div className="chat-area">
-          <ChatHeader />
-          <MessagesArea ContactId={selectedContact.contactId} endOfMessages={selectedContact.fetchedAllMessages} />
+          <ChatHeader ContactProfile={ContactProfile} removeContactHandler={deleteChat} allowOptions={chatAccepted.byUser && chatAccepted.byConnection} />
+          <MessagesArea
+            ContactId={selectedContact.contactId}
+            endOfMessages={selectedContact.fetchedAllMessages}
+            RequestPopup={
+              !chatAccepted.byUser && (
+                <div className="chat-area__permission-popup">
+                  <div className="permission-popup-container">
+                    <p>You have a new message request from {ContactProfile.firstName}. Would you like to:</p>
+                    <div className="permission-actions">
+                      <button className="action accept" onClick={acceptChat}>
+                        Accept
+                      </button>
+                      <button className="action" onClick={() => deleteChat()}>
+                        Reject
+                      </button>
+                      <button className="action" onClick={() => deleteChat(true)}>
+                        Reject & Block
+                      </button>
+                    </div>
+                    <sub>*By sending a message, you are also implicitly agreeing to the request.</sub>
+                  </div>
+                </div>
+              )
+            }
+          />
         </div>
       ) : (
         <NoChatMessage />

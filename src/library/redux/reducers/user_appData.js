@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
-import { clearChatSocket, removeConnection, sendMessage, sendMessageSeenUpdate, statusUpdate, updateTyping } from "../../socket.io/socket";
-import { getSelectedContact, getTempConnection, getUserData, selectedContactChatId } from "../selectors";
+import { acceptRequest, clearChatSocket, removeConnection, sendMessage, sendMessageSeenUpdate, statusUpdate, updateTyping } from "../../socket.io/socket";
+import { contactsChat, getSelectedContact, getTempConnection, getUserData, selectedContactChatId } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
 const appDataInitialState = {
@@ -41,7 +41,7 @@ export const getMyProfile = createAsyncThunk("fetchMyData", async (authToken) =>
 });
 
 export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObject, { getState }) => {
-  const chat_id = selectedContactChatId(getState());
+  const { chat_id, participants } = contactsChat(getState());
   const selectedId = getSelectedContact(getState());
   const {
     data: { id: sender_id },
@@ -49,6 +49,10 @@ export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObj
   messageObject.sender_id = sender_id;
 
   await sendMessage({ chat_id, receiverId: selectedId.contactId }, messageObject, !chat_id ? true : false);
+  if (!participants.includes(sender_id)) {
+    acceptRequest(chat_id, sender_id);
+    return { accepted: true, chatId: chat_id, id: sender_id };
+  }
 });
 
 export const updateTypingThunk = createAsyncThunk("updateTyping", async (isTyping, { getState }) => {
@@ -98,6 +102,15 @@ export const updateStatusThunk = createAsyncThunk("statusUpdate", async ({ statu
   statusUpdate(id, { code: status, update_type: type });
 });
 
+export const acceptRequestThunk = createAsyncThunk("acceptMessageRequest", (chatId, { getState }) => {
+  const {
+    data: { id },
+  } = getUserData(getState());
+
+  acceptRequest(chatId, id);
+  return { chatId, id };
+});
+
 const userAppDataSlice = createSlice({
   name: "user_appData",
   initialState: appDataInitialState,
@@ -106,6 +119,9 @@ const userAppDataSlice = createSlice({
       if (action.payload !== state.temp_contact?.id) state.temp_contact = null;
       state.selectedContact.contactId = action.payload;
       state.selectedContact.isAvailable = true;
+    },
+    addParticipants: (state, { payload }) => {
+      state.chats?.[payload.chatId]?.participants.push(payload.id);
     },
     addTypingAuthors: (state, { payload: { chat_id, authorId, isTyping } }) => {
       if (isTyping) {
@@ -211,6 +227,11 @@ const userAppDataSlice = createSlice({
           state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id, unseen: true }));
         }
       })
+      .addCase(addMessageThunk.fulfilled, (state, { payload }) => {
+        if (payload.accepted) {
+          state.chats?.[payload.chatId]?.participants.push(payload.id);
+        }
+      })
       .addCase(addMessageThunk.rejected, (state, action) => {
         console.log("Unable to send message", action);
         // let chatId = selectedContactChatId({ appData: state });
@@ -293,9 +314,13 @@ const userAppDataSlice = createSlice({
         (state.user.data.status.code = status), (state.user.data.status.update_type = type);
       }
     );
+
+    builder.addCase(acceptRequestThunk.fulfilled, (state, { payload }) => {
+      state.chats?.[payload.chatId]?.participants.push(payload.id);
+    });
   },
 });
 
-export const { clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
+export const { addParticipants, clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

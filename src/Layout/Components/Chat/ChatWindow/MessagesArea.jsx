@@ -9,7 +9,7 @@ import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
 
-const MessagesArea = ({ ContactId, endOfMessages }) => {
+const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
   const messageContainer = useRef(null);
   const lastMessageDateDifference = useRef(null);
   const chat = useSelector(contactsChat);
@@ -102,6 +102,7 @@ const MessagesArea = ({ ContactId, endOfMessages }) => {
               <BouncyBalls containerColor="transparent" />
             </div>
           )}
+          {RequestPopup}
         </div>
       </div>
       <ChatInput scrollToBottom={scrollToBottom} />
