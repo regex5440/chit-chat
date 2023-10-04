@@ -86,6 +86,7 @@ const SignupContent = () => {
     lastName: "",
     email: "",
     password: "",
+    about: "",
   });
 
   const [dialogError, setDialogError] = useState("");
@@ -159,7 +160,7 @@ const SignupContent = () => {
       case "user-credentials":
         if (form.password.value !== "" && form.username.value && signupFlags.usernameAvailable === "available") {
           signupSlideHandler("forth");
-          setSignupForm((state) => ({ ...state, password: form.password.value }));
+          setSignupForm((state) => ({ ...state, password: form.password.value, about: form.about.value || "" }));
         } else if (form.password.value === "") {
           updateError({ showError: true, message: "Please create a new password" });
         } else {
@@ -342,6 +343,7 @@ const SignupContent = () => {
               )}
             </div>
             <input type="password" name="password" placeholder="Create a new password" />
+            <input type="text" name="about" placeholder="About" />
 
             <div className="route-ctas">
               <div className={`availability  ${signupFlags.usernameAvailable !== null && signupFlags.usernameAvailable}`}>{signupFormState.usernameSelected !== "" && signupFlags.usernameAvailable === "available" ? `Username available!` : signupFlags.usernameAvailable === "unavailable" ? `Username not available!` : ""}</div>
