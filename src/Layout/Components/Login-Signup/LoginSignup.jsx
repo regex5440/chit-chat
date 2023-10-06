@@ -14,7 +14,10 @@ const emailRegEx = /^[\w.!#$%&'*+/=?^_`{|}~-]+@[\w-]+(\.[\w-]+)+$/;
 const LoginContent = () => {
   const [loginProgress, setProgress] = useState(false);
   const navigate = useNavigate();
-  const [errorState, updateError] = useOutletContext();
+  const {
+    state: [errorState, updateError],
+    AuthButton,
+  } = useOutletContext();
 
   const loginHandler = async (e) => {
     e.preventDefault();
@@ -55,16 +58,24 @@ const LoginContent = () => {
           Signup
         </Link>
       </div>
+      <br />
+      <div style={{ fontSize: "small", fontStyle: "italic", margin: "auto" }}>Or</div>
+      <br />
+      {AuthButton}
     </form>
   );
 };
 
 const SignupContent = () => {
-  const [errorState, updateError] = useOutletContext();
+  const {
+    state: [errorState, updateError],
+    dataForSignup,
+  } = useOutletContext();
   const navigate = useNavigate();
   const emailModal = useRef(null);
   const emailInput = useRef(null);
   const imageBlob = useRef(null);
+  const step1Form = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
     step: 0,
     usernameAvailable: null,
@@ -88,6 +99,23 @@ const SignupContent = () => {
     password: "",
     about: "",
   });
+  useEffect(() => {
+    if (dataForSignup) {
+      setSignupForm((state) => ({
+        ...state,
+        firstName: dataForSignup.firstName,
+        lastName: dataForSignup.lastName,
+        email: dataForSignup.email,
+      }));
+      step1Form.current.firstname.value = dataForSignup.firstName;
+      step1Form.current.lastname.value = dataForSignup.lastName;
+      step1Form.current.email.value = dataForSignup.email;
+      if (dataForSignup.emailVerified) {
+        setSignupAuthToken(dataForSignup.token);
+        setSignupFlags((state) => ({ ...state, verifiedEmail: true, step: 1 }));
+      }
+    }
+  }, [dataForSignup, step1Form.current]);
 
   const [dialogError, setDialogError] = useState("");
 
@@ -307,7 +335,7 @@ const SignupContent = () => {
           </div>
         </dialog>
         <div className="signup-input">
-          <form className={`user-info-input ${signupFlags.step === 0 && "active"}`} onSubmit={submitHandler} data-name="user-info">
+          <form className={`user-info-input ${signupFlags.step === 0 && "active"}`} onSubmit={submitHandler} data-name="user-info" ref={step1Form}>
             <div>
               <input type="email" name="email" spellCheck={false} placeholder="Your Email address" required autoFocus onBlur={allowVerification} onChange={() => !signupFlags.verifiedEmail && setSignupFlags((state) => ({ ...state, verifiedEmail: false }))} ref={emailInput} disabled={signupFlags.verifiedEmail} />{" "}
               {showVerification &&
@@ -370,7 +398,9 @@ const LandingPage = () => {
   const [errorState, updateError] = useState({ showError: false, message: "" });
   const location = useLocation();
   const navigate = useNavigate();
-
+  const gSigninButton = useRef();
+  const signUpOAuthData = useRef(null);
+  const [authInProgress, setAuthInProgress] = useState(false);
   useEffect(() => {
     document.title = "Login/Signup - Chit Chat";
     if (location.pathname === "/") {
@@ -378,6 +408,35 @@ const LandingPage = () => {
     }
     updateError({ showError: false, message: "" });
   }, [location.pathname]);
+
+  useEffect(() => {
+    google.accounts.id.initialize({
+      client_id: import.meta.env.CC_OAuthClientID,
+      callback: handleOAuth,
+    });
+    google.accounts.id.renderButton(gSigninButton.current, { theme: "filled_blue", size: "large", text: "continue_with", type: "standard", shape: "rectangular", logo_alignment: "center" });
+    google.accounts.id.prompt(); // also display the One Tap dialog
+  }, [gSigninButton, window.google, location.pathname]);
+
+  const handleOAuth = async (data) => {
+    if (data?.credential) {
+      setAuthInProgress(true);
+      const response = await axios.post(`${import.meta.env.CC_ServerDomain}/oauth_process`, { credential: data.credential });
+      if (response.data) {
+        setAuthInProgress(false);
+        switch (response.data.message) {
+          case "login":
+            setLoginStateToken(response.data.data);
+            navigate("/app");
+            break;
+          case "signup":
+            signUpOAuthData.current = response.data.data;
+            navigate("/signup");
+            break;
+        }
+      }
+    }
+  };
 
   return (
     <div className="chit-chat-login-signup">
@@ -389,7 +448,7 @@ const LandingPage = () => {
         <h2>Login/Signup</h2>
         <div className="user-form">
           {errorState.showError && <div className="error-message">{errorState.message}</div>}
-          <Outlet context={[errorState, updateError]} />
+          <Outlet context={{ state: [errorState, updateError], AuthButton: authInProgress ? <CircularLoader size={40} riderColor="lightgrey" /> : <div className="signin_cta" ref={gSigninButton}></div>, dataForSignup: signUpOAuthData.current }} />
         </div>
       </div>
     </div>
