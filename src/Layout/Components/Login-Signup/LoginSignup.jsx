@@ -47,8 +47,8 @@ const LoginContent = () => {
 
   return (
     <form onSubmit={loginHandler} className="login-form">
-      <input type="text" name="username" id="username" placeholder="Username or Email" data-error={errorState.showError} spellCheck={false} />
-      <input type="password" name="password" id="password" placeholder="Password" data-error={errorState.showError} />
+      <input type="text" name="username" id="username" placeholder="Username or Email" data-error={errorState.showError} spellCheck={false} autoComplete="username" />
+      <input type="password" name="password" id="password" placeholder="Password" data-error={errorState.showError} autoComplete="current-password" />
       <div className="forgot-password-cta">Forgot Password?</div> {/*//TODO: Forgot password popup */}
       <div className="action-buttons">
         <button type="submit" className="cta" style={loginProgress ? { pointerEvents: "none" } : {}}>
@@ -370,7 +370,7 @@ const SignupContent = () => {
                 </span>
               )}
             </div>
-            <input type="password" name="password" placeholder="Create a new password" />
+            <input type="password" name="password" placeholder="Create a new password" autoComplete="current-password" />
             <input type="text" name="about" placeholder="About" />
 
             <div className="route-ctas">
@@ -410,6 +410,7 @@ const LandingPage = () => {
   }, [location.pathname]);
 
   useEffect(() => {
+    // if (location.pathname !== "/login" || location.pathname !== "/signup") return;
     google.accounts.id.initialize({
       client_id: import.meta.env.CC_OAuthClientID,
       callback: handleOAuth,
