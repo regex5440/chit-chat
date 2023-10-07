@@ -73,7 +73,7 @@ const ProfileTab = () => {
             </div>
             <div className="profile-name-container">
               <span>{`${user.firstName} ${user.lastName}`}</span>
-              <DropDown id="status-select" onChange={statusChangeHandler} defaultValue={user.status.code} actionType="hover" optionLayerStyle={{ borderRadius: "3px", overflow: "hidden" }} style={{ borderRadius: "3px", width: "80px", height: "30px" }} selectedOptionStyle={{ borderRadius: "3px", background: "transparent", justifyContent: "left" }}>
+              <DropDown id="status-select" onChange={statusChangeHandler} defaultValue={user.status.code} actionType="hover" optionLayerStyle={{ borderRadius: "3px", overflow: "hidden", background: "var(--modal-background-primary)" }} style={{ borderRadius: "3px", width: "80px", height: "30px" }} selectedOptionStyle={{ borderRadius: "3px", background: "transparent", justifyContent: "left" }}>
                 <DropDown.Option value={USER_STATUSES.ONLINE.code}>
                   <div className="status-option-container">
                     <span className="status-icon" style={{ backgroundColor: USER_STATUSES.ONLINE.color }}></span>Online

@@ -6,7 +6,6 @@ import ContactTile, { UserTileType } from "../Chat/ContactTile";
 import { useSelector } from "react-redux";
 import { getContactsListSorted, getTempConnection } from "../../../library/redux/selectors";
 import { CircularLoader } from "hd-ui";
-import { THEME_VARIABLES } from "../../../utils/enums";
 
 const Contacts = () => {
   const contactList = useSelector(getContactsListSorted);
@@ -23,7 +22,7 @@ const Contacts = () => {
     <div className="contact-list-container" data-showshadow={false} onScroll={addShadow}>
       {contactList.loading ? (
         <div className="contacts-loading">
-          <CircularLoader size={30} riderColor={THEME_VARIABLES.loaderColor} />
+          <CircularLoader size={30} riderColor={"var(--icon-stroke)"} />
           Getting your contacts...
         </div>
       ) : contactList.hasData || tempContact ? (

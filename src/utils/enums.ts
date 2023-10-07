@@ -1,7 +1,3 @@
-import { getExportedVariables } from ".";
-//@ts-ignore
-import themeVariables from "@theme-variables";
-
 const USER_STATUSES = {
   ONLINE: {
     code: "ONLINE",
@@ -35,6 +31,4 @@ const SOCKET_HANDLERS = {
   }
 };
 
-const THEME_VARIABLES = getExportedVariables(themeVariables);
-
-export { USER_STATUSES, THEME_VARIABLES, SOCKET_HANDLERS };
+export { USER_STATUSES, SOCKET_HANDLERS };

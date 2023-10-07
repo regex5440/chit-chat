@@ -4,7 +4,6 @@ import { BouncyBalls, CircularLoader, LazyLoader } from "hd-ui";
 import { capitalize, dateComparer, dateDifference, getFormattedDate, getFormattedTime, msToDays } from "../../../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { contactsChat, unseenMsgCountSelectedContact } from "../../../../library/redux/selectors";
-import { THEME_VARIABLES } from "../../../../utils/enums";
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
@@ -92,7 +91,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
             onVisibleHandler={() => console.log("Hi")}
             Loader={
               <div style={{ textAlign: "center", margin: "20px 0" }}>
-                <CircularLoader size={30} riderColor={THEME_VARIABLES.loaderColor} />
+                <CircularLoader size={30} riderColor={"var(--icon-stroke)"} />
               </div>
             }
           />

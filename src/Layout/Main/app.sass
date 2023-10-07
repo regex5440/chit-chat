@@ -7,7 +7,7 @@
     background-size: cover
     background-blend-mode: soft-light
     &__app-window
-        background-color: rgba(125,125,125,0.1)
+        background-color: var(--app-background)
         backdrop-filter: blur(15px)
         height: 100%
         width: 100%
@@ -19,7 +19,7 @@
         grid-row-gap: 8.16px
         position: relative
         & > div
-            background: $window-background
+            background: var(--window-background)
         .story-container
             border-top-left-radius: 25.48px
             grid-area: 1 / 1 / 1 / span 3

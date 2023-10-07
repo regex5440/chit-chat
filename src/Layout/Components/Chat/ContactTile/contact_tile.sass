@@ -10,14 +10,15 @@
         padding: 11.21px 12.23px 11.21px 7.14px
         border-bottom: 1.01948px solid rgba(255, 255, 255, 0.25)
         height: 60px
-        border-radius: 20.3897px 0px 0px 20.3897px
-        transition: background 0.2s, box-shadow 0.2s, transform 0.3s
+        border-radius: 0
+        transition: background 0.2s, box-shadow 0.2s, transform 0.3s, border-radius 0.2s
         &[data-active=true]
-            background: $window-background
+            background: var(--window-background)
             box-shadow: 0px 4.07794px 12.2338px rgba(0, 0, 0, 0.15)
             transform-origin: left
             transform: scaleX(1.020)
             backdrop-filter: blur(10.1948px)
+            border-radius: 20.3897px 0px 0px 20.3897px
         .contact-picture-container
             grid-area: 1 / 1 / span 2 / span 1
             @include chat-profile-picture
@@ -35,7 +36,7 @@
             font-weight: 600
             line-height: 19px
             letter-spacing: 0.02em
-            color: #505050
+            color: var(--text-secondary-color)
             max-width: 100%
             text-overflow: ellipsis
             overflow: hidden
@@ -46,14 +47,14 @@
                 font-size: $subtext-font-size
                 line-height: 19px
                 letter-spacing: 0.02em
-                color: #747474
+                color: var(--text-ternary-color)
         .profile-last-activity
             grid-area: 1 / 4 / 1 / span 4
-            font-weight: 600
+            font-weight: 400
             font-size: $subtext-font-size
             line-height: 19px
             letter-spacing: 0.02em
-            color: #929191
+            color: var(--text-ternary-color)
         .contact-status
             grid-area: 2 / 4 / 2 / span 4
             span.contact-unread-message-count
@@ -82,7 +83,7 @@
         transition: background 0.2s ease-out
         box-shadow: 0px 4.07794px 12.2338px rgba(0, 0, 0, 0.15)
     &:hover .contact-tile-content
-        background: rgb(230,230,230)
+        background: grey
 
 @keyframes align-in
     0%

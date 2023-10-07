@@ -5,7 +5,7 @@
     font-size: $name-font-size-chat-only
     line-height: 22px
     letter-spacing: 0.02em
-    color: #616161
+    color: var(--text-primary-color)
 @mixin chat-profile-picture()
     height: 55.31px
     width: 55.31px
@@ -40,6 +40,15 @@
     line-height: 110.66%
     color: #FFFFFF
     margin-left: auto
+
+@mixin placeholder()
+    font-family: $frame-font
+    font-weight: 500
+    font-size: 14.2728px
+    line-height: 1px
+    letter-spacing: 0.02em
+    color: var(--text-secondary-color)
+    opacity: 0.8
 
 @mixin secondary-button()
     all: unset

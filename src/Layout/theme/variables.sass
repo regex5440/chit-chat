@@ -1,5 +1,26 @@
-$window-background: rgba(255, 255, 255, 0.85)
-$person-background: #fff
+:root
+    --option-modal-shadow: rgba(150,150,150,0.5)
+    @media (prefers-color-scheme: light)
+        --window-background: rgba(255, 255, 255, 0.85)
+        --modal-background-primary: rgba(255,255,255,0.9)
+        --input-background-color: #E9E9E9
+        --icon-stroke: #616161
+        --text-primary-color: #616161
+        --text-secondary-color: #535353
+        --text-ternary-color: #494949
+        --shadow-color: rgba(0,0,0,0.3)
+        --app-background: rgba(255, 255, 255, 0.50)
+    @media (prefers-color-scheme: dark)
+        // color-scheme: dark
+        --window-background: rgba(0, 0, 0, 0.50)
+        --modal-background-primary: rgba(0, 0, 0, 0.90)
+        --input-background-color: rgba(223, 223, 223, 0.10)
+        --icon-stroke: #fff
+        --text-primary-color: #fff
+        --text-secondary-color: #F0EBEB
+        --text-ternary-color: #C7C7C7
+        --shadow-color: rgba(255,255,255,0.3)
+        --app-background: rgba(26, 27, 38, 0.55)
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap')
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap')
@@ -12,22 +33,13 @@ $seconday-button-color: #2A3441
 
 $error-message-color: rgb(255 58 58)
 
-$heading-color: #616161
-//--------------Contact List
-$no-contact-font-color: grey
-
 //--------------Chat
 $name-font-size-chat-only: 16.31px
 $subtext-font-size: 14.27px
 
-// Chat List
-$search-input-background: #E9E9E9
-
 // Chat Window
 $chat-window-header-height: 81.56px
 $chat-window-input-area-height: 72.85px
-$no-chat-message-color: grey
-$chat-header-background: #fff
 
 $my-chat-message-color: #2E9DFB
 $others-chat-message-color: #E9E9EB
@@ -39,10 +51,3 @@ $message-time-stamp-font-size: 11px
 //---------------Profile
 $profile-name-font-size: 18.3507px
 $profile-name-color: #616161
-
-:root
-    --option-modal-shadow: rgba(150,150,150,0.5)
-:export
-    othersChatMessageColor: $others-chat-message-color
-    myChatMessageColor: $my-chat-message-color
-    loaderColor: $profile-name-color
