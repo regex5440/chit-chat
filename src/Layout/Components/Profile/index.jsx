@@ -7,6 +7,9 @@ import { USER_STATUSES } from "../../../utils/enums";
 import { CircularLoader, DropDown, Modal } from "hd-ui";
 import ThreeDot from "../Common/ThreeDot";
 import { updateStatusThunk } from "../../../library/redux/reducers";
+import ChitChatServer from "../../../client/api";
+import { setLoginStateToken } from "../../../utils";
+import { useNavigate } from "react-router-dom";
 
 const ProfileTab = () => {
   const profileContainer = useRef(null);
@@ -15,6 +18,7 @@ const ProfileTab = () => {
   const dispatch = useDispatch();
   const [profileModalOpen, openProfileModal] = useState(false);
   const targetForModal = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (profileContainer.current) {
@@ -38,6 +42,12 @@ const ProfileTab = () => {
     dispatch(updateStatusThunk({ type: changeType, status: value }));
   };
 
+  const logOutHandler = () => {
+    ChitChatServer.get("/log_out");
+    setLoginStateToken("");
+    navigate("/");
+  };
+
   const renderProfileModal = () => {
     return (
       <Modal
@@ -53,7 +63,9 @@ const ProfileTab = () => {
       >
         <div className="option not-allowed">Update Profile</div>
         <div className="option not-allowed">Blocked Contacts</div>
-        <div className="option red">Logout</div>
+        <div className="option red" onClick={logOutHandler}>
+          Logout
+        </div>
       </Modal>
     );
   };
