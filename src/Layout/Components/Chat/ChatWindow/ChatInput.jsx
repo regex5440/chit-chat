@@ -45,16 +45,16 @@ const ChatInput = ({ scrollToBottom }) => {
   return (
     <div className="user-chat-option">
       <div className="user-chat-option__container option">
-        <div className="option__emoji click-icon" title="Emoticons">
+        <div className="option__emoji click-icon not-allowed" title="Emoticons">
           <SmileyEmoji height="24" width="24" />
         </div>
-        <div className="option__attachments click-icon" title="Attachments">
+        <div className="option__attachments click-icon not-allowed" title="Attachments">
           <PaperClipIcon height="24" width="24" />
         </div>
         <form className="option__input" onSubmit={submitHandler}>
           <input type="text" placeholder="Type a message or send a voice note" onChange={debouncedInput} onInput={inputHandler} autoFocus />
         </form>
-        <div className="option__voice-note click-icon" title="Voice Message">
+        <div className="option__voice-note click-icon not-allowed" title="Voice Message">
           <MicrophoneIcon height="24" width="24" />
         </div>
       </div>

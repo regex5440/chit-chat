@@ -92,7 +92,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
                 <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
                   Delete Connection
                 </button>
-                <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
+                <button className="option red not-allowed" title="Delete and Block connection" onClick={() => removeHandler(true)}>
                   Delete and Block
                 </button>
               </div>

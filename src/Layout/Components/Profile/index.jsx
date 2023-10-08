@@ -51,8 +51,8 @@ const ProfileTab = () => {
         triggerElement={targetForModal}
         showBackdrop={false}
       >
-        <div className="option">Update Profile</div>
-        <div className="option">Blocked Contacts</div>
+        <div className="option not-allowed">Update Profile</div>
+        <div className="option not-allowed">Blocked Contacts</div>
         <div className="option red">Logout</div>
       </Modal>
     );

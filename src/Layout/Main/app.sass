@@ -30,3 +30,10 @@
             grid-area: 2 / 1 / 2 / span 1
         .chat-window
             grid-area: 2 / 3 / 2 / span 5
+    .not-allowed
+        cursor: not-allowed !important
+        pointer-events: none !important
+        color: lightgrey !important
+        text-decoration: line-through !important
+        &:after
+            content: '*'
