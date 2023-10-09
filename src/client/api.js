@@ -1,4 +1,5 @@
 import axios from "axios";
+import { setLoginStateToken } from "../utils";
 
 const ChitChatServer = axios.create({
   baseURL: import.meta.env.CC_ServerDomain + "/api/",
@@ -6,7 +7,20 @@ const ChitChatServer = axios.create({
 });
 ChitChatServer.interceptors.response.use(
   (response) => response.data,
-  (error) => Promise.reject(error)
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const response = await ChitChatServer.get("");
+      if (response.success) {
+        setAPIHeader(response.data);
+        setLoginStateToken(response.data);
+        originalRequest.headers.Authorization = `Bearer ${response.data}`;
+        return ChitChatServer(originalRequest);
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 export const setAPIHeader = (authToken) => {
