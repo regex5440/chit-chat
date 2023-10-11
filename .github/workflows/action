@@ -1,0 +1,24 @@
+name: Chit-Chat CI action
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Installing Dependencies
+        run: |
+          echo Installing Dependencies
+          npm install
+      - name: Creating build
+        run: npm run build
+        env:
+          CC_ServerDomain: ${{ secrets.CC_ServerDomain }}
+          CC_IMAGE_BUCKET_URL: ${{ secrets.CC_IMAGE_BUCKET_URL }}
+          CC_OAuthClientID: ${{ secrets.CC_OAuthClientID }}
