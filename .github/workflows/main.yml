@@ -22,3 +22,8 @@ jobs:
           CC_ServerDomain: ${{ secrets.CC_ServerDomain }}
           CC_IMAGE_BUCKET_URL: ${{ secrets.CC_IMAGE_BUCKET_URL }}
           CC_OAuthClientID: ${{ secrets.CC_OAuthClientID }}
+      - name: Deploying
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: dist
