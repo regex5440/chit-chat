@@ -24,6 +24,7 @@
 ```
 CC_ServerDomain=<API Server Domain>
 CC_IMAGE_BUCKET_URL=<S3 or R2 Bucket URL>
+CC_OAuthClientID=<Google OAuth Client Id>
 ```
 
 > Replace the `<---HINT---->` with your own values.
