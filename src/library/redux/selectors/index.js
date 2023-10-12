@@ -47,15 +47,16 @@ const chatInfoForContactTile = (contact_id) => {
     (state) => state,
     (selectedContact, state) => {
       const contacts = state.appData.contacts.data;
-      const contactsChat = state.appData.chats[contacts[contact_id].chat_id];
+      const chatId = contacts[contact_id]?.chat_id;
+      const contactsChat = state.appData.chats[chatId];
 
       const contacts_messages = contactsChat?.messages;
 
       return {
-        last_message: contacts_messages[contacts_messages.length - 1],
-        last_updated: contactsChat.last_updated,
-        authors_typing: contactsChat.authors_typing,
-        isSelected: selectedContact.contactId === contact_id,
+        last_message: contacts_messages?.at(-1),
+        last_updated: contactsChat?.last_updated,
+        authors_typing: contactsChat?.authors_typing,
+        isSelected: selectedContact?.contactId === contact_id,
       };
     }
   );

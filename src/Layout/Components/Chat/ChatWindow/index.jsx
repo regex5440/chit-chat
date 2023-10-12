@@ -66,39 +66,38 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
     removeContactHandler(block);
     closeModal();
   };
-
+  const renderCallingOption = () => <div></div>;
   return (
     <header className="chat-area__header-container">
       <div className="chat-area__header-content">
         {renderProfileDetails()}
-        {allowOptions && (
-          <div className="contact-options">
-            <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
-            <Modal
-              open={menuOpen}
-              closeHandler={() => {
-                setMenuOpen(false);
-              }}
-              keepModalCentered={false}
-              closeOnBlur={true}
-              TransitionStyle="fade"
-              triggerElement={menuButton}
-              showBackdrop={false}
-            >
-              <div className="options-modal-container">
-                <button className="option" title="Remove all messages" onClick={handleClearChat}>
-                  Clear Chat
-                </button>
-                <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
-                  Delete Connection
-                </button>
-                <button className="option red not-allowed" title="Delete and Block connection" onClick={() => removeHandler(true)}>
-                  Delete and Block
-                </button>
-              </div>
-            </Modal>
-          </div>
-        )}
+        <div className="contact-options">
+          {allowOptions && renderCallingOption()}
+          <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
+          <Modal
+            open={menuOpen}
+            closeHandler={() => {
+              setMenuOpen(false);
+            }}
+            keepModalCentered={false}
+            closeOnBlur={true}
+            TransitionStyle="fade"
+            triggerElement={menuButton}
+            showBackdrop={false}
+          >
+            <div className="options-modal-container">
+              <button className="option" title="Remove all messages" onClick={handleClearChat}>
+                Clear Chat
+              </button>
+              <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
+                Delete Connection
+              </button>
+              <button className="option red not-allowed" title="Delete and Block connection" onClick={() => removeHandler(true)}>
+                Delete and Block
+              </button>
+            </div>
+          </Modal>
+        </div>
       </div>
     </header>
   );
@@ -108,7 +107,6 @@ const ChatWindow = () => {
   const selectedContact = useSelector(getSelectedContact);
   const ContactProfile = useSelector(getSelectedContactProfile);
   const chatAccepted = useSelector(isChatAccepted);
-  console.log(chatAccepted);
   const dispatch = useDispatch();
 
   const deleteChat = (block = false) => {
