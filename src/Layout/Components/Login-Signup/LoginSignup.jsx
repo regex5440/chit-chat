@@ -415,7 +415,7 @@ const LandingPage = () => {
       client_id: import.meta.env.CC_OAuthClientID,
       callback: handleOAuth,
     });
-    google.accounts.id.renderButton(gSigninButton.current, { theme: "filled_blue", size: "large", text: "continue_with", type: "standard", shape: "rectangular", logo_alignment: "center" });
+    google.accounts.id.renderButton(gSigninButton.current, { theme: "filled_blue", size: "large", text: "continue_with", type: "standard", shape: "rectangular", logo_alignment: "center", width: "295" });
     google.accounts.id.prompt(); // also display the One Tap dialog
   }, [gSigninButton, window.google, location.pathname]);
 
@@ -449,7 +449,7 @@ const LandingPage = () => {
         <h2>Login/Signup</h2>
         <div className="user-form">
           {errorState.showError && <div className="error-message">{errorState.message}</div>}
-          <Outlet context={{ state: [errorState, updateError], AuthButton: authInProgress ? <CircularLoader size={40} riderColor="lightgrey" /> : <div className="signin_cta" ref={gSigninButton}></div>, dataForSignup: signUpOAuthData.current }} />
+          <Outlet context={{ state: [errorState, updateError], AuthButton: authInProgress ? <CircularLoader size={40} riderColor="lightgrey" /> : <div className="signin_cta" ref={gSigninButton} style={{ colorScheme: "light" }}></div>, dataForSignup: signUpOAuthData.current }} />
         </div>
       </div>
     </div>
