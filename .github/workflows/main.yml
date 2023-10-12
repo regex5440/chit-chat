@@ -11,7 +11,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
       - name: Installing Dependencies
@@ -24,9 +25,8 @@ jobs:
           CC_ServerDomain: ${{ secrets.CC_ServerDomain }}
           CC_IMAGE_BUCKET_URL: ${{ secrets.CC_IMAGE_BUCKET_URL }}
           CC_OAuthClientID: ${{ secrets.CC_OAuthClientID }}
-      - name: Deploying
+      - name: Deployment
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
           branch: gh-pages
           folder: dist
-          token: ${{ secrets.DEPLOY_PAT }}
