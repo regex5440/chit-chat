@@ -110,6 +110,10 @@ export const SocketComponent = () => {
         dispatch(addParticipants({ chatId, id }));
       }
     });
+
+    socket.on(SOCKET_HANDLERS.CHAT.NewRequest_Failed, (message) => {
+      window.alert(message);
+    });
   }, [dispatch, userId]);
 };
 export { acceptRequest, clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };

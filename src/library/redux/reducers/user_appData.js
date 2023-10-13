@@ -146,6 +146,7 @@ const userAppDataSlice = createSlice({
     },
     deleteContact: (state, { payload: { contactId, chatId } }) => {
       if (state.selectedContact.contactId === contactId) {
+        state.temp_contact = null;
         state.selectedContact.contactId = null;
         state.selectedContact.isAvailable = false;
       }
@@ -295,7 +296,8 @@ const userAppDataSlice = createSlice({
           delete state.contacts.data[contactId];
           delete state.chats[chatId];
           if (state.selectedContact.contactId === contactId) {
-            state.selectedContact.contactId = "";
+            state.selectedContact.contactId = null;
+            state.temp_contact = null;
             state.selectedContact.isAvailable = false;
           }
         }

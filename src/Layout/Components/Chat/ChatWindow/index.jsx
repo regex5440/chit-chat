@@ -24,8 +24,10 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const menuButton = useRef(null);
 
   const renderProfileStatus = () => {
-    // if (authors_typing.includes(ContactProfile.id)) return "Typing...";
-    // else
+    if (ContactProfile.last_active === undefined && !ContactProfile.status) {
+      return ContactProfile.about;
+    }
+
     if (ContactProfile.status === USER_STATUSES.ONLINE.code) return "Online";
     let parsedDateString = "";
     const daysDifference = dateDifference(ContactProfile.last_active, new Date());
@@ -92,7 +94,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
               <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
                 Delete Connection
               </button>
-              <button className="option red not-allowed" title="Delete and Block connection" onClick={() => removeHandler(true)}>
+              <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
                 Delete and Block
               </button>
             </div>
@@ -122,8 +124,7 @@ const ChatWindow = () => {
   const acceptChat = () => {
     dispatch(acceptRequestThunk(ContactProfile.chat_id));
   };
-  // @Requirement
-  // Need to add a skeleton loading for data that is not available but required
+  // TODO: Need to add a skeleton loading for data that is not available but required
   return (
     <div className="chat-window-main-container">
       {selectedContact?.isAvailable ? (
@@ -133,25 +134,32 @@ const ChatWindow = () => {
             ContactId={selectedContact.contactId}
             endOfMessages={selectedContact.fetchedAllMessages}
             RequestPopup={
-              !chatAccepted.byUser && (
-                <div className="chat-area__permission-popup">
-                  <div className="permission-popup-container">
-                    <p>You have a new message request from {ContactProfile.firstName}. Would you like to:</p>
-                    <div className="permission-actions">
-                      <button className="action accept" onClick={acceptChat}>
-                        Accept
-                      </button>
-                      <button className="action" onClick={() => deleteChat()}>
-                        Reject
-                      </button>
-                      <button className="action" onClick={() => deleteChat(true)}>
-                        Reject & Block
-                      </button>
+              <>
+                {!chatAccepted.byUser && (
+                  <div className="chat-area__permission-popup">
+                    <div className="permission-popup-container">
+                      <p>You have a new message request from {ContactProfile.firstName}. Would you like to:</p>
+                      <div className="permission-actions">
+                        <button className="action accept" onClick={acceptChat}>
+                          Accept
+                        </button>
+                        <button className="action" onClick={() => deleteChat()}>
+                          Reject
+                        </button>
+                        <button className="action" onClick={() => deleteChat(true)}>
+                          Reject & Block
+                        </button>
+                      </div>
+                      <sub>*By sending a message, you are also implicitly agreeing to the request.</sub>
                     </div>
-                    <sub>*By sending a message, you are also implicitly agreeing to the request.</sub>
                   </div>
-                </div>
-              )
+                )}
+                {ContactProfile.restricted && (
+                  <div className="chat-area__permission-popup">
+                    <p style={{ textAlign: "center", margin: "0", color: "var(--error-color)" }}>You can no longer send message to this recipient</p>
+                  </div>
+                )}
+              </>
             }
           />
         </div>
