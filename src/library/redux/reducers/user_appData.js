@@ -229,7 +229,7 @@ const userAppDataSlice = createSlice({
         }
       })
       .addCase(addMessageThunk.fulfilled, (state, { payload }) => {
-        if (payload.accepted) {
+        if (payload?.accepted) {
           state.chats?.[payload.chatId]?.participants.push(payload.id);
         }
       })

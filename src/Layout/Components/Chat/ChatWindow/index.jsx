@@ -24,7 +24,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const menuButton = useRef(null);
 
   const renderProfileStatus = () => {
-    if (ContactProfile.last_active === undefined && !ContactProfile.status) {
+    if (!allowOptions) {
       return ContactProfile.about;
     }
 
@@ -88,9 +88,11 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
             showBackdrop={false}
           >
             <div className="options-modal-container">
-              <button className="option" title="Remove all messages" onClick={handleClearChat}>
-                Clear Chat
-              </button>
+              {allowOptions && (
+                <button className="option" title="Remove all messages" onClick={handleClearChat}>
+                  Clear Chat
+                </button>
+              )}
               <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
                 Delete Connection
               </button>
