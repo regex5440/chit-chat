@@ -84,16 +84,24 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
     }
   };
   const typing = authors_typing?.includes(prop.id) || false;
-
+  const messageSection = prop.TYPE === UserTileType.CONNECTION ? typing ? <span className="status-typing">typing...</span> : last_message?.text || <em>No Message</em> : prop.bio;
   return (
     <div className="contact-tile-container" data-type={prop.TYPE}>
       <div className="contact-tile-content" data-active={prop.TYPE !== UserTileType.CONNECTION ? true : isSelected || false} onClick={updateSelectedContact}>
         <div className="contact-picture-container">
           <img src={prop.avatar.url || (prop.avatar.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${prop.avatar.key}` : "")} alt={prop.firstName} className="profile-picture" />
         </div>
-        <div className="contact-name">{getProfileName()}</div>
-        {prop.TYPE === UserTileType.USER && <span className="contact-username">@{prop.username}</span>}
-        <div className="contact-message">{prop.TYPE === UserTileType.CONNECTION ? typing ? <span className="status-typing">typing...</span> : last_message?.text || <em>No Message</em> : prop.bio}</div>
+        <div className="contact-name" title={getProfileName()}>
+          {getProfileName()}
+        </div>
+        {prop.TYPE === UserTileType.USER && (
+          <span className="contact-username" title={prop.username}>
+            @{prop.username}
+          </span>
+        )}
+        <div className="contact-message" title={messageSection}>
+          {messageSection}
+        </div>
         {last_updated && <div className="profile-last-activity">{renderRecentActivityTime()}</div>}
         {prop.TYPE === UserTileType.CONNECTION && (
           <div className="contact-status" data-typing={typing} data-count={prop.unseen_messages_count}>
