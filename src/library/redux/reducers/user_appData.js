@@ -182,7 +182,10 @@ const userAppDataSlice = createSlice({
       }
     },
     setTempConnection: (state, action) => {
-      state.temp_contact = state.search.data?.users?.find((user) => user.id === action.payload);
+      if (state.contacts.hasData && state.contacts.data[action.payload] === undefined) {
+        state.temp_contact = state.search.data?.users?.find((user) => user.id === action.payload);
+      }
+      state.search.query = "";
     },
     removeTempConnection: (state, action) => {
       state.temp_contact = null;
