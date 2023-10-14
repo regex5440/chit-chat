@@ -6,9 +6,9 @@
     width: 100%
     height: 100%
     min-height: 400px
-    .signin_cta iframe
-        margin-left: auto !important
-        margin-right: auto !important
+    .signin_cta
+        width: fit-content
+        margin: auto
     dialog
     .login-form-container
         font-family: $frame-font
@@ -30,11 +30,9 @@
         .user-form
             $formSidePadding: 30px
             border-radius: 20px
-            width: 70%
-            max-width: 450px
-            // height: 100%
+            max-width: 320px + $formSidePadding
             max-height: 90%
-            padding: 0 $formSidePadding
+            padding: $formSidePadding
             box-sizing: border-box
             inset: 0
             margin: auto
@@ -43,7 +41,6 @@
             flex-direction: column
             justify-content: space-between
             align-items: center
-            overflow: hidden
             .signup-steps-container
                 height: 30px
                 width: 100%
@@ -241,6 +238,8 @@
         -webkit-background-clip: text
         -webkit-text-fill-color: transparent
         font-size: xx-large
+        &.mobile
+            display: none
         h1
             font-family: 'Moirai One', cursive
         p
@@ -302,6 +301,44 @@
     100%
         opacity: 1
         transform: translate3d(0, 0, 0) scaleY(1)
-@media screen and (max-height: 400px)
-    .chit-chat-login-signup .login-form-container .user-form
-        max-height: 100%
+@media screen and (max-width: 1024px)
+    .chit-chat-login-signup
+        .chit-chat-info
+        .login-form-container
+            max-width: 50%
+
+@media screen and (max-width: 768px)
+    .chit-chat-login-signup
+        min-width: unset
+        background-size: 200% 500%
+        background-position: 10%
+        .chit-chat-info
+            display: none
+            float: unset
+            position: static
+        .chit-chat-info.mobile
+            width: 100%
+            padding: 0
+            display: flex
+            h1
+                margin: 0 auto
+
+        .login-form-container
+            max-width: 100%
+            float: unset
+            background: none
+            box-shadow: unset !important
+            padding: 30px 0
+            overflow-x: hidden
+            .user-form
+                max-height: 100%
+                &[data-forPage='signup']
+                    padding: 10px
+@keyframes fade-away
+    0%
+        opacity: 1
+    50%
+        opacity: 0
+        visibility: hidden
+    100%
+        z-index: unset

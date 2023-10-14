@@ -371,7 +371,7 @@ const SignupContent = () => {
               )}
             </div>
             <input type="password" name="password" placeholder="Create a new password" autoComplete="current-password" />
-            <input type="text" name="about" placeholder="About" />
+            <input type="text" name="about" placeholder="About" defaultValue={"Hey! I am new to Chit-Chat"} />
 
             <div className="route-ctas">
               <div className={`availability  ${signupFlags.usernameAvailable !== null && signupFlags.usernameAvailable}`}>{signupFormState.usernameSelected !== "" && signupFlags.usernameAvailable === "available" ? `Username available!` : signupFlags.usernameAvailable === "unavailable" ? `Username not available!` : ""}</div>
@@ -446,8 +446,11 @@ const LandingPage = () => {
         <p>Connecting people through conversations: Join the Chit Chat community and start chatting with friends and loved ones.</p>
       </section>
       <div className={`login-form-container ${location.pathname === "/signup" && "full-width"}`}>
+        <section className="chit-chat-info mobile">
+          <h1>Chit Chat</h1>
+        </section>
         <h2>Login/Signup</h2>
-        <div className="user-form">
+        <div className="user-form" data-forPage={location.pathname.replace("/", "")}>
           {errorState.showError && <div className="error-message">{errorState.message}</div>}
           <Outlet context={{ state: [errorState, updateError], AuthButton: authInProgress ? <CircularLoader size={40} riderColor="lightgrey" /> : <div className="signin_cta" ref={gSigninButton} style={{ colorScheme: "light" }}></div>, dataForSignup: signUpOAuthData.current }} />
         </div>
