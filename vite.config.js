@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import path from "node:path";
+import baseSsl from "@vitejs/plugin-basic-ssl";
 
 const themeVariables = path.resolve(__dirname, "src/Layout/theme/mixins.sass");
 
@@ -11,6 +12,7 @@ export default ({ mode }) => {
     "process.env": {},
     envPrefix: "CC",
     plugins: [
+      baseSsl(),
       react(),
       svgr({
         exportAsDefault: true,
