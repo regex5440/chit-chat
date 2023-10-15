@@ -30,7 +30,7 @@
         .user-form
             $formSidePadding: 30px
             border-radius: 20px
-            max-width: 320px + $formSidePadding
+            max-width: 420px + $formSidePadding
             max-height: 90%
             padding: $formSidePadding
             box-sizing: border-box
@@ -331,14 +331,7 @@
             padding: 30px 0
             overflow-x: hidden
             .user-form
+                max-width: 350px
                 max-height: 100%
                 &[data-forPage='signup']
                     padding: 10px
-@keyframes fade-away
-    0%
-        opacity: 1
-    50%
-        opacity: 0
-        visibility: hidden
-    100%
-        z-index: unset
