@@ -77,7 +77,7 @@ const SignupContent = () => {
   const imageBlob = useRef(null);
   const step1Form = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
-    step: 0,
+    step: 2,
     usernameAvailable: null,
     verifiedEmail: false,
     allowedSignup: false, // Changes based on upload status of profile picture
@@ -450,7 +450,7 @@ const LandingPage = () => {
           <h1>Chit Chat</h1>
         </section>
         <h2>Login/Signup</h2>
-        <div className="user-form" data-forPage={location.pathname.replace("/", "")}>
+        <div className="user-form" data-forpage={location.pathname.replace("/", "")}>
           {errorState.showError && <div className="error-message">{errorState.message}</div>}
           <Outlet context={{ state: [errorState, updateError], AuthButton: authInProgress ? <CircularLoader size={40} riderColor="lightgrey" /> : <div className="signin_cta" ref={gSigninButton} style={{ colorScheme: "light" }}></div>, dataForSignup: signUpOAuthData.current }} />
         </div>
