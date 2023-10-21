@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./style/image_selector.sass";
 import { Chevron, MagnifyMinus, MagnifyPlus, ReloadIcon, TickIcon } from "../../../assets/icons";
+import { debounce, useDebounce } from "../../../utils";
 
 const getBGPosition = (elem) => {
   const [posX, posY] = getComputedStyle(elem)?.backgroundPosition.split(" ");
@@ -16,56 +17,84 @@ const getBGSize = (elem) => {
     height: Number(imageHeight.replace("%", "").trim()),
   };
 };
-
-const resolution = { height: 400, width: 400 }; // For canvas container
 const INPUT_ID = window.crypto.randomUUID();
 
-const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {} }) => {
+const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resolution = { height: 400, width: 400 } }) => {
   const fileSelectInput = useRef(null);
-  const selectedImageContainer = useRef(null);
+  const previewContainer = useRef(null);
   const previewerDivRef = useRef(null);
-  const { current: canvas } = useRef(document.createElement("canvas"));
+  // const { current: canvas } = useRef(document.createElement("canvas"));
+  const canvas = useRef(document.createElement("canvas"));
   const [profilePicSrc, setProfilePicSrc] = useState(currentImageSrc);
   const [dragCursorOver, setDragCursorOver] = useState(false);
   const [imageSelected, setImageStatus] = useState("");
-  const [initialBGSize, setBGSize] = useState({ width: 100, height: 100 });
+  let { current: initialBoxSize } = useRef({ width: 100, height: 100 });
+  const [adjustedBoxSize, setAdjustedBS] = useState({ height: 100, width: 100 });
+  const translate = useRef({ x: 0, y: 0 });
+  const [previewDisplacement, setPreviewDisplacement] = useState({ x: 0, y: 0 });
+  const adjustedImageInPx = useRef({ height: 0, width: 0 });
 
   const imageSizeAfterMagnification = { width: 0, height: 0 }; // Used for setting positioning of image
 
   const createCanvas = useCallback(() => {
     // This function is handling the canvas and should provide the cropped image
-    canvas.height = resolution.height;
-    canvas.width = resolution.width;
+    canvas.current.height = resolution.height;
+    canvas.current.width = resolution.width;
     const img = new Image();
     img.src = profilePicSrc;
+    // img.style.width = adjustedImageInPx + "px";
+    // img.style.width = adjustedImageInPx + "px";
     img.onload = () => {
-      const context = canvas.getContext("2d");
+      const context = canvas.current.getContext("2d");
       context.clearRect(0, 0, resolution.width, resolution.height);
-      // context.scale(2, 2);   // TODO: later to increase the dpi of the cropped image
-      const { x, y, height, width } = { ...getBGPosition(selectedImageContainer.current), ...getBGSize(selectedImageContainer.current) };
+      // const { x, y, height, width } = { ...getBGPosition(previewContainer.current), ...getBGSize(previewContainer.current) };
       const orgWidth = img.naturalWidth,
         orgHeight = img.naturalHeight;
 
-      const renderedHeight = (height * resolution.height) / 100,
-        renderedWidth = (width * resolution.width) / 100;
-      const leftInPx = (x * (renderedWidth - resolution.width)) / 100,
-        topInPx = (y * (renderedHeight - resolution.height)) / 100;
-
-      context.drawImage(img, 0, 0, orgWidth, orgHeight, -1 * leftInPx, -1 * topInPx, renderedWidth, renderedHeight);
+      // const renderedHeight = (height * resolution.height) / 100,
+      //   renderedWidth = (width * resolution.width) / 100;
+      // const leftInPx = (x * (renderedWidth - resolution.width)) / 100,
+      //   topInPx = (translate.current.y * (renderedHeight - resolution.height)) / 100;
+      console.log("Adjusted", adjustedBoxSize);
+      context.drawImage(
+        img,
+        (Math.abs(translate.current.x) * orgWidth) / 100,
+        (Math.abs(translate.current.y) * orgHeight) / 100,
+        orgWidth,
+        orgHeight, // adjustedBoxSize.width * adjustedImageInPx.current.width, adjustedBoxSize.height * adjustedImageInPx.current.height,
+        0,
+        0,
+        (adjustedBoxSize.width * 400) / 100,
+        (adjustedBoxSize.height * 400) / 100
+      );
     };
-  }, [profilePicSrc, selectedImageContainer.current, initialBGSize]);
+  }, [profilePicSrc, previewContainer.current, adjustedBoxSize]);
 
   useEffect(() => {
     //? Workaround: onWheel Event listener for zoom-in and out.
     //! onWheel event (SyntacticEvent) could not be prevented default in React
     previewerDivRef.current?.addEventListener("wheel", mouseWheelHandler);
-
-    createCanvas();
   }, [previewerDivRef.current]);
-
+  useEffect(() => {
+    if (previewerDivRef.current) {
+      const { width: containerWidth, height: containerHeight } = previewerDivRef.current.getBoundingClientRect();
+      const newDimensionsPx = {
+        width: (adjustedBoxSize.width * containerWidth) / 100,
+        height: (adjustedBoxSize.height * containerHeight) / 100,
+      };
+      adjustedImageInPx.current = newDimensionsPx;
+      const previewPortionInsideContainer = {
+        x: Number(((containerWidth / newDimensionsPx.width) * 100).toFixed(1)),
+        y: Number(((containerHeight / newDimensionsPx.height) * 100).toFixed(1)),
+      };
+      setPreviewDisplacement({
+        x: Number((((100 - previewPortionInsideContainer.x) * newDimensionsPx.width) / 100).toFixed(1)),
+        y: Number((((100 - previewPortionInsideContainer.y) * newDimensionsPx.height) / 100).toFixed(1)),
+      });
+    }
+  }, [previewerDivRef.current, adjustedBoxSize]);
   //* IMAGE SELECT FUNCTIONS
   const createAndSetImageUrl = useCallback(
-    // TODO: This needs to create correct
     (file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -76,17 +105,18 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {} }) => {
         img.onload = () => {
           let imgHeight = img.naturalHeight;
           let imgWidth = img.naturalWidth;
-          if (imgHeight > imgWidth) {
-            setBGSize((state) => ({ ...state, height: Math.floor((imgHeight / imgWidth) * 100) }));
-          } else if (imgWidth > imgHeight) {
-            setBGSize((state) => ({ ...state, width: Math.floor((imgWidth / imgHeight) * 100) }));
-          }
+          const newDimensions = {
+            width: imgWidth > imgHeight ? Math.floor((imgWidth / imgHeight) * 100) : 100,
+            height: imgHeight > imgWidth ? Math.floor((imgHeight / imgWidth) * 100) : 100,
+          };
+          initialBoxSize = newDimensions;
+          setAdjustedBS(newDimensions);
         };
         setProfilePicSrc(imageSrc);
       };
       reader.readAsArrayBuffer(file);
     },
-    [setProfilePicSrc, setBGSize]
+    [setProfilePicSrc]
   );
   const imageSelectHandler = (e) => {
     const [file] = e.target.files;
@@ -113,43 +143,25 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {} }) => {
     setDragCursorOver(true);
   };
 
-  //* SELECTED IMAGE MOVEMENT
-  const imagePosition = (x = null, y = null) => {
-    if (typeof x === "number" || typeof y === "number") {
-      if (typeof x === "number") selectedImageContainer.current.style.backgroundPositionX = `${x}%`;
-      if (typeof y === "number") selectedImageContainer.current.style.backgroundPositionY = `${y}%`;
-    } else {
-      return getBGPosition(selectedImageContainer.current);
-    }
-  };
-
-  const imageSize = (width = null, height = null) => {
-    if (width && height) {
-      selectedImageContainer.current.style.backgroundSize = `${width}% ${height}%`;
-    } else {
-      return getBGSize(selectedImageContainer.current);
-    }
-  };
   const zoomIn = () => {
-    const { width, height } = imageSize();
-    const [newHeight, newWidth] = [height + Math.floor(initialBGSize.height / 10), width + Math.floor(initialBGSize.width / 10)];
-    imageSize(newWidth, newHeight);
-    Object.assign(imageSizeAfterMagnification, { width: newWidth, height: newHeight });
+    setAdjustedBS((state) => {
+      if (state.height >= 500 || state.width >= 500) return state;
+      return { height: Math.floor(state.height * 1.1), width: Math.floor(state.width * 1.1) };
+    });
   };
+  const resetTranslate = debounce(
+    () => {
+      previewContainer.current?.style.removeProperty("transform");
+      translate.current = { x: 0, y: 0 };
+    },
+    { duration: 300 }
+  );
   const zoomOut = () => {
-    const { width, height } = imageSize();
-    if (width > 100 && height > 100) {
-      const [newHeight, newWidth] = [height - Math.floor(initialBGSize.height / 10), width - Math.floor(initialBGSize.width / 10)];
-      imageSize(newWidth, newHeight);
-      Object.assign(imageSizeAfterMagnification, { width: newWidth, height: newHeight });
-    } else {
-      if (height === 100) {
-        imagePosition(null, 0);
-      }
-      if (width === 100) {
-        imagePosition(0);
-      }
-    }
+    resetTranslate();
+    setAdjustedBS((state) => {
+      if (state.height <= initialBoxSize.height || state.width <= initialBoxSize.width) return state;
+      return { height: Math.max(state.height / 1.1, initialBoxSize.height), width: Math.ceil(state.width / 1.1, initialBoxSize.width) };
+    });
   };
   const mouseWheelHandler = (e) => {
     e.preventDefault();
@@ -159,66 +171,69 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {} }) => {
     } else {
       zoomOut();
     }
-    createCanvas();
   };
 
-  let dragStarted = false;
-  const initialCursorPos = {
-    x: 0,
-    y: 0,
-  };
-  const initialImagePosition = {
-    x: 0,
-    y: 0,
-  };
+  const dragStarted = useRef(false);
 
-  let clientRect = {};
-  let imageBGSize = {};
+  const cursorPos = useRef({
+    x: 0,
+    y: 0,
+  });
+  const currentTranslate = useRef({
+    x: 0,
+    y: 0,
+  });
+  const movement = useRef({ x: 0, y: 0 });
+  const translateInPx = useRef({ x: 0, y: 0 });
   const moveStartHandler = (e) => {
-    dragStarted = true;
-    clientRect = selectedImageContainer.current.getBoundingClientRect();
-    imageBGSize = imageSize();
-    const { x: offsetLeft, y: offsetTop } = clientRect;
-    const cursorPosX = e.clientX - offsetLeft,
-      cursorPosY = e.clientY - offsetTop;
-
-    initialCursorPos.x = cursorPosX;
-    initialCursorPos.y = cursorPosY;
-
-    Object.assign(initialImagePosition, imagePosition());
+    dragStarted.current = true;
+    (cursorPos.current.x = e.clientX), (cursorPos.current.y = e.clientY);
+    translateInPx.current.x = Number(((translate.current.x * adjustedImageInPx.current.width) / 100).toFixed(2));
+    translateInPx.current.y = Number(((translate.current.y * adjustedImageInPx.current.height) / 100).toFixed(2));
+    currentTranslate.current.x = translateInPx.current.x;
+    currentTranslate.current.y = translateInPx.current.y;
+    (movement.current.x = 0), (movement.current.y = 0);
+    console.log("StartedWith", translate.current, currentTranslate.current);
   };
   const moveHandler = (e) => {
-    if (dragStarted) {
-      const { x: offsetLeft, y: offsetTop, height: containerHeight, width: containerWidth } = clientRect;
-      const finalCursorPosX = { x: e.clientX - offsetLeft, y: e.clientY - offsetTop };
-
-      const displacementX = finalCursorPosX.x - initialCursorPos.x,
-        displacementY = finalCursorPosX.y - initialCursorPos.y;
-
-      const movementInPercentage = {
-        x: (displacementX / containerWidth) * 100,
-        y: (displacementY / containerHeight) * 100,
+    if (dragStarted.current) {
+      const currentCursorPos = {
+        x: e.clientX,
+        y: e.clientY,
       };
 
-      const { x: initialPosX, y: initialPosY } = initialImagePosition;
-      const newImagePosition = {
-        x: initialPosX - movementInPercentage.x,
-        y: initialPosY - movementInPercentage.y,
-      };
+      currentTranslate.current.x = currentCursorPos.x - cursorPos.current.x;
+      movement.current.x = translateInPx.current.x + currentTranslate.current.x;
 
-      const { height, width } = imageBGSize;
+      if (movement.current.x < -1 * previewDisplacement.x) {
+        movement.current.x = -1 * previewDisplacement.x;
+      }
+      if (movement.current.x > 0) {
+        movement.current.x = 0;
+      }
 
-      if (height > 100) {
-        if (newImagePosition.y >= 0 && newImagePosition.y <= 100) imagePosition(null, newImagePosition.y);
+      currentTranslate.current.y = currentCursorPos.y - cursorPos.current.y;
+      movement.current.y = translateInPx.current.y + currentTranslate.current.y;
+
+      if (movement.current.y < -1 * previewDisplacement.y) {
+        movement.current.y = -1 * previewDisplacement.y;
       }
-      if (width > 100) {
-        if (newImagePosition.x >= 0 && newImagePosition.x <= 100) imagePosition(newImagePosition.x);
+      if (movement.current.y > 0) {
+        movement.current.y = 0;
       }
-      createCanvas();
+      console.log("Movement", movement.current);
+      previewContainer.current.style.setProperty("transform", `translate(${movement.current.x}px,${movement.current.y}px)`);
     }
   };
   const moveEndHandler = (e) => {
-    dragStarted = false;
+    if (dragStarted.current) {
+      translate.current = {
+        x: Number(((movement.current.x / adjustedImageInPx.current.width) * 100).toFixed(1)),
+        y: Number(((movement.current.y / adjustedImageInPx.current.height) * 100).toFixed(1)),
+      };
+      console.log("Stored", translate.current, adjustedImageInPx.current);
+      dragStarted.current = false;
+    }
   };
 
   return (
@@ -235,50 +250,60 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {} }) => {
           )}
         </label>
       ) : (
-        <div className={`image-preview ${imageSelected === "selected" ? "selected" : ""}`} onMouseDown={moveStartHandler} onMouseMove={moveHandler} onMouseLeave={moveEndHandler} onMouseUp={moveEndHandler} ref={previewerDivRef}>
-          <div style={{ backgroundImage: `url(${profilePicSrc}`, backgroundSize: `${initialBGSize.width}% ${initialBGSize.height}%` }} data-type="profile-pic" ref={selectedImageContainer}></div>
+        <>
+          <div className={`image-preview ${imageSelected === "selected" ? "selected" : ""}`} onMouseDown={moveStartHandler} onMouseMove={moveHandler} onMouseLeave={moveEndHandler} onMouseUp={moveEndHandler} ref={previewerDivRef}>
+            <div style={{ backgroundImage: `url(${profilePicSrc}`, height: `${adjustedBoxSize.height}%`, width: `${adjustedBoxSize.width}%` }} data-type="profile-pic" ref={previewContainer}></div>
 
+            <div className="success-status">
+              <TickIcon stroke="#0ab81b" width="400px" height="400px" />
+            </div>
+          </div>
           <div className="preview-controls">
+            {/*//TODO: Also, zoom in and out not using translate and showing unexpected results*/}
             <div
               onClick={() => {
                 setProfilePicSrc("");
+                currentTranslate.current = { x: 0, y: 0 };
+                scaleLevel = 1;
+                cursorPos.current = { x: 0, y: 0 };
+                translate.current = { x: 0, y: 0 };
+                previewContainer.current?.style.removeProperty("transform");
               }}
             >
-              <ReloadIcon width="40px" height="40px" fill="white" stroke="white" title="Select new image" />
+              <ReloadIcon width="20px" height="20px" fill="white" stroke="white" title="Select new image" />
             </div>
             <div onClick={zoomIn}>
-              <MagnifyPlus width="40px" height="40px" fill="white" title="Zoom In" />
+              <MagnifyPlus width="20px" height="20px" fill="white" title="Zoom In" />
             </div>
             <div onClick={zoomOut}>
-              <MagnifyMinus width="40px" height="40px" fill="white" title="Zoom Out" />
+              <MagnifyMinus width="20px" height="20px" fill="white" title="Zoom Out" />
             </div>
             <div
               onClick={() => {
-                setImageStatus("selected");
-                canvas.toBlob(
-                  (blob) => {
-                    if (blob) {
-                      blobHandler(blob);
-                    } else {
-                      setImageStatus("");
-                      window.alert("Something went wrong! Please try later");
-                      console.error("CanvasBlobCreateError: Unable to create canvas block\nPlease report to developer!");
-                    }
-                  },
-                  "image/png",
-                  1
-                );
+                // setImageStatus("selected");
+                createCanvas();
+                // canvas.toBlob(
+                //   (blob) => {
+                //     if (blob) {
+                //       blobHandler(blob);
+                //     } else {
+                //       setImageStatus("");
+                //       window.alert("Something went wrong! Please try later");
+                //       console.error("CanvasBlobCreateError: Unable to create canvas block\nPlease report to developer!");
+                //     }
+                //   },
+                //   "image/png",
+                //   1
+                // );
               }}
             >
-              <TickIcon width="40px" height="40px" stroke="white" title="Upload" />
+              <TickIcon width="20px" height="20px" stroke="white" title="Upload" />
             </div>
           </div>
-          <div className="success-status">
-            <TickIcon stroke="#0ab81b" width="400px" height="400px" />
-          </div>
-        </div>
+        </>
       )}
-      <input ref={fileSelectInput} type="file" id={INPUT_ID} name="image" placeholder="Your profile picture" accept="image/png,image/jpeg" capture="environment" onChange={imageSelectHandler} style={{ display: "none" }} />
+      <canvas ref={canvas} />
+      <input ref={fileSelectInput} type="file" id={INPUT_ID} name="image" placeholder="Your profile picture" accept="capture=camera;image/*" onChange={imageSelectHandler} style={{ display: "none" }} />
     </div>
   );
 };

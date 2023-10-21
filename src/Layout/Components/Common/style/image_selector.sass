@@ -5,6 +5,7 @@ $progress-size: 10px
     height: 300px
     width: 300px
     label.upload-action
+        display: flex
         cursor: pointer
         position: relative
         border: 3px dashed grey
@@ -36,7 +37,6 @@ $progress-size: 10px
             color: white
             pointer-events: none
     label.upload-action, div.image-preview
-        display: flex
         margin: auto
         width: 100%
         aspect-ratio: 1/1
@@ -48,13 +48,13 @@ $progress-size: 10px
     div.image-preview
         cursor: move
         user-select: none
+        border-bottom-right-radius: 0
+        border-bottom-left-radius: 0
         &__progress
             display: none
         [data-type='profile-pic']
             display: block
             margin: auto
-            width: 100%
-            height: 100%
             background-repeat: no-repeat
             background-position: 0% 0%
             background-size: 100% 100%
@@ -62,7 +62,7 @@ $progress-size: 10px
         &::after
             content: ''
             display: block
-            border-radius: 10px
+            border-radius: 10px 10px 0 0
             position: absolute
             inset: 0
             margin: auto
@@ -70,26 +70,6 @@ $progress-size: 10px
             width: 100%
             background: radial-gradient( transparent 55%, black 1px, rgba(0,0,0,0.6) 1px)
             z-index: 1
-        div.preview-controls
-            $control-box-height: 50px
-            // border-top: 1px solid rgba(0,0,0,0.6)
-            position: absolute
-            bottom: 0
-            left: 0
-            width: 100%
-            height: $control-box-height
-            box-sizing: border-box
-            display: flex
-            justify-content: center
-            gap: 40px
-            align-items: center
-            background: radial-gradient(black, transparent)
-            z-index: 2
-            opacity: 1
-            transition: opacity 0.2s ease
-            &>div
-                display: flex
-                cursor: pointer
         .success-status
             position: absolute
             left: 0
@@ -119,8 +99,33 @@ $progress-size: 10px
                         stroke-dashoffset: 20
                         animation: tick-mark 0.4s 0.2s ease-in forwards
 
+    div.preview-controls
+        $control-box-height: 50px
+        // border-top: 1px solid rgba(0,0,0,0.6)
+        width: 100%
+        height: $control-box-height
+        box-sizing: border-box
+        display: flex
+        justify-content: center
+        align-items: center
+        background: radial-gradient(black, transparent)
+        z-index: 2
+        opacity: 1
+        transition: opacity 0.2s ease
+        border-radius: 0 0 10px 10px
+        &>div
+            display: flex
+            cursor: pointer
+            width: 100%
+            height: 100%
+            align-items: center
+            justify-content: center
+            margin: auto
 @keyframes tick-mark
     0%
         stroke-dashoffset: 20
     100%
         stroke-dashoffset: 0
+
+#root canvas
+    background: white
