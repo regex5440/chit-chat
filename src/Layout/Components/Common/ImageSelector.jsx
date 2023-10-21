@@ -3,26 +3,13 @@ import "./style/image_selector.sass";
 import { Chevron, MagnifyMinus, MagnifyPlus, ReloadIcon, TickIcon } from "../../../assets/icons";
 import { debounce, useDebounce } from "../../../utils";
 
-const getBGPosition = (elem) => {
-  const [posX, posY] = getComputedStyle(elem)?.backgroundPosition.split(" ");
-  return {
-    x: Number(posX.replace("%", "").trim()),
-    y: Number(posY.replace("%", "").trim()),
-  };
-};
-const getBGSize = (elem) => {
-  const [imageWidth, imageHeight] = getComputedStyle(elem)?.backgroundSize.split(" ");
-  return {
-    width: Number(imageWidth.replace("%", "").trim()),
-    height: Number(imageHeight.replace("%", "").trim()),
-  };
-};
 const INPUT_ID = window.crypto.randomUUID();
 
 const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resolution = { height: 400, width: 400 } }) => {
   const fileSelectInput = useRef(null);
   const previewContainer = useRef(null);
   const previewerDivRef = useRef(null);
+  const { current: isMobile } = useRef(navigator.userAgent.toLowerCase().match(/mobile/i) ? true : false);
   // const { current: canvas } = useRef(document.createElement("canvas"));
   const canvas = useRef(document.createElement("canvas"));
   const [profilePicSrc, setProfilePicSrc] = useState(currentImageSrc);
@@ -34,7 +21,18 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
   const [previewDisplacement, setPreviewDisplacement] = useState({ x: 0, y: 0 });
   const adjustedImageInPx = useRef({ height: 0, width: 0 });
 
-  const imageSizeAfterMagnification = { width: 0, height: 0 }; // Used for setting positioning of image
+  const dragStarted = useRef(false);
+
+  const cursorPos = useRef({
+    x: 0,
+    y: 0,
+  });
+  const currentTranslate = useRef({
+    x: 0,
+    y: 0,
+  });
+  const movement = useRef({ x: 0, y: 0 });
+  const translateInPx = useRef({ x: 0, y: 0 });
 
   const createCanvas = useCallback(() => {
     // This function is handling the canvas and should provide the cropped image
@@ -70,29 +68,6 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
     };
   }, [profilePicSrc, previewContainer.current, adjustedBoxSize]);
 
-  useEffect(() => {
-    //? Workaround: onWheel Event listener for zoom-in and out.
-    //! onWheel event (SyntacticEvent) could not be prevented default in React
-    previewerDivRef.current?.addEventListener("wheel", mouseWheelHandler);
-  }, [previewerDivRef.current]);
-  useEffect(() => {
-    if (previewerDivRef.current) {
-      const { width: containerWidth, height: containerHeight } = previewerDivRef.current.getBoundingClientRect();
-      const newDimensionsPx = {
-        width: (adjustedBoxSize.width * containerWidth) / 100,
-        height: (adjustedBoxSize.height * containerHeight) / 100,
-      };
-      adjustedImageInPx.current = newDimensionsPx;
-      const previewPortionInsideContainer = {
-        x: Number(((containerWidth / newDimensionsPx.width) * 100).toFixed(1)),
-        y: Number(((containerHeight / newDimensionsPx.height) * 100).toFixed(1)),
-      };
-      setPreviewDisplacement({
-        x: Number((((100 - previewPortionInsideContainer.x) * newDimensionsPx.width) / 100).toFixed(1)),
-        y: Number((((100 - previewPortionInsideContainer.y) * newDimensionsPx.height) / 100).toFixed(1)),
-      });
-    }
-  }, [previewerDivRef.current, adjustedBoxSize]);
   //* IMAGE SELECT FUNCTIONS
   const createAndSetImageUrl = useCallback(
     (file) => {
@@ -173,18 +148,6 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
     }
   };
 
-  const dragStarted = useRef(false);
-
-  const cursorPos = useRef({
-    x: 0,
-    y: 0,
-  });
-  const currentTranslate = useRef({
-    x: 0,
-    y: 0,
-  });
-  const movement = useRef({ x: 0, y: 0 });
-  const translateInPx = useRef({ x: 0, y: 0 });
   const moveStartHandler = (e) => {
     dragStarted.current = true;
     (cursorPos.current.x = e.clientX), (cursorPos.current.y = e.clientY);
@@ -201,6 +164,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
         x: e.clientX,
         y: e.clientY,
       };
+      console.log(currentCursorPos, "allowed", previewDisplacement);
 
       currentTranslate.current.x = currentCursorPos.x - cursorPos.current.x;
       movement.current.x = translateInPx.current.x + currentTranslate.current.x;
@@ -236,6 +200,67 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
     }
   };
 
+  useEffect(() => {
+    if (isMobile) {
+      console.log("Mobile");
+      previewerDivRef.current?.addEventListener(
+        "touchstart",
+        (e) => {
+          console.log(e);
+          if (e.targetTouches.length === 2) {
+            e.preventDefault();
+            const clientX = e.targetTouches[0].clientX + e.targetTouches[1].clientX,
+              clientY = e.targetTouches[0].clientY + e.targetTouches[1].clientY;
+            moveStartHandler({ clientX, clientY });
+          }
+        },
+        false
+      );
+      previewerDivRef.current?.addEventListener("touchmove", (e) => {
+        if (e.targetTouches.length === 2) {
+          e.preventDefault();
+          const clientX = e.targetTouches[0].clientX + e.targetTouches[1].clientX,
+            clientY = e.targetTouches[0].clientY + e.targetTouches[1].clientY;
+          moveHandler({ clientX, clientY });
+        }
+      });
+
+      previewerDivRef.current?.addEventListener("touchend", (e) => {
+        if (e.targetTouches.length === 0) {
+          e.preventDefault();
+          moveEndHandler(undefined);
+        }
+      });
+      previewerDivRef.current?.addEventListener("touchcancel", (e) => {
+        if (e.targetTouches.length === 0) {
+          e.preventDefault();
+          moveEndHandler(undefined);
+        }
+      });
+    } else {
+      //? Workaround: onWheel Event listener for zoom-in and out.
+      //! onWheel event (SyntacticEvent) could not be prevented default in React
+      previewerDivRef.current?.addEventListener("wheel", mouseWheelHandler);
+    }
+  }, [previewerDivRef.current, moveHandler, moveStartHandler, moveEndHandler, mouseWheelHandler]);
+  useEffect(() => {
+    if (previewerDivRef.current) {
+      const { width: containerWidth, height: containerHeight } = previewerDivRef.current.getBoundingClientRect();
+      const newDimensionsPx = {
+        width: (adjustedBoxSize.width * containerWidth) / 100,
+        height: (adjustedBoxSize.height * containerHeight) / 100,
+      };
+      adjustedImageInPx.current = newDimensionsPx;
+      const previewPortionInsideContainer = {
+        x: Number(((containerWidth / newDimensionsPx.width) * 100).toFixed(1)),
+        y: Number(((containerHeight / newDimensionsPx.height) * 100).toFixed(1)),
+      };
+      setPreviewDisplacement({
+        x: Number((((100 - previewPortionInsideContainer.x) * newDimensionsPx.width) / 100).toFixed(1)),
+        y: Number((((100 - previewPortionInsideContainer.y) * newDimensionsPx.height) / 100).toFixed(1)),
+      });
+    }
+  }, [previewerDivRef.current, adjustedBoxSize]);
   return (
     <div className="image-selector" style={style}>
       {!profilePicSrc ? (
@@ -251,7 +276,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
         </label>
       ) : (
         <>
-          <div className={`image-preview ${imageSelected === "selected" ? "selected" : ""}`} onMouseDown={moveStartHandler} onMouseMove={moveHandler} onMouseLeave={moveEndHandler} onMouseUp={moveEndHandler} ref={previewerDivRef}>
+          <div className={`image-preview ${imageSelected === "selected" ? "selected" : ""}`} ref={previewerDivRef} onMouseDown={isMobile ? undefined : moveStartHandler} onMouseMove={isMobile ? undefined : moveHandler} onMouseLeave={isMobile ? undefined : moveEndHandler} onMouseUp={isMobile ? undefined : moveEndHandler}>
             <div style={{ backgroundImage: `url(${profilePicSrc}`, height: `${adjustedBoxSize.height}%`, width: `${adjustedBoxSize.width}%` }} data-type="profile-pic" ref={previewContainer}></div>
 
             <div className="success-status">
