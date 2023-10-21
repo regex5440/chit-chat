@@ -11,7 +11,7 @@ ChitChatServer.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const response = await ChitChatServer.get("");
+      const response = await (await fetch(`${import.meta.env.CC_ServerDomain}/api/`)).json();
       if (response.success) {
         setAPIHeader(response.data);
         setLoginStateToken(response.data);
