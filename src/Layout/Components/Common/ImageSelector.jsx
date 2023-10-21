@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./style/image_selector.sass";
-import { Chevron, MagnifyMinus, MagnifyPlus, ReloadIcon, TickIcon } from "../../../assets/icons";
-import { debounce, useDebounce } from "../../../utils";
+import { MagnifyMinus, MagnifyPlus, PlusIcon, ReloadIcon, TickIcon } from "../../../assets/icons";
+import { debounce } from "../../../utils";
 
-const INPUT_ID = window.crypto.randomUUID();
+const INPUT_ID = "hidden-input-image-selector";
 
 const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resolution = { height: 400, width: 400 } }) => {
   const fileSelectInput = useRef(null);
   const previewContainer = useRef(null);
   const previewerDivRef = useRef(null);
   const { current: isMobile } = useRef(navigator.userAgent.toLowerCase().match(/mobile/i) ? true : false);
-  // const { current: canvas } = useRef(document.createElement("canvas"));
-  const canvas = useRef(document.createElement("canvas"));
+  const { current: canvas } = useRef(document.createElement("canvas"));
   const [profilePicSrc, setProfilePicSrc] = useState(currentImageSrc);
   const [dragCursorOver, setDragCursorOver] = useState(false);
   const [imageSelected, setImageStatus] = useState("");
@@ -36,35 +35,16 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
 
   const createCanvas = useCallback(() => {
     // This function is handling the canvas and should provide the cropped image
-    canvas.current.height = resolution.height;
-    canvas.current.width = resolution.width;
+    canvas.height = resolution.height;
+    canvas.width = resolution.width;
     const img = new Image();
     img.src = profilePicSrc;
-    // img.style.width = adjustedImageInPx + "px";
-    // img.style.width = adjustedImageInPx + "px";
     img.onload = () => {
-      const context = canvas.current.getContext("2d");
+      const context = canvas.getContext("2d");
       context.clearRect(0, 0, resolution.width, resolution.height);
-      // const { x, y, height, width } = { ...getBGPosition(previewContainer.current), ...getBGSize(previewContainer.current) };
       const orgWidth = img.naturalWidth,
         orgHeight = img.naturalHeight;
-
-      // const renderedHeight = (height * resolution.height) / 100,
-      //   renderedWidth = (width * resolution.width) / 100;
-      // const leftInPx = (x * (renderedWidth - resolution.width)) / 100,
-      //   topInPx = (translate.current.y * (renderedHeight - resolution.height)) / 100;
-      console.log("Adjusted", adjustedBoxSize);
-      context.drawImage(
-        img,
-        (Math.abs(translate.current.x) * orgWidth) / 100,
-        (Math.abs(translate.current.y) * orgHeight) / 100,
-        orgWidth,
-        orgHeight, // adjustedBoxSize.width * adjustedImageInPx.current.width, adjustedBoxSize.height * adjustedImageInPx.current.height,
-        0,
-        0,
-        (adjustedBoxSize.width * 400) / 100,
-        (adjustedBoxSize.height * 400) / 100
-      );
+      context.drawImage(img, (Math.abs(translate.current.x) * orgWidth) / 100, (Math.abs(translate.current.y) * orgHeight) / 100, orgWidth, orgHeight, 0, 0, (adjustedBoxSize.width * 400) / 100, (adjustedBoxSize.height * 400) / 100);
     };
   }, [profilePicSrc, previewContainer.current, adjustedBoxSize]);
 
@@ -156,7 +136,6 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
     currentTranslate.current.x = translateInPx.current.x;
     currentTranslate.current.y = translateInPx.current.y;
     (movement.current.x = 0), (movement.current.y = 0);
-    console.log("StartedWith", translate.current, currentTranslate.current);
   };
   const moveHandler = (e) => {
     if (dragStarted.current) {
@@ -164,7 +143,6 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
         x: e.clientX,
         y: e.clientY,
       };
-      console.log(currentCursorPos, "allowed", previewDisplacement);
 
       currentTranslate.current.x = currentCursorPos.x - cursorPos.current.x;
       movement.current.x = translateInPx.current.x + currentTranslate.current.x;
@@ -185,7 +163,6 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
       if (movement.current.y > 0) {
         movement.current.y = 0;
       }
-      console.log("Movement", movement.current);
       previewContainer.current.style.setProperty("transform", `translate(${movement.current.x}px,${movement.current.y}px)`);
     }
   };
@@ -195,7 +172,6 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
         x: Number(((movement.current.x / adjustedImageInPx.current.width) * 100).toFixed(1)),
         y: Number(((movement.current.y / adjustedImageInPx.current.height) * 100).toFixed(1)),
       };
-      console.log("Stored", translate.current, adjustedImageInPx.current);
       dragStarted.current = false;
     }
   };
@@ -284,50 +260,53 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
             </div>
           </div>
           <div className="preview-controls">
-            {/*//TODO: Also, zoom in and out not using translate and showing unexpected results*/}
             <div
               onClick={() => {
                 setProfilePicSrc("");
+                setImageStatus("");
                 currentTranslate.current = { x: 0, y: 0 };
-                scaleLevel = 1;
                 cursorPos.current = { x: 0, y: 0 };
                 translate.current = { x: 0, y: 0 };
                 previewContainer.current?.style.removeProperty("transform");
-              }}
-            >
-              <ReloadIcon width="20px" height="20px" fill="white" stroke="white" title="Select new image" />
-            </div>
-            <div onClick={zoomIn}>
-              <MagnifyPlus width="20px" height="20px" fill="white" title="Zoom In" />
-            </div>
-            <div onClick={zoomOut}>
-              <MagnifyMinus width="20px" height="20px" fill="white" title="Zoom Out" />
-            </div>
-            <div
-              onClick={() => {
-                // setImageStatus("selected");
                 createCanvas();
-                // canvas.toBlob(
-                //   (blob) => {
-                //     if (blob) {
-                //       blobHandler(blob);
-                //     } else {
-                //       setImageStatus("");
-                //       window.alert("Something went wrong! Please try later");
-                //       console.error("CanvasBlobCreateError: Unable to create canvas block\nPlease report to developer!");
-                //     }
-                //   },
-                //   "image/png",
-                //   1
-                // );
               }}
             >
-              <TickIcon width="20px" height="20px" stroke="white" title="Upload" />
+              {imageSelected === "selected" ? <PlusIcon width="20px" height="20px" fill="white" stroke="white" title="Remove selected image" style={{ transform: "rotate(45deg)" }} /> : <ReloadIcon width="20px" height="20px" fill="white" stroke="white" title="Select new image" />}
             </div>
+            {imageSelected !== "selected" && (
+              <>
+                <div onClick={zoomIn}>
+                  <MagnifyPlus width="20px" height="20px" fill="white" title="Zoom In" />
+                </div>
+                <div onClick={zoomOut}>
+                  <MagnifyMinus width="20px" height="20px" fill="white" title="Zoom Out" />
+                </div>
+                <div
+                  onClick={() => {
+                    setImageStatus("selected");
+                    createCanvas();
+                    canvas.toBlob(
+                      (blob) => {
+                        if (blob) {
+                          blobHandler(blob);
+                        } else {
+                          setImageStatus("");
+                          window.alert("Something went wrong! Please try later");
+                          console.error("CanvasBlobCreateError: Unable to create canvas block\nPlease report to developer!");
+                        }
+                      },
+                      "image/png",
+                      1
+                    );
+                  }}
+                >
+                  <TickIcon width="20px" height="20px" stroke="white" title="Upload" />
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
-      <canvas ref={canvas} />
       <input ref={fileSelectInput} type="file" id={INPUT_ID} name="image" placeholder="Your profile picture" accept="capture=camera;image/*" onChange={imageSelectHandler} style={{ display: "none" }} />
     </div>
   );

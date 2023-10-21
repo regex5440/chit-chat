@@ -12,7 +12,7 @@ export default ({ mode }) => {
     "process.env": {},
     envPrefix: "CC",
     plugins: [
-      baseSsl(),
+      // baseSsl(),
       react(),
       svgr({
         exportAsDefault: true,
