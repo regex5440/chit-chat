@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "./style/image_selector.sass";
 import { MagnifyMinus, MagnifyPlus, PlusIcon, ReloadIcon, TickIcon } from "../../../assets/icons";
 import { debounce } from "../../../utils";
+import twoFingersGesture from "../../../assets/two-finger-gesture.png";
 
 const INPUT_ID = "hidden-input-image-selector";
 
@@ -19,6 +20,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
   const translate = useRef({ x: 0, y: 0 });
   const [previewDisplacement, setPreviewDisplacement] = useState({ x: 0, y: 0 });
   const adjustedImageInPx = useRef({ height: 0, width: 0 });
+  const [showCropInstruction, setCropInstruction] = useState(true);
 
   const dragStarted = useRef(false);
 
@@ -68,6 +70,9 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
           setAdjustedBS(newDimensions);
         };
         setProfilePicSrc(imageSrc);
+        setTimeout(() => {
+          setCropInstruction(false);
+        }, 4000);
       };
       reader.readAsArrayBuffer(file);
     },
@@ -76,7 +81,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
   const imageSelectHandler = (e) => {
     const [file] = e.target.files;
     if (file && ["image/jpeg", "image/png"].includes(file.type)) createAndSetImageUrl(file);
-    else window.alert("Please select a valid image file.");
+    else window.alert("Please select a valid image file. Supported formats: .jpg, .png");
   };
   const droppedFileHandler = (e) => {
     e.preventDefault();
@@ -178,13 +183,14 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
 
   useEffect(() => {
     if (isMobile) {
-      console.log("Mobile");
       previewerDivRef.current?.addEventListener(
         "touchstart",
         (e) => {
-          console.log(e);
           if (e.targetTouches.length === 2) {
             e.preventDefault();
+            if (showCropInstruction) {
+              setCropInstruction(false);
+            }
             const clientX = e.targetTouches[0].clientX + e.targetTouches[1].clientX,
               clientY = e.targetTouches[0].clientY + e.targetTouches[1].clientY;
             moveStartHandler({ clientX, clientY });
@@ -203,13 +209,13 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
 
       previewerDivRef.current?.addEventListener("touchend", (e) => {
         if (e.targetTouches.length === 0) {
-          e.preventDefault();
+          // e.preventDefault();
           moveEndHandler(undefined);
         }
       });
       previewerDivRef.current?.addEventListener("touchcancel", (e) => {
         if (e.targetTouches.length === 0) {
-          e.preventDefault();
+          // e.preventDefault();
           moveEndHandler(undefined);
         }
       });
@@ -246,7 +252,13 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
             <div className="drop-marker">Drop Here!</div>
           ) : (
             <div className="instruction">
-              Click to Select <br /> OR <br /> Drag a Image
+              {isMobile ? "Tap here to select an image from your device." : "Click to select a file from your device"}
+              <br />
+              {!isMobile && (
+                <>
+                  OR <br /> Drag and drop an image file here
+                </>
+              )}
             </div>
           )}
         </label>
@@ -255,9 +267,14 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
           <div className={`image-preview ${imageSelected === "selected" ? "selected" : ""}`} ref={previewerDivRef} onMouseDown={isMobile ? undefined : moveStartHandler} onMouseMove={isMobile ? undefined : moveHandler} onMouseLeave={isMobile ? undefined : moveEndHandler} onMouseUp={isMobile ? undefined : moveEndHandler}>
             <div style={{ backgroundImage: `url(${profilePicSrc}`, height: `${adjustedBoxSize.height}%`, width: `${adjustedBoxSize.width}%` }} data-type="profile-pic" ref={previewContainer}></div>
 
-            <div className="success-status">
-              <TickIcon stroke="#0ab81b" width="400px" height="400px" />
-            </div>
+            {showCropInstruction && (
+              <div className="crop-instruction">
+                Use two fingers to move the image
+                <div className="crop-instruction-image">
+                  <img src={twoFingersGesture} />
+                </div>
+              </div>
+            )}
           </div>
           <div className="preview-controls">
             <div
