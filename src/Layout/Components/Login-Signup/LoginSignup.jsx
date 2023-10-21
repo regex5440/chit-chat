@@ -77,7 +77,7 @@ const SignupContent = () => {
   const imageBlob = useRef(null);
   const step1Form = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
-    step: 2,
+    step: 0,
     usernameAvailable: null,
     verifiedEmail: false,
     allowedSignup: false, // Changes based on upload status of profile picture

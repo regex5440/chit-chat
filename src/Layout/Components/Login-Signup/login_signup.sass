@@ -41,6 +41,9 @@
             flex-direction: column
             justify-content: space-between
             align-items: center
+            &[data-forpage="signup"]
+                padding-bottom: 0
+
             .signup-steps-container
                 height: 30px
                 width: 100%
@@ -134,6 +137,7 @@
                 height: 90%
                 box-sizing: border-box
                 padding-top: 50px
+                overflow-x: hidden
                 &>form
                     min-width: 100%
                     padding: 0 5px
