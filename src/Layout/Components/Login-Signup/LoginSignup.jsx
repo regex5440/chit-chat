@@ -411,30 +411,38 @@ const LandingPage = () => {
 
   useEffect(() => {
     // if (location.pathname !== "/login" || location.pathname !== "/signup") return;
-    google.accounts.id.initialize({
-      client_id: import.meta.env.CC_OAuthClientID,
-      callback: handleOAuth,
-    });
-    google.accounts.id.renderButton(gSigninButton.current, { theme: "filled_blue", size: "large", text: "continue_with", type: "standard", shape: "rectangular", logo_alignment: "center", width: "295" });
-    google.accounts.id.prompt(); // also display the One Tap dialog
+    if (google) {
+      google.accounts.id.initialize({
+        client_id: import.meta.env.CC_OAuthClientID,
+        callback: handleOAuth,
+      });
+      google.accounts.id.renderButton(gSigninButton.current, { theme: "filled_blue", size: "large", text: "continue_with", type: "standard", shape: "rectangular", logo_alignment: "center", width: "295" });
+      google.accounts.id.prompt(); // also display the One Tap dialog
+    }
   }, [gSigninButton, window.google, location.pathname]);
 
   const handleOAuth = async (data) => {
     if (data?.credential) {
       setAuthInProgress(true);
-      const response = await axios.post(`${import.meta.env.CC_ServerDomain}/oauth_process`, { credential: data.credential });
-      if (response.data) {
-        setAuthInProgress(false);
-        switch (response.data.message) {
-          case "login":
-            setLoginStateToken(response.data.data);
-            navigate("/app");
-            break;
-          case "signup":
-            signUpOAuthData.current = response.data.data;
-            navigate("/signup");
-            break;
+      try {
+        const response = await axios.post(`${import.meta.env.CC_ServerDomain}/oauth_process`, { credential: data.credential });
+        if (response.data) {
+          switch (response.data.message) {
+            case "login":
+              setLoginStateToken(response.data.data);
+              navigate("/app");
+              break;
+            case "signup":
+              signUpOAuthData.current = response.data.data;
+              navigate("/signup");
+              break;
+          }
         }
+      } catch (e) {
+        console.log("OathError", e);
+        updateError({ showError: true, message: "Something went wrong. Try again later!" });
+      } finally {
+        setAuthInProgress(false);
       }
     }
   };
@@ -452,7 +460,18 @@ const LandingPage = () => {
         <h2>Login/Signup</h2>
         <div className="user-form" data-forpage={location.pathname.replace("/", "")}>
           {errorState.showError && <div className="error-message">{errorState.message}</div>}
-          <Outlet context={{ state: [errorState, updateError], AuthButton: authInProgress ? <CircularLoader size={40} riderColor="lightgrey" /> : <div className="signin_cta" ref={gSigninButton} style={{ colorScheme: "light" }}></div>, dataForSignup: signUpOAuthData.current }} />
+          <Outlet
+            context={{
+              state: [errorState, updateError],
+              AuthButton: (
+                <>
+                  {authInProgress && <CircularLoader size={40} riderColor="lightgrey" />}
+                  <div className="signin_cta" ref={gSigninButton} style={{ colorScheme: "light" }} aria-hidden={authInProgress}></div>
+                </>
+              ),
+              dataForSignup: signUpOAuthData.current,
+            }}
+          />
         </div>
       </div>
     </div>
