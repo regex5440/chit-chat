@@ -96,6 +96,7 @@ const unseenMsgCountSelectedContact = createSelector(
 //---------------------App configuration selector
 
 const getClockHour = (state) => state.config.clockHr;
+const getDeviceDetails = (state) => state.config.deviceDetails;
 
 export {
   // UserState
@@ -116,4 +117,5 @@ export {
 
   //AppConfig
   getClockHour,
+  getDeviceDetails,
 };

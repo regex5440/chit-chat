@@ -12,5 +12,6 @@ import ReloadIcon from "./reload.svg";
 import SentIcon from "./tick-sent.svg";
 import DoubleTickIcon from "./double-tick.svg";
 import ExclamationIcon from "./exclamation.svg";
+import LeftArrow from "./left-arrow.svg";
 
-export { ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon };
+export { ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow };

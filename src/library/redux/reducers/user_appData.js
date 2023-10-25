@@ -115,7 +115,13 @@ const userAppDataSlice = createSlice({
   name: "user_appData",
   initialState: appDataInitialState,
   reducers: {
-    selectContact: (state, action) => {
+    updateSelectedContact: (state, action) => {
+      if (!action.payload) {
+        state.selectedContact.isAvailable = false;
+        state.selectedContact.contactId = null;
+        state.temp_contact = null;
+        return;
+      }
       if (action.payload !== state.temp_contact?.id) state.temp_contact = null;
       state.selectedContact.contactId = action.payload;
       state.selectedContact.isAvailable = true;
@@ -326,6 +332,6 @@ const userAppDataSlice = createSlice({
   },
 });
 
-export const { addParticipants, clearChat, deleteContact, selectContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
+export const { addParticipants, clearChat, deleteContact, updateSelectedContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

@@ -1,13 +1,15 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
 import { useDispatch, useSelector } from "react-redux";
-import { getSelectedContact, getSelectedContactProfile, isChatAccepted } from "../../../../library/redux/selectors";
+import { getDeviceDetails, getSelectedContact, getSelectedContactProfile, isChatAccepted } from "../../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../../utils/enums";
-import { dateDifference, getFormattedDate, getFormattedTime } from "../../../../utils";
+import { dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../../utils";
 import ThreeDot from "../../Common/ThreeDot";
-import { Modal } from "hd-ui";
-import { acceptRequestThunk, clearChatThunk, removeConnectionThunk } from "../../../../library/redux/reducers";
+import { acceptRequestThunk, clearChatThunk, removeConnectionThunk, updateSelectedContact } from "../../../../library/redux/reducers";
+import { LeftArrow as BackIcon } from "../../../../assets/icons";
+import * as Popover from "@radix-ui/react-popover";
+import { MainWindow } from "../../../../Context/layoutFunctions";
 
 const NoChatMessage = () => (
   <div className="no-chat-message-container">
@@ -21,7 +23,17 @@ const NoChatMessage = () => (
 const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useDispatch();
-  const menuButton = useRef(null);
+  const device = useSelector(getDeviceDetails);
+  const scrollTo = useContext(MainWindow);
+
+  useEffect(() => {
+    if (ContactProfile) {
+      scrollTo("end");
+    }
+    return () => {
+      scrollTo("start");
+    };
+  }, [ContactProfile]);
 
   const renderProfileStatus = () => {
     if (!allowOptions) {
@@ -43,11 +55,17 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
     return `Last seen ${parsedDateString}`;
   };
 
+  const moveToMainWindow = () => {
+    dispatch(updateSelectedContact());
+  };
+
   const renderProfileDetails = () => {
     return (
       <div className="profile-container">
+        {device.type === "mobile" && <BackIcon width="25px" style={{ marginRight: "5px" }} stroke={"var(--icon-stroke)"} fill={"var(--icon-stroke)"} onClick={moveToMainWindow} />}
+
         <div className="profile-picture-container">
-          <img src={ContactProfile.avatar.url || (ContactProfile.avatar.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${ContactProfile.avatar.key}` : "")} alt={ContactProfile.firstName} className="profile-picture" />
+          <img src={getImageUrl(ContactProfile.avatar)} alt={ContactProfile.firstName} className="profile-picture" />
         </div>
         <div className="profile-details">
           <div className="profile-name">{`${ContactProfile.firstName} ${ContactProfile.lastName}`}</div>
@@ -75,32 +93,26 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
         {renderProfileDetails()}
         <div className="contact-options">
           {allowOptions && renderCallingOption()}
-          <ThreeDot title={"Chat Options"} onClick={() => setMenuOpen(true)} ref={menuButton} />
-          <Modal
-            open={menuOpen}
-            closeHandler={() => {
-              setMenuOpen(false);
-            }}
-            keepModalCentered={false}
-            closeOnBlur={true}
-            TransitionStyle="fade"
-            triggerElement={menuButton}
-            showBackdrop={false}
-          >
-            <div className="options-modal-container">
-              {allowOptions && (
-                <button className="option" title="Remove all messages" onClick={handleClearChat}>
-                  Clear Chat
+          <Popover.Root open={menuOpen} onOpenChange={setMenuOpen}>
+            <Popover.Trigger asChild>
+              <ThreeDot title={"Chat Options"} />
+            </Popover.Trigger>
+            <Popover.Content asChild>
+              <div className="options-modal-container">
+                {allowOptions && (
+                  <button className="option" title="Remove all messages" onClick={handleClearChat}>
+                    Clear Chat
+                  </button>
+                )}
+                <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
+                  Delete Connection
                 </button>
-              )}
-              <button className="option red" title="Delete the connection" onClick={() => removeHandler()}>
-                Delete Connection
-              </button>
-              <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
-                Delete and Block
-              </button>
-            </div>
-          </Modal>
+                <button className="option red" title="Delete and Block connection" onClick={() => removeHandler(true)}>
+                  Delete and Block
+                </button>
+              </div>
+            </Popover.Content>
+          </Popover.Root>
         </div>
       </div>
     </header>

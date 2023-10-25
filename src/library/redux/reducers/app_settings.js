@@ -7,6 +7,9 @@ const defaultSetting = {
     background: "",
   },
   serverTime: "",
+  deviceDetails: {
+    type: navigator.userAgent.toLowerCase().match(/mobile/i) ? "mobile" : "desktop",
+  },
 };
 
 const appSettingsSlice = createSlice({

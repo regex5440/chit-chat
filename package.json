@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/themes": "^2.0.0",
     "@reduxjs/toolkit": "^1.9.7",
     "axios": "^1.5.1",
     "hd-ui": "github:regex5440/hd-ui#master",

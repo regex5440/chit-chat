@@ -101,3 +101,11 @@
     100%
         transform: translateY(0px)
         opacity: 1
+
+@media screen and (max-width: 768px)
+    .contact-tile-container
+        max-width: 100%
+        .contact-tile-content
+            &[data-active=true]
+                transform: scaleY(1.02)
+                border-radius: 20.3897px

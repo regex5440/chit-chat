@@ -3,7 +3,7 @@ import { setLoginStateToken } from "../utils";
 
 const ChitChatServer = axios.create({
   baseURL: import.meta.env.CC_ServerDomain + "/api/",
-  withCredentials: true,
+  withCredentials: false, //! False for testing only
 });
 ChitChatServer.interceptors.response.use(
   (response) => response.data,

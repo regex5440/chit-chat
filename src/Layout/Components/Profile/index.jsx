@@ -8,7 +8,7 @@ import { CircularLoader, DropDown, Modal } from "hd-ui";
 import ThreeDot from "../Common/ThreeDot";
 import { updateStatusThunk } from "../../../library/redux/reducers";
 import ChitChatServer from "../../../client/api";
-import { setLoginStateToken } from "../../../utils";
+import { getImageUrl, setLoginStateToken } from "../../../utils";
 import { useNavigate } from "react-router-dom";
 
 const ProfileTab = () => {
@@ -80,7 +80,7 @@ const ProfileTab = () => {
         ) : hasData ? (
           <div className="profile-section-container">
             <div className="profile-picture-container" ref={profileContainer}>
-              <img src={user.avatar.url || (user.avatar.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${user.avatar.key}` : "")} alt={user.firstName} className="profile-picture" />
+              <img src={getImageUrl(user.avatar)} alt={user.firstName} className="profile-picture" />
               <span className="user-online-status" data-status={user.status.code}></span>
             </div>
             <div className="profile-name-container">

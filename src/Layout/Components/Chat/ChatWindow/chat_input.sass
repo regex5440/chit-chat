@@ -4,7 +4,7 @@
     width: 100%
     box-sizing: border-box
     background: var(--window-background)
-    padding: 17.33px 30.97px 16.31px 47.92px
+    // padding: 17.33px 30.97px 16.31px 47.92px
     box-shadow: 1px 2px 6px black
     &[data-unselectable='true']
         user-select: none
@@ -18,7 +18,7 @@
         justify-content: space-between
         height: 100%
         .option__input
-            width: 76%
+            width: 100%
             input
                 background: var(--input-background-color)
                 backdrop-filter: blur(10.1948px)
@@ -37,5 +37,10 @@
         display: grid
         place-items: center
         cursor: pointer
+        padding: 17px
         path
             stroke: var(--icon-stroke)
+
+@media screen and (max-width: 768px)
+    .user-chat-option
+        padding: 16.31px 10px

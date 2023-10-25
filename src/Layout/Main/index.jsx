@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import ProfileTab from "../Components/Profile";
 import ContactList from "../Components/Contacts/ContactList";
 import StoriesContainer from "../Components/Story";
@@ -11,6 +11,7 @@ import { redirect } from "react-router-dom";
 import { setAPIHeader } from "../../client/api";
 import { getLoginStateToken, setLoginStateToken } from "../../utils";
 import { SocketComponent } from "../../library/socket.io/socket";
+import { MainWindow } from "../../Context/layoutFunctions";
 
 export const appLoader = async () => {
   const token = getLoginStateToken();
@@ -31,10 +32,19 @@ export const appLoader = async () => {
 };
 
 const App = () => {
+  const mainApp = useRef(null);
+
+  const scrollTo = (position) => {
+    if (position === "start") {
+      mainApp.current?.scrollTo(0, 0);
+    } else if (position === "end") {
+      mainApp.current?.scrollTo(mainApp.current.scrollWidth, 0);
+    }
+  };
   return (
     <Provider store={store}>
       <SocketComponent />
-      <div className="app-container">
+      <div className="app-container" ref={mainApp}>
         <div className="app-container__app-window">
           <div className="story-container">
             <StoriesContainer />
@@ -46,7 +56,9 @@ const App = () => {
             <ContactList />
           </div>
           <div className="chat-window">
-            <ChatWindow />
+            <MainWindow.Provider value={scrollTo}>
+              <ChatWindow />
+            </MainWindow.Provider>
           </div>
         </div>
       </div>
