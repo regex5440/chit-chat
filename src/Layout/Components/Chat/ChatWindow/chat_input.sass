@@ -14,23 +14,31 @@
             pointer-events: none
     &__container
         display: flex
-        align-items: center
+        align-items: flex-end
         justify-content: space-between
         height: 100%
         .option__input
             width: 100%
-            input
+            height: 100%
+            display: flex
+            align-items: center
+            textarea
+                height: 20px
+            textarea,input
+                all: unset
+                display: block
                 background: var(--input-background-color)
                 backdrop-filter: blur(10.1948px)
                 border-radius: 10.1948px
-                padding: 15.45px 20.7px 13.39px
+                padding: 5px 13.77px
                 border: none
                 outline: none
                 width: 100%
                 box-sizing: border-box
                 &::placeholder
                     font-style: italic
-                    @include placeholder()
+            input
+                padding: 17px
     .click-icon
         height: 32.62px
         width: 32.62px
@@ -43,4 +51,6 @@
 
 @media screen and (max-width: 768px)
     .user-chat-option
-        padding: 16.31px 10px
+        padding: 5px 0
+        &__container
+            .option__input

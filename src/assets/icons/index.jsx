@@ -13,5 +13,6 @@ import SentIcon from "./tick-sent.svg";
 import DoubleTickIcon from "./double-tick.svg";
 import ExclamationIcon from "./exclamation.svg";
 import LeftArrow from "./left-arrow.svg";
+import SendIcon from "./send.svg";
 
-export { ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow };
+export { ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow, SendIcon };

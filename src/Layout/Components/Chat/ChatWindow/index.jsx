@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,6 +25,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const dispatch = useDispatch();
   const device = useSelector(getDeviceDetails);
   const scrollTo = useContext(MainWindow);
+  const header = useRef(null);
 
   useEffect(() => {
     if (ContactProfile) {
