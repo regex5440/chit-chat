@@ -208,6 +208,7 @@ const dateDifference = (dateA: DateParam | undefined = new Date(), dateB: DatePa
 };
 
 function setLoginStateToken(token: string) {
+  if (!token) localStorage.removeItem(`user.auth.token`);
   localStorage.setItem(`user.auth.token`, token);
 }
 function getLoginStateToken() {

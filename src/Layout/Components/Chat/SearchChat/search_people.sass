@@ -52,6 +52,17 @@
         padding: 10px
         grid-area: 2/3/2/span 5
         display: flex
+        .loader-container, .no-data-container
+            margin: 40px auto auto
+            display: flex
+            justify-content: center
+            height: 100%
+            width: 100%
+            svg
+                height: 50px
+                width: 50px
+                path
+                    stroke: var(--text-secondary-color)
         &::before
             content: ''
             height: 100%
@@ -71,7 +82,7 @@
             border-radius: 10px
             align-self: stretch
         .connections,.users,.groups
-            width: 33%
+            min-width: 33%
             max-height: 100%
             display: flex
             .content
@@ -113,3 +124,15 @@
         padding: 12.23px 4px 12px 4px
         &__input-container
             border-radius: 10px
+        &__results-container
+            position: static
+            grid-area: unset
+            order: 1
+            padding: 0
+            flex-direction: column
+            h2
+                margin: 0 0 0 15px
+            &::before
+                display: none
+            .connections,.users,.groups
+                width: 100%

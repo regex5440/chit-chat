@@ -5,7 +5,8 @@ import ContactTile, { UserTileType } from "../ContactTile";
 import { debounce } from "../../../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { updateSearchQuery, userSearchThunk } from "../../../../library/redux/reducers";
-import { getTempConnection, searchState } from "../../../../library/redux/selectors";
+import { getDeviceDetails, getTempConnection, searchState } from "../../../../library/redux/selectors";
+import { CircularLoader } from "hd-ui";
 
 const SearchChat = () => {
   const [searchText, setSearchText] = useState("");
@@ -13,6 +14,7 @@ const SearchChat = () => {
   const dispatch = useDispatch();
   const { query, loading, hasData, data } = useSelector(searchState);
   const tempSelectedUser = useSelector(getTempConnection);
+  const device = useSelector(getDeviceDetails);
   const setSearchQueryInStore = useCallback(
     debounce(
       (value) => {
@@ -47,25 +49,28 @@ const SearchChat = () => {
     setSearchQueryInStore("");
   };
   return (
-    <div className="search-container">
-      <div className="search-container__input-container">
-        <span className="input-icon-container">
-          <MagnifyIcon className="magnify-icon" aria-hidden={inputFocused} />
-          <PlusIcon className="plus-icon" data-type={inputFocused ? "clear-cta" : "search-zoom"} onClick={clearSearch} />
-        </span>
-        <input type="text" value={searchText} placeholder="Search or start a new chat" onFocus={handleInputFocus} onBlur={handleInputBlur} onChange={handleInputChange} />
+    <>
+      <div className="search-container">
+        <div className="search-container__input-container">
+          <span className="input-icon-container">
+            <MagnifyIcon className="magnify-icon" aria-hidden={inputFocused} />
+            <PlusIcon className="plus-icon" data-type={inputFocused ? "clear-cta" : "search-zoom"} onClick={clearSearch} />
+          </span>
+          <input type="text" value={searchText} placeholder="Search or start a new chat" onFocus={handleInputFocus} onBlur={handleInputBlur} onChange={handleInputChange} />
+        </div>
       </div>
       {inputFocused && query.length > 0 && (
         <div className="search-container__results-container">
           {loading ? (
-            "Loading..."
-          ) : //TODO: Add a loading icon
-          hasData ? (
+            <div className="loader-container">
+              <CircularLoader size={50} riderColor={"var(--text-secondary-color)"} />
+            </div>
+          ) : hasData ? (
             <>
               {data.users.length > 0 && (
                 <div className="users">
                   <div className="content">
-                    <h3>Users</h3>
+                    <h3>All Users</h3>
                     <div className="list">
                       {data.users.map((user, index) => {
                         return <ContactTile TYPE={UserTileType.USER} isConnection={false} avatar={user.avatar} firstName={user.firstName} lastName={user.lastName} username={user.username} style={{ opacity: "0", animationDelay: `${index / 50}s` }} bio={user.about} id={user.id} />;
@@ -89,12 +94,11 @@ const SearchChat = () => {
               )}
             </>
           ) : (
-            //TODO: A no results message
-            "No Data"
+            <div className="no-data-container">No result found</div>
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

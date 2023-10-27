@@ -43,7 +43,7 @@ const Contacts = () => {
       ) : (
         <div className="no-contacts">
           {contactList.searchResults ? (
-            <h2>No results found</h2>
+            <h3>Connection not found</h3>
           ) : (
             <>
               <h3>No contacts in touch?</h3>
