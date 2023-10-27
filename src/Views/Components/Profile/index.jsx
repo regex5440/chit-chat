@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./profile.sass";
-import { GearIcon } from "../../../assets/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { getContactsRaw, getUserData } from "../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../utils/enums";
@@ -63,6 +62,7 @@ const ProfileTab = () => {
       >
         <div className="option not-allowed">Update Profile</div>
         <div className="option not-allowed">Blocked Contacts</div>
+        <div className="option not-allowed settings">App Settings</div>
         <div className="option red" onClick={logOutHandler}>
           Logout
         </div>
@@ -99,7 +99,6 @@ const ProfileTab = () => {
               </DropDown>
             </div>
             <div className="profile-options-container">
-              <GearIcon className="app-settings" />
               <ThreeDot ref={targetForModal} onClick={() => openProfileModal(true)} />
               {renderProfileModal()}
             </div>

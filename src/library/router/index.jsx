@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
-import { LandingPage, LoginContent, SignupContent, landingPageLoader } from "../../Layout/Components/Login-Signup/LoginSignup";
+import { LandingPage, LoginContent, SignupContent, landingPageLoader } from "../../Views/Components/Login-Signup/LoginSignup";
 import React from "react";
-import { appLoader } from "../../Layout/Main";
+import { appLoader } from "../../Views/Main";
 
-const App = React.lazy(() => import("../../Layout/Main"));
+const App = React.lazy(() => import("../../Views/Main"));
 
 const router = createBrowserRouter([
   {

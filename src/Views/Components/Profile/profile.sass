@@ -50,9 +50,8 @@
                 font-family: $frame-font
                 color: var(--text-secondary-color)
 
-            [selected]::after
-                content: '<'
-
+            [selected]
+                background: var(--option-hover-background)
             div.status-option-container
                 display: flex
                 align-items: center
@@ -65,7 +64,6 @@
                     border-radius: 50%
         .profile-options-container
             margin-left: auto
-            align-self: flex-end
             .app-settings
                 position: absolute
                 right: 18.92px
@@ -81,3 +79,38 @@
         display: grid
         place-items: center
         height: 100%
+
+@media screen and (max-width: 768px)
+    .profile-section
+        // overflow: hidden
+        padding: 0 5px
+        .profile-section-container
+            display: grid
+            row-gap: 5px
+            align-items: center
+            grid-template-areas: 'profile-picture-container profile-options-container' 'profile-name-container profile-options-container'
+            padding: 0
+            .profile-picture-container
+                grid-area: profile-picture-container
+                width: 61.56px
+                height: 61.56px
+                margin: auto
+                img
+                    border-width: 1px
+                span.user-online-status
+                    width: 11.35px
+            .profile-name-container
+                margin-left: 0
+                grid-area: profile-name-container
+                &>span
+                    display: none
+                #status-select
+                    box-shadow: 1px 1px 6px var(--shadow-color)
+                    background: var(--window-background)
+                    border-radius: 5px
+                    .dropdown-button
+                        justify-content: center !important
+
+            .profile-options-container
+                grid-area: profile-options-container
+                align-self: flex-start

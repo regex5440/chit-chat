@@ -1,6 +1,6 @@
 import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import "./Layout/theme/variables.sass";
+import "./Views/theme/variables.sass";
 import "./index.sass";
 import { RouterProvider } from "react-router-dom";
 import router from "./library/router";

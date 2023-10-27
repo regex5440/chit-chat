@@ -47,15 +47,14 @@
         &__app-window
             width: 200%
             padding: 0
-            grid-template-columns: calc(50% - 100px) 100px 50%
+            grid-template-columns: calc(50% - 120px) 120px 50%
             grid-template-rows: 100px 1fr
             .story-container
                 grid-area: 1 / 1/ 1/ span 1
                 border-radius: 0
             .profile-container
-                grid-area: 1/2/1/ span 2
+                grid-area: 1/2/1/ 2
                 border-radius: 0
-                display: none
             .chat-list
                 grid-area: 2/1/span 1/span 2
                 overflow-y: auto

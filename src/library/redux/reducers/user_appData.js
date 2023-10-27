@@ -49,7 +49,7 @@ export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObj
   messageObject.sender_id = sender_id;
 
   await sendMessage({ chat_id, receiverId: selectedId.contactId }, messageObject, !chat_id ? true : false);
-  if (!participants.includes(sender_id)) {
+  if (participants && !participants.includes(sender_id)) {
     acceptRequest(chat_id, sender_id);
     return { accepted: true, chatId: chat_id, id: sender_id };
   }

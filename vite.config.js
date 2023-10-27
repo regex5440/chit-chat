@@ -4,7 +4,7 @@ import svgr from "vite-plugin-svgr";
 import path from "node:path";
 import baseSsl from "@vitejs/plugin-basic-ssl";
 
-const themeVariables = path.resolve(__dirname, "src/Layout/theme/mixins.sass");
+const themeVariables = path.resolve(__dirname, "src/Views/theme/mixins.sass");
 
 // https://vitejs.dev/config/
 export default ({ mode }) => {
