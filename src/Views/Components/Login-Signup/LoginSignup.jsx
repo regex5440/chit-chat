@@ -51,7 +51,7 @@ const LoginContent = () => {
       <input type="password" name="password" id="password" placeholder="Password" data-error={errorState.showError} autoComplete="current-password" />
       <div className="forgot-password-cta">Forgot Password?</div> {/*//TODO: Forgot password popup */}
       <div className="action-buttons">
-        <button type="submit" className="cta" style={loginProgress ? { pointerEvents: "none" } : {}}>
+        <button type="submit" className="cta" style={loginProgress ? { pointerEvents: "none" } : {}} data-in_progress={loginProgress}>
           {loginProgress ? <CircularLoader size={30} riderColor="#fff" /> : "Login"}
         </button>
         <Link className="cta" to="/signup">
@@ -383,7 +383,7 @@ const SignupContent = () => {
             <ImageSelector style={{ margin: "auto", height: "fit-content", width: "100%" }} blobHandler={imageBlobHandler} />
 
             <div className="action-buttons">
-              <div className="cta" style={(progressIn.signup && { pointerEvents: "none" }) || {}} onClick={signupHandler}>
+              <div className="cta" style={(progressIn.signup && { pointerEvents: "none" }) || {}} onClick={signupHandler} data-in_progress={progressIn.signup}>
                 {progressIn.signup ? <CircularLoader size={30} riderColor="#fff" /> : "Signup"}
               </div>
             </div>
