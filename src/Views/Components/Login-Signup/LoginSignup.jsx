@@ -449,7 +449,7 @@ const LandingPage = () => {
 
   return (
     <div className="chit-chat-login-signup">
-      <section className="chit-chat-info">
+      <section className="chit-chat-info chit-chat-logo">
         <h1>Chit Chat</h1>
         <p>Connecting people through conversations: Join the Chit Chat community and start chatting with friends and loved ones.</p>
       </section>

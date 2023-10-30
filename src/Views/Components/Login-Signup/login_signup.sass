@@ -1,5 +1,4 @@
 @import '@theme-variables'
-@import url('https://fonts.googleapis.com/css2?family=Moirai+One&display=swap')
 .chit-chat-login-signup
     background: url('/src/assets/LoginPageAbstract.svg') no-repeat 0% 40%
     background-size: cover
@@ -231,26 +230,20 @@
                 @include primary-button()
                 .hdui-circular-loader.loader-container
                     display: flex
-    .chit-chat-info
-        float: left
-        position: absolute
-        height: fit-content
-        width: 40%
-        inset: 0
-        margin-top: auto
-        margin-bottom: auto
-        padding-left: 40px
-        background: linear-gradient(-30deg, #00287f, #00bdff)
-        -webkit-background-clip: text
-        -webkit-text-fill-color: transparent
-        font-size: xx-large
-        &.mobile
-            display: none
-        h1
-            font-family: 'Moirai One', cursive
-        p
-            font-family: $frame-font
-            font-size: x-large
+.chit-chat-info
+    float: left
+    position: absolute
+    height: fit-content
+    width: 40%
+    inset: 0
+    margin-top: auto
+    margin-bottom: auto
+    padding-left: 40px
+    &.mobile
+        display: none
+    p
+        font-family: $frame-font
+        font-size: x-large
 
 .email-verification-modal
     border-radius: 10px

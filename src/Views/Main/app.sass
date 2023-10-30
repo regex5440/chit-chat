@@ -6,6 +6,7 @@
     background: url('/src/assets/RE4FlaY_1920x1080.jpg')
     background-size: cover
     background-blend-mode: soft-light
+    transition: background 500ms ease
     &__app-window
         background-color: var(--app-background)
         backdrop-filter: blur(15px)
@@ -45,6 +46,7 @@
     .app-container
         overflow: hidden
         scroll-behavior: smooth
+        scroll-snap-type: mandatory
         &__app-window
             width: 200%
             padding: 0

@@ -38,7 +38,7 @@ const App = () => {
     if (position === "start") {
       mainApp.current?.scrollTo(0, 0);
     } else if (position === "end") {
-      mainApp.current?.scrollTo(mainApp.current.scrollWidth * 2, 0);
+      mainApp.current?.scrollTo(mainApp.current.scrollWidth, 0);
     }
   };
   return (

@@ -5,11 +5,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1" />
   <title>Chit Chat - Messaging app</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Moirai+One&display=swap" />
 </head>
 
 <body>
+  <style>
+    .chit-chat-logo {
+      background-image: linear-gradient(-30deg, #00287f, #00bdff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: xx-large;
+    }
+
+    .chit-chat-logo h1 {
+      font-family: 'Moirai One', cursive;
+      text-wrap: nowrap;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --startup-loading-background: rgba(12, 12, 12, 1);
+      }
+    }
+
+    #loader-logo {
+      background-color: var(--startup-loading-background);
+    }
+
+    #loader-logo .chit-chat-logo {
+      animation: heartbeat 2s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      50% {
+        filter: drop-shadow(1px 2px 7px #00bdff) drop-shadow(2px 4px 15px #00287f);
+      }
+    }
+  </style>
   <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+  <div
+    style="position: fixed; display: grid;left:0; top: 0; height: 100%; width: 100%; place-content: center; margin: auto; z-index: 999999999; transition: all 0.8s ease 0.5s;"
+    id="loader-logo">
+    <div class="chit-chat-logo">
+      <h1>Chit Chat</h1>
+    </div>
+  </div>
+  <script>
+    const observer = new MutationObserver(function (mutations) {
+      if (mutations.length > 0) {
+        console.log('loaded');
+        document.getElementById('loader-logo').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('loader-logo').remove();
+        }, 1500);
+        this.disconnect();
+      }
+
+    }).observe(document.getElementById('root'), { childList: true, subtree: true });
+  </script>
+  <!-- <script type="module" src="/src/main.jsx"></script> -->
   <script src="https://accounts.google.com/gsi/client" async></script>
 
 </body>
