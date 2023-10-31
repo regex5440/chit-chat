@@ -11,7 +11,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
   const previewContainer = useRef(null);
   const previewerDivRef = useRef(null);
   const { current: isMobile } = useRef(navigator.userAgent.toLowerCase().match(/mobile/i) ? true : false);
-  const { current: canvas } = useRef(document.createElement("canvas"));
+  const canvas = useRef(document.createElement("canvas"));
   const [profilePicSrc, setProfilePicSrc] = useState(currentImageSrc);
   const [dragCursorOver, setDragCursorOver] = useState(false);
   const [imageSelected, setImageStatus] = useState("");
@@ -37,18 +37,18 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
 
   const createCanvas = useCallback(() => {
     // This function is handling the canvas and should provide the cropped image
-    canvas.height = resolution.height;
-    canvas.width = resolution.width;
+    canvas.current.height = resolution.height;
+    canvas.current.width = resolution.width;
     const img = new Image();
     img.src = profilePicSrc;
     img.onload = () => {
-      const context = canvas.getContext("2d");
+      const context = canvas.current.getContext("2d");
       context.clearRect(0, 0, resolution.width, resolution.height);
       const orgWidth = img.naturalWidth,
         orgHeight = img.naturalHeight;
       context.drawImage(img, (Math.abs(translate.current.x) * orgWidth) / 100, (Math.abs(translate.current.y) * orgHeight) / 100, orgWidth, orgHeight, 0, 0, (adjustedBoxSize.width * 400) / 100, (adjustedBoxSize.height * 400) / 100);
     };
-  }, [profilePicSrc, previewContainer.current, adjustedBoxSize]);
+  }, [canvas.current, profilePicSrc, previewContainer.current, adjustedBoxSize, resolution, translate.current]);
 
   //* IMAGE SELECT FUNCTIONS
   const createAndSetImageUrl = useCallback(
@@ -302,19 +302,21 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
                   onClick={() => {
                     setImageStatus("selected");
                     createCanvas();
-                    canvas.toBlob(
-                      (blob) => {
-                        if (blob) {
-                          blobHandler(blob);
-                        } else {
-                          setImageStatus("");
-                          window.alert("Something went wrong! Please try later");
-                          console.error("CanvasBlobCreateError: Unable to create canvas block\nPlease report to developer!");
-                        }
-                      },
-                      "image/png",
-                      1
-                    );
+                    setTimeout(() => {
+                      canvas.current.toBlob(
+                        (blob) => {
+                          if (blob) {
+                            blobHandler(blob);
+                          } else {
+                            setImageStatus("");
+                            window.alert("Something went wrong! Please try later");
+                            console.error("CanvasBlobCreateError: Unable to create canvas block\nPlease report to developer!");
+                          }
+                        },
+                        "image/png",
+                        1
+                      );
+                    }, 100);
                   }}
                 >
                   <TickIcon width="20px" height="20px" stroke="white" title="Upload" />
