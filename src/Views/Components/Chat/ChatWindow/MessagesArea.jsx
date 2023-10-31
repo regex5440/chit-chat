@@ -7,36 +7,59 @@ import { contactsChat, unseenMsgCountSelectedContact } from "../../../../library
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
+import { ClockIcon } from "@radix-ui/react-icons";
+
+const Message = ({ messageObject, ContactId, ChatId }) => {
+  const dispatch = useDispatch();
+  const messageContainer = useRef(null);
+  const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
+
+  useEffect(() => {
+    if (messageContainer.current && unseenMessagesCount > 0) {
+      //* chat.last_updated is just to update the observer to latest message
+      if (messageContainer.current.dataset.mine === "true") return;
+      const observer = new IntersectionObserver(([entries]) => {
+        if (entries.isIntersecting) {
+          dispatch(sendMessageSeenThunk({ chat_id: ChatId, toUserId: ContactId, messageId: messageObject.id }));
+          observer.disconnect();
+        }
+      });
+      observer.observe(messageContainer.current);
+    }
+  }, [messageContainer.current, unseenMessagesCount]);
+
+  const isMine = messageObject.sender_id !== ContactId;
+  let messageStatus = "";
+  if (messageObject.seenByRecipients?.includes(ContactId)) {
+    messageStatus = <DoubleTickIcon height="20px" width="20px" fill="#2E9DFB" />;
+  } else if (!messageObject.id) {
+    messageStatus = <ClockIcon height="16px" width="16px" fill="var(--icon-stroke)" />;
+  } else if (messageObject.error) {
+    messageStatus = <ExclamationIcon height="16px" width="18px" />;
+  } else {
+    messageStatus = <SentIcon height="18px" width="18px" fill="var(--icon-stroke)" />;
+  }
+
+  return (
+    <div className="message message-box" data-mine={isMine} ref={!isMine ? messageContainer : null}>
+      {isMine && <span className="message-status">{messageStatus}</span>}
+      <span className="message-text">{messageObject.text}</span>
+      <span className="message-time">{getFormattedTime(messageObject.timestamp, "h:mm")}</span>
+    </div>
+  );
+};
 
 const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
   const messageContainer = useRef(null);
   const lastMessageDateDifference = useRef(null);
   const chat = useSelector(contactsChat);
-  const dispatch = useDispatch();
-  const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
+
   const scrollToBottom = useCallback(() => {
     if (messageContainer.current) {
       messageContainer.current.scrollTo(0, messageContainer.current.scrollHeight);
     }
   }, []);
   const contactIsTyping = chat?.authors_typing?.includes(ContactId);
-
-  useEffect(() => {
-    if (messageContainer.current && chat?.last_updated) {
-      //* chat.last_updated is just to update the observer to latest message
-      if (unseenMessagesCount > 0) {
-        const lastMessageElement = messageContainer.current.lastElementChild;
-        if (lastMessageElement.dataset.mine === "true") return;
-        const observer = new IntersectionObserver(([entries]) => {
-          if (entries.isIntersecting) {
-            dispatch(sendMessageSeenThunk({ chat_id: chat.chat_id, toUserId: ContactId }));
-            observer.disconnect();
-          }
-        });
-        observer.observe(lastMessageElement);
-      }
-    }
-  }, [messageContainer.current, chat?.last_updated]);
 
   useEffect(() => {
     scrollToBottom();
@@ -50,17 +73,17 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
     lastMessageDateDifference.current = null;
   }, [ContactId]);
 
-  const renderMessage = (message_object) => {
+  const renderMessage = (message) => {
     let timeStampMessage = "";
     let TimeStamp = "";
-    const daysDifference = dateDifference(new Date(), message_object.timestamp);
+    const daysDifference = dateDifference(new Date(), message.timestamp);
     if (daysDifference !== lastMessageDateDifference.current) {
       if (daysDifference > 7) {
         // Show Time Stamp
-        TimeStamp = getFormattedDate(message_object.timestamp, "www, dd-mmm-yy");
+        TimeStamp = getFormattedDate(message.timestamp, "www, dd-mmm-yy");
       } else if (daysDifference > 1 && daysDifference <= 7) {
         //Show Weekdays
-        TimeStamp = getFormattedDate(message_object.timestamp, "wwww");
+        TimeStamp = getFormattedDate(message.timestamp, "wwww");
       } else {
         //Show relative time: Today, Yesterday
         TimeStamp = capitalize(dateComparer.format(-1 * daysDifference, "day"));
@@ -68,18 +91,12 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
       timeStampMessage = <div className="message-stamp">{TimeStamp}</div>;
     }
     lastMessageDateDifference.current = daysDifference;
-    const isMine = message_object.sender_id !== ContactId;
-    const message = (
+    return (
       <>
         {timeStampMessage}
-        <div className="message message-box" data-mine={isMine}>
-          {isMine && <span className="message-status">{message_object.unseen ? <SentIcon height="18px" width="18px" /> : message_object.error ? <ExclamationIcon height="18px" width="18px" /> : <DoubleTickIcon height="20px" width="20px" fill="#2E9DFB" />}</span>}
-          <span className="message-text">{message_object.text}</span>
-          <span className="message-time">{getFormattedTime(message_object.timestamp, "h:mm")}</span>
-        </div>
+        <Message messageObject={message} ContactId={ContactId} ChatId={chat.chat_id} />
       </>
     );
-    return message;
   };
 
   return (
@@ -95,7 +112,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
               </div>
             }
           />
-          {chat?.messages && chat.messages.map((message) => renderMessage(message))}
+          {chat?.messages && chat.messages.map((message, index) => renderMessage(message))}
           {contactIsTyping && (
             <div className="message message-loading">
               <BouncyBalls containerColor="transparent" />

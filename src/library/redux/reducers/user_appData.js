@@ -48,11 +48,14 @@ export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObj
   } = getUserData(getState());
   messageObject.sender_id = sender_id;
 
-  await sendMessage({ chat_id, receiverId: selectedId.contactId }, messageObject, !chat_id ? true : false);
+  const data = await sendMessage({ chat_id, receiverId: selectedId.contactId }, messageObject, !chat_id ? true : false);
+
   if (participants && !participants.includes(sender_id)) {
+    // Accepted request by sending a message
     acceptRequest(chat_id, sender_id);
-    return { accepted: true, chatId: chat_id, id: sender_id };
+    return { accepted: true, chatId: chat_id, id: sender_id, ...data };
   }
+  return data;
 });
 
 export const updateTypingThunk = createAsyncThunk("updateTyping", async (isTyping, { getState }) => {
@@ -66,11 +69,12 @@ export const updateTypingThunk = createAsyncThunk("updateTyping", async (isTypin
   await updateTyping(chat_id, { authorId, isTyping });
 });
 
-export const sendMessageSeenThunk = createAsyncThunk("sendSeenUpdate", async ({ chat_id, toUserId }, { getState }) => {
+export const sendMessageSeenThunk = createAsyncThunk("sendSeenUpdate", async ({ chat_id, toUserId, messageId }, { getState }) => {
   const {
     data: { id },
   } = getUserData(getState());
-  sendMessageSeenUpdate(chat_id, id, toUserId);
+  sendMessageSeenUpdate(chat_id, id, toUserId, messageId);
+  return { id };
 });
 
 export const userSearchThunk = createAsyncThunk("userSearch", async (query) => {
@@ -164,17 +168,15 @@ const userAppDataSlice = createSlice({
       state.chats[update.chat_id].messages.push(update.message);
       state.contacts.data[update.message.sender_id].unseen_messages_count++;
     },
-    updateChatSeenStatus: (state, { payload: chat_id }) => {
+    updateChatSeenStatus: (state, { payload: { chat_id, fromUserId, messageId } }) => {
       const messages = state.chats[chat_id].messages;
       for (let i = messages.length - 1; i > 0; i--) {
         const message = messages[i];
-        if (message.unseen) {
-          delete message.unseen;
-          continue;
+        if (message.id === messageId) {
+          message.seenByRecipients.push(fromUserId);
+          break;
         }
-        break;
       }
-      state.chats[chat_id].seenByConnection = true;
     },
     updateSearchQuery: (state, action) => {
       state.search.query = action.payload;
@@ -188,7 +190,7 @@ const userAppDataSlice = createSlice({
       }
     },
     setTempConnection: (state, action) => {
-      if (state.contacts.hasData && state.contacts.data[action.payload] === undefined) {
+      if (state.contacts.data[action.payload] === undefined) {
         state.temp_contact = state.search.data?.users?.find((user) => user.id === action.payload);
       }
       state.search.query = "";
@@ -232,35 +234,44 @@ const userAppDataSlice = createSlice({
       .addCase(addMessageThunk.pending, (state, { meta }) => {
         let chatId = selectedContactChatId({ appData: state });
         if (chatId) {
-          state.chats[chatId].seenByConnection = false;
           state.chats[chatId].last_updated = meta.arg.timestamp;
           state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id, unseen: true }));
         }
       })
       .addCase(addMessageThunk.fulfilled, (state, { payload }) => {
         if (payload?.accepted) {
-          state.chats?.[payload.chatId]?.participants.push(payload.id);
+          state.chats?.[payload.chat_id]?.participants.push(payload.id);
         }
+        state.chats[payload.chat_id]?.messages.splice(-1, 1, payload.messageObject);
       })
       .addCase(addMessageThunk.rejected, (state, action) => {
         console.log("Unable to send message", action);
-        // let chatId = selectedContactChatId({ appData: state });
-        // if(chatId){
-        //   state.chats[chatId].messages.at(-1).error = true;
-        // }
+        let chatId = selectedContactChatId({ appData: state });
+        if (chatId) {
+          state.chats[chatId].messages.at(-1).error = true;
+        }
       });
 
     builder.addCase(
-      sendMessageSeenThunk.pending,
+      sendMessageSeenThunk.fulfilled,
       (
         state,
         {
           meta: {
-            arg: { chat_id, toUserId },
+            arg: { chat_id, toUserId, messageId },
           },
+          payload: { id },
         }
       ) => {
         state.contacts.data[toUserId].unseen_messages_count = 0;
+        const messages = state.chats[chat_id].messages;
+        for (let backIndex = messages.length - 1; backIndex > 0; backIndex--) {
+          const message = messages[backIndex];
+          if (message.id === messageId) {
+            message.seenByRecipients.push(id);
+            break;
+          }
+        }
       }
     );
 

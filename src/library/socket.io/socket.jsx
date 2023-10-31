@@ -9,15 +9,22 @@ import { io } from "socket.io-client";
 let socket = null;
 
 const sendMessage = async ({ chat_id, receiverId }, messageObject, newMessageRequest = false) => {
-  socket.emit(newMessageRequest ? SOCKET_HANDLERS.CHAT.NewRequest : SOCKET_HANDLERS.CHAT.NewMessage, { receiverId, messageObject, chat_id });
+  return new Promise((resolve, reject) => {
+    socket.emit(newMessageRequest ? SOCKET_HANDLERS.CHAT.NewRequest : SOCKET_HANDLERS.CHAT.NewMessage, { receiverId, messageObject, chat_id });
+    const timer = setTimeout(reject, 10000);
+    socket.on(newMessageRequest ? SOCKET_HANDLERS.CHAT.NewRequest_Success : SOCKET_HANDLERS.CHAT.NewMessage, (chat_id, last_updated, messageObject) => {
+      clearTimeout(timer);
+      resolve({ chat_id, last_updated, messageObject });
+    });
+  });
 };
 
 const updateTyping = async (chat_id, { authorId, isTyping }) => {
   socket.emit(SOCKET_HANDLERS.CHAT.TypingUpdate, chat_id, { authorId, isTyping });
 };
 
-const sendMessageSeenUpdate = (chat_id, fromUserId, toUserId) => {
-  socket.emit(SOCKET_HANDLERS.CHAT.SeenUpdate, chat_id, fromUserId, toUserId);
+const sendMessageSeenUpdate = (chat_id, fromUserId, toUserId, messageId) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.SeenUpdate, chat_id, fromUserId, toUserId, messageId);
 };
 
 const clearChatSocket = async (chatId, fromId, toId) => {
@@ -82,9 +89,9 @@ export const SocketComponent = () => {
     });
 
     // Seen Update
-    socket.on(SOCKET_HANDLERS.CHAT.SeenUpdate, (chat_id, fromUserId) => {
+    socket.on(SOCKET_HANDLERS.CHAT.SeenUpdate, (chat_id, fromUserId, messageId) => {
       if (fromUserId !== userId) {
-        dispatch(updateChatSeenStatus(chat_id, fromUserId));
+        dispatch(updateChatSeenStatus({ chat_id, fromUserId, messageId }));
       }
     });
 
