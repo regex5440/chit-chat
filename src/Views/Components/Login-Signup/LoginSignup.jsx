@@ -39,7 +39,6 @@ const LoginContent = () => {
       } catch (e) {
         updateError({ showError: true, message: "Something's wrong!" });
         console.error("LoginFailed:", e);
-      } finally {
         setProgress(false);
       }
     }
@@ -76,6 +75,7 @@ const SignupContent = () => {
   const emailInput = useRef(null);
   const imageBlob = useRef(null);
   const step1Form = useRef(null);
+  const imageProgressBar = useRef(null);
   const [signupFlags, setSignupFlags] = useState({
     step: 0,
     usernameAvailable: null,
@@ -250,6 +250,11 @@ const SignupContent = () => {
                 "Content-Type": "application/octet-stream",
                 Authorization: `Bearer ${response.data}`,
               },
+              onUploadProgress: (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                imageProgressBar.current?.style.setProperty("max-width", `${percentCompleted.toFixed(2)}%`);
+                console.log(percentCompleted);
+              },
             });
           }
           navigate("/app");
@@ -261,8 +266,6 @@ const SignupContent = () => {
     } catch {
       setProgress((state) => ({ ...state, signup: false }));
       updateError({ showError: true, message: "Something went wrong, please try again!" });
-    } finally {
-      setProgress((state) => ({ ...state, signup: false }));
     }
   };
 
@@ -384,6 +387,7 @@ const SignupContent = () => {
 
             <div className="action-buttons">
               <div className="cta" style={(progressIn.signup && { pointerEvents: "none" }) || {}} onClick={signupHandler} data-in_progress={progressIn.signup}>
+                <div className="progress_bar" ref={imageProgressBar}></div>
                 {progressIn.signup ? <CircularLoader size={30} riderColor="#fff" /> : "Signup"}
               </div>
             </div>
@@ -440,9 +444,8 @@ const LandingPage = () => {
         }
       } catch (e) {
         console.log("OathError", e);
-        updateError({ showError: true, message: "Something went wrong. Try again later!" });
-      } finally {
         setAuthInProgress(false);
+        updateError({ showError: true, message: "Something went wrong. Try again later!" });
       }
     }
   };

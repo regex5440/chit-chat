@@ -44,6 +44,7 @@
             align-items: center
             &[data-forpage="signup"]
                 padding-bottom: 0
+                overflow-x: hidden
 
             .signup-steps-container
                 height: 30px
@@ -138,7 +139,6 @@
                 height: 90%
                 box-sizing: border-box
                 padding-top: 50px
-                overflow-x: hidden
                 &>form
                     min-width: 100%
                     padding: 0 5px
@@ -228,6 +228,16 @@
             .cta
                 // Button
                 @include primary-button()
+                position: relative
+                .progress_bar
+                    width: 100%
+                    max-width: 0%
+                    position: absolute
+                    height: 100%
+                    left: 0
+                    top: 0
+                    transition: max-width 0.2s ease
+                    background: rgba(0,0,0,0.5)
                 .hdui-circular-loader.loader-container
                     display: flex
 .chit-chat-info
