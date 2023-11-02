@@ -96,6 +96,37 @@
     overflow: hidden
     .option
         all: unset
+        display: flex
+        width: 100%
+        box-sizing: border-box
+        padding: 6px 18px 6px
+        transition: background 100ms ease
+        cursor: pointer
+        justify-content: space-between
+        position: relative
+        & > span.text
+            margin-left: auto
+        & > span[data-state="checked"]
+            position: absolute
+            top: 50%
+            left: 2px
+            transform: translateY(-50%)
+        &:not(:last-child)
+            box-shadow: 0 0.5px 0 0 rgba(150,150,150,0.2)
+        &.red
+            color: red
+        &[data-highlighted]
+            background: var(--option-hover-background)
+
+@mixin menu-option()
+    background: var(--modal-background-primary)
+    color: var(--text-secondary-color)
+    box-shadow: 1px 2px 10px var(--option-modal-shadow)
+    border-radius: 8px
+    font-family: $frame-font
+    overflow: hidden
+    .option
+        all: unset
         display: block
         width: 100%
         box-sizing: border-box

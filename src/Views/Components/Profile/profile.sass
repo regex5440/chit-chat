@@ -32,7 +32,7 @@
         .profile-name-container
             margin-left: 11.24px
             align-self: flex-end
-            span
+            span.name-data
                 display: inline-block
                 max-width: 150px
                 font-family: $frame-font
@@ -49,9 +49,9 @@
                 border: none
                 font-family: $frame-font
                 color: var(--text-secondary-color)
+                text-transform: capitalize
+                cursor: pointer
 
-            [selected]
-                background: var(--option-hover-background)
             div.status-option-container
                 display: flex
                 align-items: center
@@ -73,12 +73,15 @@
                 min-width: 200px
                 height: auto
                 margin-top: 50px
-                @include options-modal()
+                @include menu-option()
 
     .profile-section_loading
         display: grid
         place-items: center
         height: 100%
+
+.status-option-dropdown
+    @include options-modal()
 
 @media screen and (max-width: 768px)
     .profile-section

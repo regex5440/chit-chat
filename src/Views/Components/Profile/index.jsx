@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./profile.sass";
 import { useDispatch, useSelector } from "react-redux";
-import { getContactsRaw, getUserData } from "../../../library/redux/selectors";
+import { getContactsRaw, getDeviceDetails, getUserData } from "../../../library/redux/selectors";
 import { USER_STATUSES } from "../../../utils/enums";
-import { CircularLoader, DropDown, Modal } from "hd-ui";
+import { CircularLoader, Modal } from "hd-ui";
 import ThreeDot from "../Common/ThreeDot";
 import { updateStatusThunk } from "../../../library/redux/reducers";
 import ChitChatServer from "../../../client/api";
 import { getImageUrl, setLoginStateToken } from "../../../utils";
 import { useNavigate } from "react-router-dom";
+import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
+import { TickIcon } from "../../../assets/icons";
 
 const ProfileTab = () => {
   const profileContainer = useRef(null);
@@ -18,6 +20,8 @@ const ProfileTab = () => {
   const [profileModalOpen, openProfileModal] = useState(false);
   const targetForModal = useRef(null);
   const navigate = useNavigate();
+  const device = useSelector(getDeviceDetails);
+  const [statusOption, showStatusOption] = useState(false);
 
   useEffect(() => {
     if (profileContainer.current) {
@@ -84,19 +88,31 @@ const ProfileTab = () => {
               <span className="user-online-status" data-status={user.status.code}></span>
             </div>
             <div className="profile-name-container">
-              <span>{`${user.firstName} ${user.lastName}`}</span>
-              <DropDown id="status-select" onChange={statusChangeHandler} defaultValue={user.status.code} actionType="hover" optionLayerStyle={{ borderRadius: "3px", overflow: "hidden", background: "var(--modal-background-primary)" }} style={{ borderRadius: "3px", width: "80px", height: "30px" }} selectedOptionStyle={{ borderRadius: "3px", background: "transparent", justifyContent: "left" }}>
-                <DropDown.Option value={USER_STATUSES.ONLINE.code}>
-                  <div className="status-option-container">
-                    <span className="status-icon" style={{ backgroundColor: USER_STATUSES.ONLINE.color }}></span>Online
-                  </div>
-                </DropDown.Option>
-                <DropDown.Option value={USER_STATUSES.OFFLINE.code}>
-                  <div className="status-option-container">
-                    <span className="status-icon" style={{ backgroundColor: USER_STATUSES.OFFLINE.color }}></span>Offline
-                  </div>
-                </DropDown.Option>
-              </DropDown>
+              <span className="name-data">{`${user.firstName} ${user.lastName}`}</span>
+              <DropDownMenu.Root open={statusOption} onOpenChange={showStatusOption}>
+                <DropDownMenu.Trigger asChild id="status-select" onMouseOver={device.type !== "mobile" ? () => showStatusOption(true) : undefined}>
+                  <div>{USER_STATUSES[user.status.code].code?.toLowerCase()}</div>
+                </DropDownMenu.Trigger>
+                <DropDownMenu.Portal>
+                  <DropDownMenu.Content className="status-option-dropdown">
+                    <DropDownMenu.RadioGroup value={user.status.code} onValueChange={statusChangeHandler} style={{ borderRadius: "3px", overflow: "hidden", background: "var(--modal-background-primary)" }}>
+                      <DropDownMenu.RadioItem value={USER_STATUSES.ONLINE.code} className="option">
+                        <DropDownMenu.ItemIndicator>
+                          <TickIcon width="16px" height="16px" stroke="var(--icon-stroke)" />
+                        </DropDownMenu.ItemIndicator>
+                        <span className="text">Online</span>
+                      </DropDownMenu.RadioItem>
+
+                      <DropDownMenu.RadioItem value={USER_STATUSES.OFFLINE.code} className="option">
+                        <DropDownMenu.ItemIndicator>
+                          <TickIcon width="16px" height="16px" stroke="var(--icon-stroke)" />
+                        </DropDownMenu.ItemIndicator>
+                        <span className="text">Offline</span>
+                      </DropDownMenu.RadioItem>
+                    </DropDownMenu.RadioGroup>
+                  </DropDownMenu.Content>
+                </DropDownMenu.Portal>
+              </DropDownMenu.Root>
             </div>
             <div className="profile-options-container">
               <ThreeDot ref={targetForModal} onClick={() => openProfileModal(true)} />
