@@ -4,6 +4,7 @@ const defaultSetting = {
   clockHr: 12,
   darkMode: false,
   theme: {
+    preferred: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     background: "",
   },
   serverTime: "",

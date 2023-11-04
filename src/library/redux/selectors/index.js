@@ -60,7 +60,7 @@ const chatInfoForContactTile = (contact_id) => {
       const contacts_messages = contactsChat?.messages;
 
       return {
-        last_message: contacts_messages.length > 0 ? getLastViewableMessage(contacts_messages, userId) : null,
+        last_message: contacts_messages?.length > 0 ? getLastViewableMessage(contacts_messages, userId) : null,
         last_updated: contactsChat?.last_updated,
         authors_typing: contactsChat?.authors_typing,
         isSelected: selectedContact?.contactId === contact_id,
@@ -104,6 +104,7 @@ const unseenMsgCountSelectedContact = createSelector(
 
 const getClockHour = (state) => state.config.clockHr;
 const getDeviceDetails = (state) => state.config.deviceDetails;
+const getTheme = (state) => state.config.theme;
 
 export {
   // UserState
@@ -125,4 +126,5 @@ export {
   //AppConfig
   getClockHour,
   getDeviceDetails,
+  getTheme,
 };

@@ -4,7 +4,9 @@ import { useDebounce } from "../../../../utils";
 import "./chat_input.sass";
 import { useDispatch, useSelector } from "react-redux";
 import { addMessageThunk, updateTypingThunk } from "../../../../library/redux/reducers";
-import { getDeviceDetails, getTempConnection } from "../../../../library/redux/selectors";
+import { getDeviceDetails, getTempConnection, getTheme } from "../../../../library/redux/selectors";
+import EmojiPicker from "emoji-picker-react";
+import * as PopOver from "@radix-ui/react-popover";
 
 const ChatInput = ({ scrollToBottom, editableMessage, editHandler }) => {
   const [messageText, setInput] = useState(editableMessage?.text || "");
@@ -13,10 +15,17 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler }) => {
   const textArea = useRef(null);
   const tempContact = useSelector(getTempConnection);
   const deviceDetails = useSelector(getDeviceDetails);
+  const theme = useSelector(getTheme);
   const debouncedInput = useDebounce(() => {
     typingStarted.current = false;
     dispatch(updateTypingThunk(false));
   }, 1000);
+
+  useEffect(() => {
+    if (editableMessage) {
+      setInput(editableMessage.text);
+    }
+  }, [editableMessage]);
 
   const inputHandler = (e) => {
     setInput(e.target.value);
@@ -61,9 +70,26 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler }) => {
   return (
     <div className="user-chat-option" data-unselectable={tempContact?.restricted ? true : false}>
       <div className="user-chat-option__container option">
-        <div className="option__emoji click-icon not-allowed" title="Emoticons">
-          <SmileyEmoji height="24" width="24" />
-        </div>
+        <PopOver.Root>
+          <PopOver.Trigger asChild>
+            <div className="option__emoji click-icon" title="Emoticons">
+              <SmileyEmoji height="24" width="24" />
+            </div>
+          </PopOver.Trigger>
+          <PopOver.Portal>
+            <PopOver.Content>
+              <PopOver.Arrow />
+              <EmojiPicker
+                width={300}
+                onEmojiClick={(emoji) => {
+                  setInput((prev) => prev + emoji.emoji);
+                }}
+                autoFocusSearch={true}
+                theme={theme.preferred === "dark" ? "dark" : "light"}
+              />
+            </PopOver.Content>
+          </PopOver.Portal>
+        </PopOver.Root>
         <div className="option__attachments click-icon not-allowed" title="Attachments">
           <PaperClipIcon height="24" width="24" />
         </div>
