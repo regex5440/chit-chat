@@ -18,7 +18,13 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
   const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const isMine = messageObject.sender_id !== ContactId;
-
+  useEffect(() => {
+    document.onkeydown = (e) => {
+      if (e.key === "Escape") {
+        setOptionsOpen(false);
+      }
+    };
+  }, []);
   useEffect(() => {
     if (!isMine && messageContainer.current && unseenMessagesCount > 0) {
       //* chat.last_updated is just to update the observer to latest message
@@ -119,6 +125,14 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
     }
     setOldMessage(null);
   };
+  useEffect(() => {
+    document.onkeydown = (e) => {
+      if (e.key === "Escape") {
+        setOldMessage(null);
+        setDeleteAlertData(null);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
