@@ -6,8 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { addMessageThunk, updateTypingThunk } from "../../../../library/redux/reducers";
 import { getDeviceDetails, getTempConnection } from "../../../../library/redux/selectors";
 
-const ChatInput = ({ scrollToBottom }) => {
-  const [messageText, setInput] = useState("");
+const ChatInput = ({ scrollToBottom, editableMessage, editHandler }) => {
+  const [messageText, setInput] = useState(editableMessage?.text || "");
   const dispatch = useDispatch();
   const typingStarted = useRef(false);
   const textArea = useRef(null);
@@ -31,13 +31,17 @@ const ChatInput = ({ scrollToBottom }) => {
     let message = messageText;
     if (message) {
       // 1 Send the message
-      dispatch(
-        addMessageThunk({
-          text: message,
-          timestamp: new Date().toISOString(),
-          type: "text",
-        })
-      );
+      if (editableMessage) {
+        editHandler(message);
+      } else {
+        dispatch(
+          addMessageThunk({
+            text: message,
+            timestamp: new Date().toISOString(),
+            type: "text",
+          })
+        );
+      }
       // scroll to the bottom
       scrollToBottom();
       // 3 Empty the input

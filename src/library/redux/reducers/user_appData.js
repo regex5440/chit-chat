@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
-import { acceptRequest, clearChatSocket, removeConnection, sendMessage, sendMessageSeenUpdate, statusUpdate, updateTyping } from "../../socket.io/socket";
+import { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, removeConnection, sendMessage, sendMessageSeenUpdate, statusUpdate, updateTyping } from "../../socket.io/socket";
 import { contactsChat, getSelectedContact, getTempConnection, getUserData, selectedContactChatId } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
@@ -115,6 +115,23 @@ export const acceptRequestThunk = createAsyncThunk("acceptMessageRequest", (chat
   return { chatId, id };
 });
 
+export const editMessageThunk = createAsyncThunk("editMessage", async ({ chatId, messageId, update }, { getState }) => {
+  const {
+    data: { id },
+  } = getUserData(getState());
+  editMessage(chatId, messageId, update, id);
+  return { id, chatId, messageId, update };
+});
+
+export const deleteMessageThunk = createAsyncThunk("deleteMessage", async ({ chatId, messageId, forAll }, { getState }) => {
+  const {
+    data: { id },
+  } = getUserData(getState());
+
+  deleteMessageSocket(chatId, messageId, id, forAll);
+  return { chatId, messageId, fromId: id, forAll };
+});
+
 const userAppDataSlice = createSlice({
   name: "user_appData",
   initialState: appDataInitialState,
@@ -163,6 +180,27 @@ const userAppDataSlice = createSlice({
       delete state.contacts.data[contactId];
       delete state.chats[chatId];
     },
+    deleteMessage: (state, { payload: { chatId, messageId } }) => {
+      const messages = state.chats[chatId].messages;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const message = messages[i];
+        if (message.id === messageId) {
+          messages.splice(i, 1);
+          break;
+        }
+      }
+    },
+    updateMessage: (state, { payload: { chatId, messageId, update } }) => {
+      const messages = state.chats[chatId].messages;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const message = messages[i];
+        if (message.id === messageId) {
+          message.text = update.text;
+          message.edited = true;
+          break;
+        }
+      }
+    },
     updateChat: (state, { payload: update }) => {
       state.chats[update.chat_id].last_updated = update.last_updated;
       state.chats[update.chat_id].messages.push(update.message);
@@ -170,7 +208,7 @@ const userAppDataSlice = createSlice({
     },
     updateChatSeenStatus: (state, { payload: { chat_id, fromUserId, messageId } }) => {
       const messages = state.chats[chat_id].messages;
-      for (let i = messages.length - 1; i > 0; i--) {
+      for (let i = messages.length - 1; i >= 0; i--) {
         const message = messages[i];
         if (message.id === messageId) {
           message.seenByRecipients.push(fromUserId);
@@ -265,7 +303,7 @@ const userAppDataSlice = createSlice({
       ) => {
         state.contacts.data[toUserId].unseen_messages_count = 0;
         const messages = state.chats[chat_id].messages;
-        for (let backIndex = messages.length - 1; backIndex > 0; backIndex--) {
+        for (let backIndex = messages.length - 1; backIndex >= 0; backIndex--) {
           const message = messages[backIndex];
           if (message.id === messageId) {
             message.seenByRecipients.push(id);
@@ -340,9 +378,34 @@ const userAppDataSlice = createSlice({
     builder.addCase(acceptRequestThunk.fulfilled, (state, { payload }) => {
       state.chats?.[payload.chatId]?.participants.push(payload.id);
     });
+
+    builder.addCase(deleteMessageThunk.fulfilled, (state, { payload: { chatId, messageId, forAll, fromId } }) => {
+      if (!forAll) {
+        const messages = state.chats[chatId].messages;
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const message = messages[i];
+          if (message.id === messageId) {
+            message.deletedFor = [fromId];
+            break;
+          }
+        }
+      }
+    });
+
+    builder.addCase(editMessageThunk.fulfilled, (state, { payload }) => {
+      const messages = state.chats?.[payload.chatId]?.messages;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const message = messages[i];
+        if (message.id === payload.messageId) {
+          message.text = payload.update.text;
+          message.edited = true;
+          break;
+        }
+      }
+    });
   },
 });
 
-export const { addParticipants, clearChat, deleteContact, updateSelectedContact, addTypingAuthors, addInitialData, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
+export const { addParticipants, clearChat, deleteContact, updateSelectedContact, addTypingAuthors, addInitialData, deleteMessage, updateMessage, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

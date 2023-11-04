@@ -3,7 +3,7 @@ import { DateParam } from "./types";
 import { debounce, capitalize } from "./common";
 import { useDebounce, useUniqueGet } from "./hooks.dev";
 //@ts-ignore
-import dummyProfileUrl from '../assets/dummy_profile_pic.jpg';
+import dummyProfileUrl from "../assets/dummy_profile_pic.jpg";
 
 function getRandom0To255(): number {
   return Math.floor(Math.random() * 255);
@@ -94,8 +94,8 @@ const getFormattedDate = (data: DateParam, format = `dd-mmm-yy, www`) => {
   }
 
   const dateFormatter = Intl.DateTimeFormat(undefined, {
-    day: desiredFormat.date >= 2 ? "2-digit" : "numeric",
-  }),
+      day: desiredFormat.date >= 2 ? "2-digit" : "numeric",
+    }),
     monthFormatter = Intl.DateTimeFormat(undefined, {
       month: monthOption,
     }),
@@ -215,12 +215,21 @@ function getLoginStateToken() {
   return localStorage.getItem("user.auth.token");
 }
 
-function getImageUrl(avatarObject: { key: string, url: string }) {
-  return avatarObject.url || (avatarObject.key ? `${import.meta.env.CC_IMAGE_BUCKET_URL}/${avatarObject.key}` : dummyProfileUrl)
+function getImageUrl(avatarObject: { key: string; url: string }) {
+  return (
+    avatarObject.url ||
+    (avatarObject.key
+      ? //@ts-ignore
+        `${import.meta.env.CC_IMAGE_BUCKET_URL}/${avatarObject.key}`
+      : dummyProfileUrl)
+  );
 }
 
+async function copyToClipboard(text: string) {
+  return navigator.clipboard.writeText(text);
+}
 // Common Utils
-export { debounce, capitalize, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl };
+export { debounce, capitalize, copyToClipboard, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl };
 
 // Hooks
 export { useUniqueGet, useDebounce };

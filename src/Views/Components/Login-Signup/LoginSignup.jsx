@@ -21,7 +21,7 @@ const LoginContent = () => {
 
   const loginHandler = async (e) => {
     e.preventDefault();
-    const [username, password] = [e.target.username.value, e.target.password.value];
+    const [username, password] = [e.target.username.value?.trim(), e.target.password.value?.trim()];
     if (username.length > 3 && password.length > 0) {
       try {
         setProgress(true);
@@ -415,7 +415,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     // if (location.pathname !== "/login" || location.pathname !== "/signup") return;
-    if (google) {
+    if (window.google) {
       google.accounts.id.initialize({
         client_id: import.meta.env.CC_OAuthClientID,
         callback: handleOAuth,

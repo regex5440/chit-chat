@@ -13,7 +13,7 @@ const USER_STATUSES = {
 
 const SOCKET_HANDLERS = {
   CHAT: {
-    JoinRoom: 'newChatRequestedRoom',
+    JoinRoom: "newChatRequestedRoom",
     LeaveRoom: "leaveDeleteChatRoom",
     NewMessage: "chatUpdate/message",
     TypingUpdate: "chatUpdate/typingStatus",
@@ -22,14 +22,18 @@ const SOCKET_HANDLERS = {
     NewRequest_Accepted: "newMessageRequestAccepted",
     NewRequest_Failed: "cannotSendRequest",
     SeenUpdate: "newSeenUpdate",
-    ClearAll: 'removeAllMessages'
+    ClearAll: "removeAllMessages",
+    MESSAGE: {
+      Delete: "deleteMessage",
+      Edit: "editMessage",
+    },
   },
   CONNECTION: {
     ConnectionData: "connectionsWithChat",
-    RemoveConnection: 'RemoveConnection',
-    StatusUpdate: 'lastSeenUpdate',
-    PictureUpdate: 'profilePicUpdate'
-  }
+    RemoveConnection: "RemoveConnection",
+    StatusUpdate: "lastSeenUpdate",
+    PictureUpdate: "profilePicUpdate",
+  },
 };
 
 export { USER_STATUSES, SOCKET_HANDLERS };

@@ -41,11 +41,18 @@ const getSelectedContactProfile = createSelector(
   (state) => state,
   (selectedContact, state) => state.appData.contacts.data[selectedContact.contactId] || state.appData.temp_contact
 );
+const getLastViewableMessage = (messages, userId, index = -1) => {
+  if (!messages.at(index)?.deletedFor?.includes(userId)) {
+    return messages.at(index);
+  }
+  return getLastViewableMessage(messages, userId, index - 1);
+};
 const chatInfoForContactTile = (contact_id) => {
   return createSelector(
     getSelectedContact,
     (state) => state,
     (selectedContact, state) => {
+      const userId = state.appData.user.data.id;
       const contacts = state.appData.contacts.data;
       const chatId = contacts[contact_id]?.chat_id;
       const contactsChat = state.appData.chats[chatId];
@@ -53,7 +60,7 @@ const chatInfoForContactTile = (contact_id) => {
       const contacts_messages = contactsChat?.messages;
 
       return {
-        last_message: contacts_messages?.at(-1),
+        last_message: contacts_messages.length > 0 ? getLastViewableMessage(contacts_messages, userId) : null,
         last_updated: contactsChat?.last_updated,
         authors_typing: contactsChat?.authors_typing,
         isSelected: selectedContact?.contactId === contact_id,

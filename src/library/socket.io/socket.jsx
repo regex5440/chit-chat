@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { getUserData } from "../redux/selectors";
 import { getLoginStateToken } from "../../utils";
 import { io } from "socket.io-client";
+import { deleteMessage, updateMessage } from "../redux/reducers/user_appData";
 
 let socket = null;
 
@@ -41,6 +42,14 @@ const statusUpdate = (userId, { code, update_type }) => {
 
 const acceptRequest = (chatId, userId) => {
   socket.emit(SOCKET_HANDLERS.CHAT.NewRequest_Accepted, chatId, userId);
+};
+
+const editMessage = (chatId, messageId, update, fromId) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.MESSAGE.Edit, chatId, messageId, update, fromId);
+};
+
+const deleteMessageSocket = (chatId, messageId, fromId, forAll = false) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.MESSAGE.Delete, chatId, messageId, fromId, forAll);
 };
 
 export const SocketComponent = () => {
@@ -88,6 +97,15 @@ export const SocketComponent = () => {
       dispatch(updateChat({ chat_id, last_updated, message }));
     });
 
+    socket.on(SOCKET_HANDLERS.CHAT.MESSAGE.Delete, (chatId, messageId) => {
+      dispatch(deleteMessage({ chatId, messageId }));
+    });
+
+    socket.on(SOCKET_HANDLERS.CHAT.MESSAGE.Edit, (chatId, messageId, update, fromId) => {
+      if (fromId === userId) return;
+      dispatch(updateMessage({ chatId, messageId, update, fromId }));
+    });
+
     // Seen Update
     socket.on(SOCKET_HANDLERS.CHAT.SeenUpdate, (chat_id, fromUserId, messageId) => {
       if (fromUserId !== userId) {
@@ -123,4 +141,4 @@ export const SocketComponent = () => {
     });
   }, [dispatch, userId]);
 };
-export { acceptRequest, clearChatSocket, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };
+export { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };
