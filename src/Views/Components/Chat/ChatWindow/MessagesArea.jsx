@@ -9,7 +9,6 @@ import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/ic
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
 import { ClockIcon, CopyIcon, Cross2Icon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
-import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { deleteMessageThunk, editMessageThunk } from "../../../../library/redux/reducers/user_appData";
 
 const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage }) => {
@@ -51,7 +50,6 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
   const copyHandler = () => {
     copyToClipboard(messageObject.text);
   };
-
   return (
     <>
       <DropDownMenu.Root open={optionsOpen} onOpenChange={setOptionsOpen}>
@@ -64,6 +62,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
               e.preventDefault();
               setOptionsOpen(true);
             }}
+            data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0] ? true : false}
           >
             {isMine && <span className="message-status">{messageStatus}</span>}
             <span className="message-text">{messageObject.text}</span>

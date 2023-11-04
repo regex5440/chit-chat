@@ -48,6 +48,9 @@
             max-width: min(500px,60%)
             box-sizing: border-box
             @include message-box-others()
+            &[data-emojionly=true]
+                font-size: 30px !important
+                backdrop-filter: greyscale(1px) !important
             & > span.message-status
                 position: absolute
                 right: -25px
