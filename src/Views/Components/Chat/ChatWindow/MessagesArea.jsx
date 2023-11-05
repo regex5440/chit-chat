@@ -62,7 +62,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
               e.preventDefault();
               setOptionsOpen(true);
             }}
-            data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0] ? true : false}
+            data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0].match(/[^0-9]+/g)?.[0] ? true : false}
           >
             {isMine && <span className="message-status">{messageStatus}</span>}
             <span className="message-text">{messageObject.text}</span>
