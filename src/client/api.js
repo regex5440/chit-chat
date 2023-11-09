@@ -12,7 +12,13 @@ ChitChatServer.interceptors.response.use(
     console.log(error);
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const response = await (await fetch(`${import.meta.env.CC_ServerDomain}/api/`)).json();
+      const response = await (
+        await fetch(`${import.meta.env.CC_ServerDomain}/api/`, {
+          headers: {
+            Authorization: originalRequest.headers.Authorization,
+          },
+        })
+      ).json();
       if (response?.success) {
         setAPIHeader(response.data);
         setLoginStateToken(response.data);

@@ -132,6 +132,20 @@ export const deleteMessageThunk = createAsyncThunk("deleteMessage", async ({ cha
   return { chatId, messageId, fromId: id, forAll };
 });
 
+export const getBlockedUsersThunk = createAsyncThunk("getBlockedUsers", async (x, { getState }) => {
+  const { success, data } = await ChitChatServer.get("/blocked_users");
+  if (success) {
+    return data;
+  }
+});
+
+export const unBlockHandlerThunk = createAsyncThunk("unblockUser", async (userId, { getState }) => {
+  const { success, data } = await ChitChatServer.get(`/unblock?id=${userId}`);
+  if (success) {
+    return data;
+  }
+});
+
 const userAppDataSlice = createSlice({
   name: "user_appData",
   initialState: appDataInitialState,
@@ -402,6 +416,18 @@ const userAppDataSlice = createSlice({
           break;
         }
       }
+    });
+
+    builder
+      .addCase(getBlockedUsersThunk.fulfilled, (state, { payload }) => {
+        state.user.data.blocked_users = payload.reduce((prev, curr) => ({ ...prev, [curr.id]: curr }), {});
+      })
+      .addCase(getBlockedUsersThunk.rejected, (state) => {
+        state.user.data.blocked_users = {};
+      });
+
+    builder.addCase(unBlockHandlerThunk.fulfilled, (state, { payload }) => {
+      delete state.user.data.blocked_users[payload];
     });
   },
 });

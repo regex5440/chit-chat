@@ -3,6 +3,7 @@ import "./style/image_selector.sass";
 import { MagnifyMinus, MagnifyPlus, PlusIcon, ReloadIcon, TickIcon } from "../../../assets/icons";
 import { debounce } from "../../../utils";
 import twoFingersGesture from "../../../assets/two-finger-gesture.png";
+import dummyProfileUrl from "../../../assets/dummy_profile_pic.jpg";
 
 const INPUT_ID = "hidden-input-image-selector";
 
@@ -70,9 +71,11 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
           setAdjustedBS(newDimensions);
         };
         setProfilePicSrc(imageSrc);
-        setTimeout(() => {
-          setCropInstruction(false);
-        }, 4000);
+        if (!isMobile) {
+          setTimeout(() => {
+            setCropInstruction(false);
+          }, 4000);
+        }
       };
       reader.readAsArrayBuffer(file);
     },
@@ -247,7 +250,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
     <div className="image-selector" style={style}>
       {!profilePicSrc ? (
         <label htmlFor={INPUT_ID} className="upload-action" title="Click to Select or Drag a Image" onDragOver={fileDragOverHandler} onDragLeave={(e) => setDragCursorOver(false)} onDrop={droppedFileHandler}>
-          <img alt="Profile Pic Dummy" src="/src/assets/dummy_profile_pic.jpg" />
+          <img alt="Profile Pic Dummy" src={dummyProfileUrl} />
           {dragCursorOver ? (
             <div className="drop-marker">Drop Here!</div>
           ) : (

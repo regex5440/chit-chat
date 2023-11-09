@@ -100,6 +100,8 @@ const unseenMsgCountSelectedContact = createSelector(
   }
 );
 
+const getBlockedUsers = (state) => state.appData.user.data.blocked_users;
+
 //---------------------App configuration selector
 
 const getClockHour = (state) => state.config.clockHr;
@@ -117,6 +119,7 @@ export {
   getSelectedContactProfile,
   selectedContactChatId,
   getTempConnection,
+  getBlockedUsers,
   isChatAccepted,
   unseenMsgCountSelectedContact,
   contactsChat,

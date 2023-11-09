@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import "./profile.sass";
 import { useDispatch, useSelector } from "react-redux";
 import { getContactsRaw, getDeviceDetails, getUserData } from "../../../library/redux/selectors";
-import { USER_STATUSES } from "../../../utils/enums";
+import { MenuOptionType, USER_STATUSES } from "../../../utils/enums";
 import { CircularLoader, Modal } from "hd-ui";
 import ThreeDot from "../Common/ThreeDot";
 import { updateStatusThunk } from "../../../library/redux/reducers";
@@ -11,6 +11,8 @@ import { getImageUrl, setLoginStateToken } from "../../../utils";
 import { useNavigate } from "react-router-dom";
 import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
 import { TickIcon } from "../../../assets/icons";
+import * as Dialog from "@radix-ui/react-dialog";
+import ProfileOptionDialog from "./ProfileOptionDialog";
 
 const ProfileTab = () => {
   const profileContainer = useRef(null);
@@ -22,6 +24,7 @@ const ProfileTab = () => {
   const navigate = useNavigate();
   const device = useSelector(getDeviceDetails);
   const [statusOption, showStatusOption] = useState(false);
+  const [dialogOption, setDialogOption] = useState(null);
 
   useEffect(() => {
     if (profileContainer.current) {
@@ -65,7 +68,15 @@ const ProfileTab = () => {
         showBackdrop={false}
       >
         <div className="option not-allowed">Update Profile</div>
-        <div className="option not-allowed">Blocked Contacts</div>
+        <div
+          className="option"
+          onClick={() => {
+            setDialogOption(MenuOptionType.BLOCKED_LIST);
+            // openProfileModal(false);
+          }}
+        >
+          Blocked Contacts
+        </div>
         <div className="option not-allowed settings">App Settings</div>
         <div className="option red" onClick={logOutHandler}>
           Logout
@@ -79,7 +90,7 @@ const ProfileTab = () => {
       <div className="profile-section">
         {loading ? (
           <div className="profile-section_loading">
-            <CircularLoader size={50} />{" "}
+            <CircularLoader size={50} />
           </div>
         ) : hasData ? (
           <div className="profile-section-container">
@@ -123,6 +134,7 @@ const ProfileTab = () => {
           <div>No Data</div>
         )}
       </div>
+      <ProfileOptionDialog dialogType={dialogOption} closeHandler={setDialogOption} />
     </>
   );
 };
