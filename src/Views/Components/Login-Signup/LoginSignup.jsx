@@ -108,7 +108,7 @@ const SignupContent = () => {
         email: dataForSignup.email,
       }));
       step1Form.current.firstname.value = dataForSignup.firstName;
-      step1Form.current.lastname.value = dataForSignup.lastName;
+      step1Form.current.lastname.value = dataForSignup.lastName || "";
       step1Form.current.email.value = dataForSignup.email;
       if (dataForSignup.emailVerified) {
         setSignupAuthToken(dataForSignup.token);
@@ -180,7 +180,7 @@ const SignupContent = () => {
       case "user-info":
         if (form.firstname.value && form.email.value && signupFlags.verifiedEmail) {
           signupSlideHandler("forth");
-          setSignupForm((state) => ({ ...state, firstName: form.firstname.value, lastName: form.lastname.value, email: form.email.value }));
+          setSignupForm((state) => ({ ...state, firstName: form.firstname.value, lastName: form.lastname.value || "", email: form.email.value }));
         } else if (!signupFlags.verifiedEmail) {
           updateError({ showError: true, message: "Email verification required!" });
         }
@@ -241,28 +241,32 @@ const SignupContent = () => {
   const signupHandler = () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
-      CCSignupPoint.post("/register", signupFormState).then(async (response) => {
-        if (response.success) {
-          setLoginStateToken(response.data);
-          if (imageBlob.current) {
-            await ChitChatServer.post("/imageUploader", imageBlob.current, {
-              headers: {
-                "Content-Type": "application/octet-stream",
-                Authorization: `Bearer ${response.data}`,
-              },
-              onUploadProgress: (progressEvent) => {
-                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                imageProgressBar.current?.style.setProperty("max-width", `${percentCompleted.toFixed(2)}%`);
-                console.log(percentCompleted);
-              },
-            });
+      CCSignupPoint.post("/register", signupFormState)
+        .then(async (response) => {
+          if (response.success) {
+            setLoginStateToken(response.data);
+            if (imageBlob.current) {
+              await ChitChatServer.post("/imageUploader", imageBlob.current, {
+                headers: {
+                  "Content-Type": "application/octet-stream",
+                  Authorization: `Bearer ${response.data}`,
+                },
+                onUploadProgress: (progressEvent) => {
+                  const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                  imageProgressBar.current?.style.setProperty("max-width", `${percentCompleted.toFixed(2)}%`);
+                  console.log(percentCompleted);
+                },
+              });
+            }
+            navigate("/app");
+          } else {
+            updateError({ showError: true, message: response.data });
+            setProgress((state) => ({ ...state, signup: false }));
           }
-          navigate("/app");
-        } else {
-          updateError({ showError: true, message: response.data });
-          setProgress((state) => ({ ...state, signup: false }));
-        }
-      });
+        })
+        .catch((err) => {
+          throw new Error(err);
+        });
     } catch {
       setProgress((state) => ({ ...state, signup: false }));
       updateError({ showError: true, message: "Something went wrong, please try again!" });
