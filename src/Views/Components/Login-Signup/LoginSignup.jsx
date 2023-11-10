@@ -104,7 +104,7 @@ const SignupContent = () => {
       setSignupForm((state) => ({
         ...state,
         firstName: dataForSignup.firstName,
-        lastName: dataForSignup.lastName,
+        lastName: dataForSignup.lastName || "",
         email: dataForSignup.email,
       }));
       step1Form.current.firstname.value = dataForSignup.firstName;
