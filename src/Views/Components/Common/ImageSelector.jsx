@@ -21,7 +21,8 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
   const translate = useRef({ x: 0, y: 0 });
   const [previewDisplacement, setPreviewDisplacement] = useState({ x: 0, y: 0 });
   const adjustedImageInPx = useRef({ height: 0, width: 0 });
-  const [showCropInstruction, setCropInstruction] = useState(true);
+  const showedInstruction = useRef(false);
+  const [showCropInstruction, setCropInstruction] = useState(false);
 
   const dragStarted = useRef(false);
 
@@ -54,6 +55,10 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
   //* IMAGE SELECT FUNCTIONS
   const createAndSetImageUrl = useCallback(
     (file) => {
+      if (!showedInstruction.current && isMobile) {
+        setCropInstruction(true);
+        showedInstruction.current = true;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageBlob = new Blob([e.target.result]);
@@ -71,9 +76,9 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
           setAdjustedBS(newDimensions);
         };
         setProfilePicSrc(imageSrc);
-        if (!isMobile) {
+        if (isMobile) {
           setTimeout(() => {
-            setCropInstruction(false);
+            showCropInstruction && setCropInstruction(false);
           }, 4000);
         }
       };
