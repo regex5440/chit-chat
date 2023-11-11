@@ -48,6 +48,7 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler }) => {
             text: message,
             timestamp: new Date().toISOString(),
             type: "text",
+            tempId: crypto.randomUUID(),
           })
         );
       }

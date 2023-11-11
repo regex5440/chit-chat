@@ -35,6 +35,7 @@ const LoginContent = () => {
           navigate("/app");
         } else {
           updateError({ message: response.data.message, showError: true });
+          setProgress(false);
         }
       } catch (e) {
         updateError({ showError: true, message: "Something's wrong!" });
@@ -260,16 +261,15 @@ const SignupContent = () => {
             }
             navigate("/app");
           } else {
-            updateError({ showError: true, message: response.data });
-            setProgress((state) => ({ ...state, signup: false }));
+            throw new Error(response.data || response.message);
           }
         })
         .catch((err) => {
-          throw new Error(err);
+          throw new Error("Something went wrong, please try again!");
         });
-    } catch {
+    } catch (e) {
       setProgress((state) => ({ ...state, signup: false }));
-      updateError({ showError: true, message: "Something went wrong, please try again!" });
+      updateError({ showError: true, message: e });
     }
   };
 

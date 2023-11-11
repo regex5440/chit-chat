@@ -287,14 +287,18 @@ const userAppDataSlice = createSlice({
         let chatId = selectedContactChatId({ appData: state });
         if (chatId) {
           state.chats[chatId].last_updated = meta.arg.timestamp;
-          state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id, unseen: true }));
+          state.chats[chatId].messages.push(Object.assign({}, meta.arg, { sender_id: state.user.data.id }));
         }
       })
-      .addCase(addMessageThunk.fulfilled, (state, { payload }) => {
+      .addCase(addMessageThunk.fulfilled, (state, { payload, meta }) => {
         if (payload?.accepted) {
           state.chats?.[payload.chat_id]?.participants.push(payload.id);
         }
-        state.chats[payload.chat_id]?.messages.splice(-1, 1, payload.messageObject);
+        const messages = state.chats[payload.chat_id].messages;
+        for (let i = messages.length - 1; i >= 0; i--) {
+          messages[i].tempId === meta.arg.tempId && (messages[i] = payload.messageObject);
+          break;
+        }
       })
       .addCase(addMessageThunk.rejected, (state, action) => {
         console.log("Unable to send message", action);
