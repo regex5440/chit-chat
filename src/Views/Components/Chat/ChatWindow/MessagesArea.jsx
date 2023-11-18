@@ -3,13 +3,14 @@ import "./message_area.sass";
 import { BouncyBalls, CircularLoader, DropDown, LazyLoader, Modal } from "hd-ui";
 import { capitalize, copyToClipboard, dateComparer, dateDifference, getFormattedDate, getFormattedTime, msToDays } from "../../../../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { contactsChat, getUserData, unseenMsgCountSelectedContact } from "../../../../library/redux/selectors";
+import { contactsChat, getSelectedFiles, getUserData, unseenMsgCountSelectedContact } from "../../../../library/redux/selectors";
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
 import { ClockIcon, CopyIcon, Cross2Icon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
 import { deleteMessageThunk, editMessageThunk } from "../../../../library/redux/reducers/user_appData";
+import FilePreviewer from "./FilePreviewer";
 
 const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage }) => {
   const dispatch = useDispatch();
@@ -63,6 +64,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
               setOptionsOpen(true);
             }}
             data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0].match(/[^0-9]+/g)?.[0] ? true : false}
+            data-type={messageObject.type}
           >
             {isMine && <span className="message-status">{messageStatus}</span>}
             <span className="message-text">{messageObject.text}</span>
@@ -106,6 +108,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
   const [oldMessage, setOldMessage] = useState(null);
   const [deleteAlertData, setDeleteAlertData] = useState(null);
   const dispatch = useDispatch();
+  const selectedAttachmentFiles = useSelector(getSelectedFiles);
   const scrollToBottom = useCallback(() => {
     if (messageContainer.current) {
       messageContainer.current.scrollTo(0, messageContainer.current.scrollHeight);
@@ -244,8 +247,9 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
             </div>
           </div>
         )}
+        {selectedAttachmentFiles.length > 0 && <FilePreviewer files={selectedAttachmentFiles} />}
       </div>
-      <ChatInput scrollToBottom={scrollToBottom} editableMessage={oldMessage} editHandler={editHandler} />
+      <ChatInput scrollToBottom={scrollToBottom} editableMessage={oldMessage} editHandler={editHandler} chatId={chat.chat_id} />
     </>
   );
 };

@@ -20,6 +20,16 @@ const sendMessage = async ({ chat_id, receiverId }, messageObject, newMessageReq
   });
 };
 
+const getSignedURL = async (chat_id, filesInfo = []) =>
+  new Promise((resolve, reject) => {
+    socket.emit(SOCKET_HANDLERS.CHAT.AttachmentURL, chat_id, filesInfo);
+    const timer = setTimeout(reject, 10000);
+    socket.on(SOCKET_HANDLERS.CHAT.AttachmentURL, (signedURLs) => {
+      clearTimeout(timer);
+      resolve(signedURLs);
+    });
+  });
+
 const updateTyping = async (chat_id, { authorId, isTyping }) => {
   socket.emit(SOCKET_HANDLERS.CHAT.TypingUpdate, chat_id, { authorId, isTyping });
 };
@@ -141,4 +151,4 @@ export const SocketComponent = () => {
     });
   }, [dispatch, userId]);
 };
-export { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };
+export { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, getSignedURL, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };

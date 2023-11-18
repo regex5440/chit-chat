@@ -228,8 +228,19 @@ function getImageUrl(avatarObject: { key: string; url: string }) {
 async function copyToClipboard(text: string) {
   return navigator.clipboard.writeText(text);
 }
+
+function convertBytes(bytes: number, to: "KB" | "MB" | "GB" = "MB") {
+  switch (to) {
+    case "KB":
+      return Number((bytes / 1024).toFixed(2));
+    case "MB":
+      return Number((bytes / 1024 / 1024).toFixed(2));
+    case "GB":
+      return Number((bytes / 1024 / 1024 / 1024).toFixed(2));
+  }
+}
 // Common Utils
-export { debounce, capitalize, copyToClipboard, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl };
+export { debounce, capitalize, convertBytes, copyToClipboard, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl };
 
 // Hooks
 export { useUniqueGet, useDebounce };

@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import ChitChatServer, { SERVER_GET_PATHS } from "../../../client/api";
 import { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, removeConnection, sendMessage, sendMessageSeenUpdate, statusUpdate, updateTyping } from "../../socket.io/socket";
-import { contactsChat, getSelectedContact, getTempConnection, getUserData, selectedContactChatId } from "../selectors";
+import { contactsChat, getSelectedContact, getUserData, selectedContactChatId } from "../selectors";
 import { setLoginStateToken } from "../../../utils";
 
 const appDataInitialState = {
@@ -51,7 +51,7 @@ export const addMessageThunk = createAsyncThunk("sendMessage", async (messageObj
   const data = await sendMessage({ chat_id, receiverId: selectedId.contactId }, messageObject, !chat_id ? true : false);
 
   if (participants && !participants.includes(sender_id)) {
-    // Accepted request by sending a message
+    // User accepted the request by sending a message
     acceptRequest(chat_id, sender_id);
     return { accepted: true, chatId: chat_id, id: sender_id, ...data };
   }

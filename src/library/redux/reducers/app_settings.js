@@ -11,6 +11,10 @@ const defaultSetting = {
   deviceDetails: {
     type: navigator.userAgent.toLowerCase().match(/mobile/i) ? "mobile" : "desktop",
   },
+  selectedFiles: [],
+  modifications: {
+    no_metadata: false,
+  },
 };
 
 const appSettingsSlice = createSlice({
@@ -23,9 +27,15 @@ const appSettingsSlice = createSlice({
     toggleDarkMode: (state) => {
       state.darkMode = !state.darkMode;
     },
+    updateSelectedFiles: (state, action) => {
+      state.selectedFiles = action.payload;
+    },
+    updateAttachmentMetadata: (state, action) => {
+      state.modifications.no_metadata = action.payload;
+    },
   },
 });
 
 export default appSettingsSlice.reducer;
 
-export const { toggleClockHour, toggleDarkMode } = appSettingsSlice.actions;
+export const { toggleClockHour, toggleDarkMode, updateSelectedFiles, updateAttachmentMetadata } = appSettingsSlice.actions;

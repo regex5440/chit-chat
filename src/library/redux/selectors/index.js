@@ -107,6 +107,8 @@ const getBlockedUsers = (state) => state.appData.user.data.blocked_users;
 const getClockHour = (state) => state.config.clockHr;
 const getDeviceDetails = (state) => state.config.deviceDetails;
 const getTheme = (state) => state.config.theme;
+const getSelectedFiles = (state) => state.config.selectedFiles;
+const getAttachmentMetadata = (state) => state.config.modifications.no_metadata;
 
 export {
   // UserState
@@ -130,4 +132,6 @@ export {
   getClockHour,
   getDeviceDetails,
   getTheme,
+  getSelectedFiles,
+  getAttachmentMetadata,
 };
