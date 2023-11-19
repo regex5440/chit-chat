@@ -62,7 +62,7 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
   const submitHandler = async (e) => {
     e.preventDefault();
     let message = messageText;
-    if (message) {
+    if (message && attachmentFiles.length === 0) {
       // 1 Send the message
       if (editableMessage) {
         editHandler(message);
@@ -90,6 +90,8 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
           const signedURLs = await getSignedURL(chatId, attachmentFiles);
           if (signedURLs?.length > 0) {
             dispatch(updateSelectedFiles([]));
+            scrollToBottom();
+            setInput("");
             const uploadPromises = [];
             const attachmentsData = [];
             for (let fI = 0; fI < attachmentFiles.length; fI++) {

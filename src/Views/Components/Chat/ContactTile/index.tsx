@@ -84,7 +84,25 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
     }
   };
   const typing = authors_typing?.includes(prop.id) || false;
-  const messageSection = prop.TYPE === UserTileType.CONNECTION ? typing ? <span className="status-typing">typing...</span> : last_message?.text || <em>Chat Deleted</em> : prop.bio;
+  const getOverview = () => {
+    if (prop.TYPE === UserTileType.CONNECTION) {
+      if (typing) {
+        return <span className="status-typing">typing...</span>;
+      } else if (last_message.type === "text") {
+        return last_message?.text;
+      } else if (last_message.type !== "text") {
+        return (
+          <em>
+            Sent {last_message.type.charAt(0) === "i" ? "an" : "a"} {last_message.type}
+          </em>
+        );
+      } else {
+        return <em>Chat Deleted</em>;
+      }
+    } else {
+      return prop.bio;
+    }
+  };
   return (
     <div className="contact-tile-container" data-type={prop.TYPE}>
       <div className="contact-tile-content" data-active={prop.TYPE !== UserTileType.CONNECTION ? true : isSelected || false} onClick={setSelectedContact}>
@@ -99,8 +117,8 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
             @{prop.username}
           </span>
         )}
-        <div className="contact-message" title={messageSection}>
-          {messageSection}
+        <div className="contact-message" title={"Latest message"}>
+          {getOverview()}
         </div>
         {last_updated && <div className="profile-last-activity">{renderRecentActivityTime()}</div>}
         {prop.TYPE === UserTileType.CONNECTION && (

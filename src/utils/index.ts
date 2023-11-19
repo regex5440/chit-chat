@@ -229,18 +229,58 @@ async function copyToClipboard(text: string) {
   return navigator.clipboard.writeText(text);
 }
 
-function convertBytes(bytes: number, to: "KB" | "MB" | "GB" = "MB") {
-  switch (to) {
-    case "KB":
-      return Number((bytes / 1024).toFixed(2));
-    case "MB":
-      return Number((bytes / 1024 / 1024).toFixed(2));
-    case "GB":
-      return Number((bytes / 1024 / 1024 / 1024).toFixed(2));
+function convertBytes(bytes: number, to: "auto" | "KB" | "MB" | "GB" = "auto") {
+  let value: number, unit: string;
+
+  if (to === "auto") {
+    // If no 'to' unit is provided, convert to the best possible unit
+    if (bytes < 1024) {
+      value = bytes;
+      unit = "Bytes";
+    } else if (bytes < 1024 * 1024) {
+      value = Number((bytes / 1024).toFixed(2));
+      unit = "KB";
+    } else if (bytes < 1024 * 1024 * 1024) {
+      value = Number((bytes / 1024 / 1024).toFixed(2));
+      unit = "MB";
+    } else {
+      value = Number((bytes / 1024 / 1024 / 1024).toFixed(2));
+      unit = "GB";
+    }
+    return `${value} ${unit}`;
+  } else {
+    unit = to;
+    switch (to) {
+      case "KB":
+        value = Number((bytes / 1024).toFixed(2));
+        break;
+      case "MB":
+        value = Number((bytes / 1024 / 1024).toFixed(2));
+        break;
+      case "GB":
+        value = Number((bytes / 1024 / 1024 / 1024).toFixed(2));
+        break;
+      default:
+        throw new Error("Invalid 'to' unit specified");
+    }
+    return `${value}`;
   }
 }
+
+function getAssetURL(key: string) {
+  //@ts-ignore
+  return `${import.meta.env.CC_ASSET_BUCKET_URL}/${key}`;
+}
+
+function triggerDownload(url: string, fileName: string) {
+  const link = document.createElement("a");
+  link.target = "_blank";
+  link.href = url;
+  link.download = fileName;
+  link.click();
+}
 // Common Utils
-export { debounce, capitalize, convertBytes, copyToClipboard, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl };
+export { debounce, capitalize, convertBytes, copyToClipboard, getAssetURL, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl, triggerDownload };
 
 // Hooks
 export { useUniqueGet, useDebounce };

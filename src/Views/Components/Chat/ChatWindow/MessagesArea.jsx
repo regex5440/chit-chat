@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./message_area.sass";
 import { BouncyBalls, CircularLoader, DropDown, LazyLoader, Modal } from "hd-ui";
-import { capitalize, copyToClipboard, dateComparer, dateDifference, getFormattedDate, getFormattedTime, msToDays } from "../../../../utils";
+import { capitalize, convertBytes, copyToClipboard, dateComparer, dateDifference, getAssetURL, getFormattedDate, getFormattedTime, msToDays, triggerDownload } from "../../../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { contactsChat, getSelectedFiles, getUserData, unseenMsgCountSelectedContact } from "../../../../library/redux/selectors";
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
-import { ClockIcon, CopyIcon, Cross2Icon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
-import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
+import { ClockIcon, CopyIcon, Cross1Icon, Cross2Icon, DownloadIcon, FileIcon, FileTextIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import * as Dialog from "@radix-ui/react-dialog";
+import * as ContextMenu from "@radix-ui/react-context-menu";
 import { deleteMessageThunk, editMessageThunk } from "../../../../library/redux/reducers/user_appData";
 import FilePreviewer from "./FilePreviewer";
 
@@ -16,18 +17,19 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
   const dispatch = useDispatch();
   const messageContainer = useRef(null);
   const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
-  const [optionsOpen, setOptionsOpen] = useState(false);
   const isMine = messageObject.sender_id !== ContactId;
-  useEffect(() => {
-    document.onkeydown = (e) => {
-      if (e.key === "Escape") {
-        setOptionsOpen(false);
-      }
-    };
-  }, []);
   useEffect(() => {
     if (!isMine && messageContainer.current && unseenMessagesCount > 0) {
       //* chat.last_updated is just to update the observer to latest message
+      const observer = new IntersectionObserver(([entries]) => {
+        if (entries.isIntersecting) {
+          dispatch(sendMessageSeenThunk({ chat_id: ChatId, toUserId: ContactId, messageId: messageObject.id }));
+          observer.disconnect();
+        }
+      });
+      observer.observe(messageContainer.current);
+    }
+    if (messageObject.attachments?.length > 0) {
       const observer = new IntersectionObserver(([entries]) => {
         if (entries.isIntersecting) {
           dispatch(sendMessageSeenThunk({ chat_id: ChatId, toUserId: ContactId, messageId: messageObject.id }));
@@ -51,51 +53,121 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
   const copyHandler = () => {
     copyToClipboard(messageObject.text);
   };
+  const renderAttachments = () => {
+    const attachments = messageObject.attachments || [];
+    if (attachments.length === 0) return null;
+    let maxImageCountToShow = Math.min(attachments.length, 6);
+    return (
+      <div className="message-attachments-container" data-has_text={messageObject.text.length > 0} data-image_count={attachments.length}>
+        {attachments.slice(0, maxImageCountToShow).map((file, index) => {
+          if (messageObject.type === "image") {
+            return (
+              <Dialog.Root>
+                <Dialog.Trigger asChild>
+                  <div className="image">
+                    <img src={getAssetURL(file.key)} loading="lazy" />
+                    {attachments.length > 6 && index === 5 && <div className="image-count">+{attachments.length - 6}</div>}
+                  </div>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <Dialog.Overlay className="attachment-previewer-overlay" />
+                  <Dialog.Content
+                    className="attachment-previewer"
+                    onContextMenu={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <FilePreviewer
+                      files={attachments}
+                      previewerMode="receive"
+                      fileType={messageObject.type}
+                      defaultSelectedIndex={index}
+                      header={
+                        <div className="preview-header">
+                          <div>
+                            <Dialog.Title className="title" style={{ margin: 0, lineHeight: 0 }}>
+                              Attachment
+                            </Dialog.Title>
+                            <Dialog.Description>{attachments.length} Files</Dialog.Description>
+                          </div>
+                          <div className="file-actions">
+                            <div className="btn" title={"Download"} onClick={() => triggerDownload(getAssetURL(file.key))}>
+                              <DownloadIcon height={25} width={25} />
+                            </div>
+                            <Dialog.Close asChild title="Close Previewer">
+                              <Cross1Icon className="btn" height={25} width={25} />
+                            </Dialog.Close>
+                          </div>
+                        </div>
+                      }
+                    />
+                  </Dialog.Content>
+                </Dialog.Portal>
+              </Dialog.Root>
+            );
+          } else {
+            return (
+              <div className="file">
+                <div className="file-info">
+                  <FileTextIcon height={50} width={50} className="icon" />
+                  <div className="file-name">{file.name}</div>
+                  <div className="file-size">{convertBytes(file.size)}</div>
+                </div>
+                <div className="file-actions">
+                  <button
+                    className="btn"
+                    title="Download"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      triggerDownload(getAssetURL(file.key), file.name);
+                    }}
+                  >
+                    <DownloadIcon height={16} width={16} /> Download
+                  </button>
+                </div>
+              </div>
+            );
+          }
+        })}
+      </div>
+    );
+  };
   return (
     <>
-      <DropDownMenu.Root open={optionsOpen} onOpenChange={setOptionsOpen}>
-        <DropDownMenu.Trigger asChild>
-          <div
-            className="message message-box"
-            data-mine={isMine}
-            ref={messageContainer}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setOptionsOpen(true);
-            }}
-            data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0].match(/[^0-9]+/g)?.[0] ? true : false}
-            data-type={messageObject.type}
-          >
+      <ContextMenu.Root>
+        <ContextMenu.Trigger asChild>
+          <div className="message message-box" data-mine={isMine} ref={messageContainer} data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0].match(/[^0-9]+/g)?.[0] ? true : false} data-type={messageObject.type}>
             {isMine && <span className="message-status">{messageStatus}</span>}
-            <span className="message-text">{messageObject.text}</span>
+            {renderAttachments()}
+            {messageObject.text && <span className="message-text">{messageObject.text}</span>}
             <span className="message-time">
               {messageObject.edited && <em>Edited</em>}
               {getFormattedTime(messageObject.timestamp, "h:mm")}
             </span>
           </div>
-        </DropDownMenu.Trigger>
-        <DropDownMenu.Portal>
-          <DropDownMenu.Content className="message-options-menu">
+        </ContextMenu.Trigger>
+        <ContextMenu.Portal>
+          <ContextMenu.Content className="message-options-menu">
             {/* <DropDownMenu.Arrow /> */}
             {messageObject.type === "text" && (
-              <DropDownMenu.Item className="option" onClick={copyHandler}>
+              <ContextMenu.Item className="option" onClick={copyHandler}>
                 <CopyIcon />
                 <div>Copy</div>
-              </DropDownMenu.Item>
+              </ContextMenu.Item>
             )}
             {messageObject.type === "text" && isMine && (
-              <DropDownMenu.Item className="option" onClick={() => editMessage(messageObject)}>
+              <ContextMenu.Item className="option" onClick={() => editMessage(messageObject)}>
                 <Pencil2Icon />
                 <div>Edit</div>
-              </DropDownMenu.Item>
+              </ContextMenu.Item>
             )}
-            <DropDownMenu.Item className="option" onClick={() => deleteMessage({ id: messageObject.id, isMine })}>
+            <ContextMenu.Item className="option" onClick={() => deleteMessage({ id: messageObject.id, isMine })}>
               <TrashIcon />
               <div>Delete</div>
-            </DropDownMenu.Item>
-          </DropDownMenu.Content>
-        </DropDownMenu.Portal>
-      </DropDownMenu.Root>
+            </ContextMenu.Item>
+          </ContextMenu.Content>
+        </ContextMenu.Portal>
+      </ContextMenu.Root>
     </>
   );
 };
@@ -247,7 +319,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
             </div>
           </div>
         )}
-        {selectedAttachmentFiles.length > 0 && <FilePreviewer files={selectedAttachmentFiles} />}
+        {selectedAttachmentFiles.length > 0 && <FilePreviewer files={selectedAttachmentFiles} previewerMode="send" fileType={selectedAttachmentFiles.at(0)?.type} />}
       </div>
       <ChatInput scrollToBottom={scrollToBottom} editableMessage={oldMessage} editHandler={editHandler} chatId={chat.chat_id} />
     </>

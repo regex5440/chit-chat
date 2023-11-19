@@ -123,6 +123,85 @@
             &[data-emojionly=true]
                 font-size: 30px !important
                 backdrop-filter: greyscale(1px) !important
+            & > .message-attachments-container
+                display: flex
+                flex-wrap: wrap
+                justify-content: space-evenly
+                max-width: 100%
+                //TODO: Give attachments a better view (specially documents and odd number images)
+                &[data-has_text=true]
+                    margin-bottom: 5px
+                div.image
+                    display: flex
+                    width: auto
+                    height: 150px
+                    box-sizing: border-box
+                    aspect-ratio: 1/1
+                    border-radius: 10px
+                    cursor: pointer
+                    filter: brightness(70%)
+                    transition: filter 0.2s ease
+                    line-height: 0
+                    overflow: hidden
+                    margin-bottom: 5px
+                    position: relative
+                    img
+                        height: 100%
+                        width: 100%
+                        object-fit: cover
+                    .image-count
+                        position: absolute
+                        height: 100%
+                        width: 100%
+                        display: flex
+                        align-items: center
+                        justify-content: center
+                        margin: auto
+                        font-size: 30px
+                        color: white
+                        font-weight: 500
+                        background: rgba(0,0,0,0.85)
+                    &:hover
+                        filter: unset
+                &[data-image_count='1']
+                    div.image
+                        width: 250px
+                        height: 250px
+                .file
+                    display: flex
+                    flex-direction: column
+                    align-items: center
+                    justify-content: space-between
+                    cursor: pointer
+                    background: var(--background-hover)
+                    border-radius: 10px
+                    height: 200px
+                    padding: 0 10px
+                    &:hover
+                        background: var(--option-hover-background)
+                    .file-info
+                        margin-top: auto
+                        text-align: center
+                        display: flex
+                        flex-direction: column
+                        align-items: center
+                        gap: 5px
+                        .icon
+                            line-height: 0
+                            path
+                                fill: var(--icon-stroke)
+                        .file-name
+                        .file-size
+                            // font-size: 1px
+                            font-weight: bolder
+                    .file-actions
+                        margin-top: auto
+                        .btn
+                            @include secondary-button()
+                            display: flex
+                            height: 15px
+                            svg
+                                margin-right: 4px
             & > span.message-text
                 display: inline-block
                 word-break: break-word
@@ -146,19 +225,46 @@
             &[data-mine=true]
                 @include message-box-mine()
                 transform-origin: right
+                text-align: right
                 span.message-time
                     left: unset
                     right: $message-box-padding
                     flex-direction: row
-            &[data-type="image"]
-                aspect-ratio: 1/1
         .message-loading
+
+.attachment-previewer-overlay
+    position: fixed
+    inset: 0
+    background: var(--overlay-color)
+    animation: fadeIn 300ms ease forwards
+.attachment-previewer
+    position: fixed
+    inset: 0
+    font-family: var(--frame-font)
+    .preview-header
+        display: flex
+        justify-content: space-between
+        align-items: center
+        padding: 5px 10px
+        .file-actions
+            display: flex
+            gap: 20px
+            .btn
+                cursor: pointer
+                path
+                    fill: var(--icon-stroke)
 
 .message-options-menu
     min-width: 100px
     @include menu-option()
     .option > svg
         margin-right: 10px
+
+@keyframes fadeIn
+    0%
+        opacity: 0
+    100%
+        opacity: 1
 
 @keyframes slideUpAlert
     100%
