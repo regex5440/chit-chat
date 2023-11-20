@@ -56,7 +56,7 @@ const FilePreviewer = ({ files, previewerMode, fileType = "image", defaultSelect
           ) : (
             <div className="attached_doc">
               <div className="doc-container">
-                <div className="doc-reader">{selectedFile.name.endsWith(".pdf") ? <iframe src={previewerMode === "receive" ? getAssetURL(selectedFile?.key) : selectedFile?.url} /> : <h2 style={{ textAlign: "center", marginTop: "100px", color: "grey", fontStyle: "italic" }}>Preview unavailable</h2>}</div>
+                <div className="doc-reader">{selectedFile?.name.endsWith(".pdf") ? <iframe src={previewerMode === "receive" ? getAssetURL(selectedFile?.key) : selectedFile?.url} /> : <h2 style={{ textAlign: "center", marginTop: "100px", color: "grey", fontStyle: "italic" }}>Preview unavailable</h2>}</div>
                 <div className="doc-name">{selectedFile?.name}</div>
                 <div className="doc-size">{convertBytes(selectedFile?.size)}</div>
               </div>
