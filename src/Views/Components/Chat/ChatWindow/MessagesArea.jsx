@@ -7,7 +7,7 @@ import { contactsChat, getSelectedFiles, getUserData, unseenMsgCountSelectedCont
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
 import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
-import { ClockIcon, CopyIcon, Cross1Icon, Cross2Icon, DownloadIcon, FileIcon, FileTextIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import { ClockIcon, CopyIcon, Cross1Icon, Cross2Icon, DownloadIcon, FileIcon, FileTextIcon, OpenInNewWindowIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { deleteMessageThunk, editMessageThunk } from "../../../../library/redux/reducers/user_appData";
@@ -114,6 +114,18 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
                   <div className="file-size">{convertBytes(file.size)}</div>
                 </div>
                 <div className="file-actions">
+                  {file?.key?.endsWith(".pdf") && (
+                    <button
+                      className="btn"
+                      title="Open"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(getAssetURL(file.key), "_blank");
+                      }}
+                    >
+                      <OpenInNewWindowIcon height={16} width={16} /> Open
+                    </button>
+                  )}
                   <button
                     className="btn"
                     title="Download"
