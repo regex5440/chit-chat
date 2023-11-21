@@ -2,7 +2,7 @@ import axios from "axios";
 
 const CCSignupPoint = axios.create({
   baseURL: import.meta.env.CC_ServerDomain + "/signup/api",
-  withCredentials: false, //! False for testing only
+  withCredentials: true,
 });
 
 CCSignupPoint.interceptors.response.use(

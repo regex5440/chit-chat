@@ -86,7 +86,7 @@ const FilePreviewer = ({ files, previewerMode, fileType = "image", defaultSelect
                   clearTimeout(deleteIconSetTimeout.current);
                   e.currentTarget.dataset.show_remove_cta = false;
                 }}
-                title={fileType !== "image" ? file.name : ""}
+                title={fileType === "document" ? file.name : ""}
               >
                 {fileType != "image" && (
                   <div className="file-previewer__doc-select">
