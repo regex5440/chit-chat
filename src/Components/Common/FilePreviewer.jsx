@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import "./file_previewer.sass";
 import { useDispatch } from "react-redux";
-import { updateSelectedFiles } from "../../../library/redux/reducers";
+import { updateSelectedFiles } from "../../library/redux/reducers";
 import { Cross1Icon, FileTextIcon, TrashIcon } from "@radix-ui/react-icons";
-import { convertBytes, getAssetURL } from "../../../utils";
+import { convertBytes, getAssetURL } from "../../utils";
 
 const FilePreviewer = ({ files, previewerMode, fileType = "image", defaultSelectedIndex, header }) => {
   const [selectedFileIndex, setSelectedFileIndex] = useState(defaultSelectedIndex || null);
