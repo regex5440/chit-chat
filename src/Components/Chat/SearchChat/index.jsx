@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { PlusIcon, MagnifyIcon } from "../../../../assets/icons";
+import { PlusIcon, MagnifyIcon } from "../../../assets/icons";
 import "./search_people.sass";
 import ContactTile, { UserTileType } from "../ContactTile";
-import { debounce } from "../../../../utils";
+import { debounce } from "../../../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { updateSearchQuery, userSearchThunk } from "../../../../library/redux/reducers";
-import { getDeviceDetails, getTempConnection, searchState } from "../../../../library/redux/selectors";
+import { updateSearchQuery, userSearchThunk } from "../../../library/redux/reducers";
+import { getDeviceDetails, getTempConnection, searchState } from "../../../library/redux/selectors";
 import { CircularLoader } from "hd-ui";
 
 const SearchChat = () => {

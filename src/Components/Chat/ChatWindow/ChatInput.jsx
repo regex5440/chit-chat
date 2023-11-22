@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MicrophoneIcon, PaperClipIcon, SendIcon, SmileyEmoji } from "../../../../assets/icons";
-import { convertBytes, useDebounce } from "../../../../utils";
+import { MicrophoneIcon, PaperClipIcon, SendIcon, SmileyEmoji } from "../../../assets/icons";
+import { convertBytes, useDebounce } from "../../../utils";
 import "./chat_input.sass";
 import { useDispatch, useSelector } from "react-redux";
-import { addMessageThunk, updateSelectedFiles, updateTypingThunk } from "../../../../library/redux/reducers";
-import { getDeviceDetails, getSelectedFiles, getTempConnection, getTheme } from "../../../../library/redux/selectors";
+import { addMessageThunk, updateSelectedFiles, updateTypingThunk } from "../../../library/redux/reducers";
+import { getDeviceDetails, getSelectedFiles, getTempConnection, getTheme } from "../../../library/redux/selectors";
 import EmojiPicker from "emoji-picker-react";
 import * as PopOver from "@radix-ui/react-popover";
 import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
 import { FileIcon, ImageIcon } from "@radix-ui/react-icons";
-import { getSignedURL } from "../../../../library/socket.io/socket";
+import { getSignedURL } from "../../../library/socket.io/socket";
 import axios from "axios";
 import { LinearLoader } from "hd-ui";
 

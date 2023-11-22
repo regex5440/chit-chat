@@ -2,14 +2,14 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
 import { useDispatch, useSelector } from "react-redux";
-import { getDeviceDetails, getSelectedContact, getSelectedContactProfile, isChatAccepted } from "../../../../library/redux/selectors";
-import { USER_STATUSES } from "../../../../utils/enums";
-import { dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../../utils";
+import { getDeviceDetails, getSelectedContact, getSelectedContactProfile, isChatAccepted } from "../../../library/redux/selectors";
+import { USER_STATUSES } from "../../../utils/enums";
+import { dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../utils";
 import ThreeDot from "../../Common/ThreeDot";
-import { acceptRequestThunk, clearChatThunk, removeConnectionThunk, updateSelectedContact } from "../../../../library/redux/reducers";
-import { LeftArrow as BackIcon } from "../../../../assets/icons";
+import { acceptRequestThunk, clearChatThunk, removeConnectionThunk, updateSelectedContact } from "../../../library/redux/reducers";
+import { LeftArrow as BackIcon } from "../../../assets/icons";
 import * as Popover from "@radix-ui/react-popover";
-import { MainWindow } from "../../../../Context/layoutFunctions";
+import { MainWindow } from "../../../Context/layoutFunctions";
 
 const NoChatMessage = () => (
   <div className="no-chat-message-container">

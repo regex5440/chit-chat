@@ -1,13 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
-import { MenuOptionType } from "../../../utils/enums";
+import { MenuOptionType } from "../../utils/enums";
 import "./option_dialog.sass";
 import * as Dialog from "@radix-ui/react-dialog";
-import { getBlockedUsers } from "../../../library/redux/selectors";
+import { getBlockedUsers } from "../../library/redux/selectors";
 import { useEffect, useState } from "react";
 import { CircularLoader } from "hd-ui";
 import * as Avatar from "@radix-ui/react-avatar";
-import { getImageUrl } from "../../../utils";
-import { getBlockedUsersThunk, unBlockHandlerThunk } from "../../../library/redux/reducers/user_appData";
+import { getImageUrl } from "../../utils";
+import { getBlockedUsersThunk, unBlockHandlerThunk } from "../../library/redux/reducers/user_appData";
 import FlipMove from "react-flip-move";
 
 const BlockedListData = () => {

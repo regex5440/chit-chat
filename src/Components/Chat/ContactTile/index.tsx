@@ -1,9 +1,9 @@
 import React, { MouseEventHandler } from "react";
 import "./contact_tile.sass";
 import { useDispatch, useSelector } from "react-redux";
-import { updateSelectedContact, setTempConnection } from "../../../../library/redux/reducers";
-import { chatInfoForContactTile } from "../../../../library/redux/selectors";
-import { capitalize, dateComparer, dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../../utils";
+import { updateSelectedContact, setTempConnection } from "../../../library/redux/reducers";
+import { chatInfoForContactTile } from "../../../library/redux/selectors";
+import { capitalize, dateComparer, dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../utils";
 
 export enum UserTileType {
   CONNECTION = "connection",

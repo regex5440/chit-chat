@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./style/image_selector.sass";
-import { MagnifyMinus, MagnifyPlus, PlusIcon, ReloadIcon, TickIcon } from "../../../assets/icons";
-import { debounce } from "../../../utils";
-import twoFingersGesture from "../../../assets/two-finger-gesture.png";
-import dummyProfileUrl from "../../../assets/dummy_profile_pic.jpg";
+import { MagnifyMinus, MagnifyPlus, PlusIcon, ReloadIcon, TickIcon } from "../../assets/icons";
+import { debounce } from "../../utils";
+import twoFingersGesture from "../../assets/two-finger-gesture.png";
+import dummyProfileUrl from "../../assets/dummy_profile_pic.jpg";
 
 const INPUT_ID = "hidden-input-image-selector";
 

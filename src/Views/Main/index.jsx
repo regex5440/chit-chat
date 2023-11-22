@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import ProfileTab from "../Components/Profile";
-import ContactList from "../Components/Contacts/ContactList";
-import StoriesContainer from "../Components/Story";
-import { ChatWindow } from "../Components/Chat";
+import ProfileTab from "../../Components/Profile";
+import ContactList from "../../Components/Contacts/ContactList";
+import StoriesContainer from "../../Components/Story";
+import { ChatWindow } from "../../Components/Chat";
 import "./app.sass";
 import store from "../../library/redux/store";
 import { Provider } from "react-redux";

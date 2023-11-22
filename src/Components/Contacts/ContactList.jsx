@@ -4,7 +4,7 @@ import "./contact_list.sass";
 import FlipMove from "react-flip-move";
 import ContactTile, { UserTileType } from "../Chat/ContactTile";
 import { useSelector } from "react-redux";
-import { getContactsListSorted, getTempConnection } from "../../../library/redux/selectors";
+import { getContactsListSorted, getTempConnection } from "../../library/redux/selectors";
 import { CircularLoader } from "hd-ui";
 
 const Contacts = () => {

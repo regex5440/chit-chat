@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import { LandingPage, LoginContent, SignupContent, landingPageLoader } from "../../Views/Components/Login-Signup/LoginSignup";
+import { LandingPage, LoginContent, SignupContent, landingPageLoader } from "../../Views/Login-Signup";
 import React from "react";
 import { appLoader } from "../../Views/Main";
 

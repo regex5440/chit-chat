@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./profile.sass";
 import { useDispatch, useSelector } from "react-redux";
-import { getContactsRaw, getDeviceDetails, getUserData } from "../../../library/redux/selectors";
-import { MenuOptionType, USER_STATUSES } from "../../../utils/enums";
+import { getContactsRaw, getDeviceDetails, getUserData } from "../../library/redux/selectors";
+import { MenuOptionType, USER_STATUSES } from "../../utils/enums";
 import { CircularLoader, Modal } from "hd-ui";
 import ThreeDot from "../Common/ThreeDot";
-import { updateStatusThunk } from "../../../library/redux/reducers";
-import ChitChatServer from "../../../client/api";
-import { getImageUrl, setLoginStateToken } from "../../../utils";
+import { updateStatusThunk } from "../../library/redux/reducers";
+import ChitChatServer from "../../client/api";
+import { getImageUrl, setLoginStateToken } from "../../utils";
 import { useNavigate } from "react-router-dom";
 import * as DropDownMenu from "@radix-ui/react-dropdown-menu";
-import { TickIcon } from "../../../assets/icons";
+import { TickIcon } from "../../assets/icons";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProfileOptionDialog from "./ProfileOptionDialog";
 

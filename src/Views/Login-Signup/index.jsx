@@ -3,10 +3,10 @@ import "./login_signup.sass";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { CircularLoader } from "hd-ui";
-import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueGet } from "../../../utils";
-import ImageSelector from "../Common/ImageSelector";
-import CCSignupPoint, { setSignupAuthToken } from "../../../client/signup_api";
-import ChitChatServer from "../../../client/api";
+import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueGet } from "../../utils";
+import ImageSelector from "../../Components/Common/ImageSelector";
+import CCSignupPoint, { setSignupAuthToken } from "../../client/signup_api";
+import ChitChatServer from "../../client/api";
 
 const maxSignupSteps = 3;
 const emailRegEx = /^[\w.!#$%&'*+/=?^_`{|}~-]+@[\w-]+(\.[\w-]+)+$/;

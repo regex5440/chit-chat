@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./message_area.sass";
 import { BouncyBalls, CircularLoader, DropDown, LazyLoader, Modal } from "hd-ui";
-import { capitalize, convertBytes, copyToClipboard, dateComparer, dateDifference, getAssetURL, getFormattedDate, getFormattedTime, msToDays, triggerDownload } from "../../../../utils";
+import { capitalize, convertBytes, copyToClipboard, dateComparer, dateDifference, getAssetURL, getFormattedDate, getFormattedTime, msToDays, triggerDownload } from "../../../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { contactsChat, getSelectedFiles, getUserData, unseenMsgCountSelectedContact } from "../../../../library/redux/selectors";
+import { contactsChat, getSelectedFiles, getUserData, unseenMsgCountSelectedContact } from "../../../library/redux/selectors";
 import ChatInput from "./ChatInput";
-import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../../assets/icons";
-import { sendMessageSeenThunk } from "../../../../library/redux/reducers";
+import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../assets/icons";
+import { sendMessageSeenThunk } from "../../../library/redux/reducers";
 import { ClockIcon, CopyIcon, Cross1Icon, Cross2Icon, DownloadIcon, FileIcon, FileTextIcon, OpenInNewWindowIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as ContextMenu from "@radix-ui/react-context-menu";
-import { deleteMessageThunk, editMessageThunk } from "../../../../library/redux/reducers/user_appData";
+import { deleteMessageThunk, editMessageThunk } from "../../../library/redux/reducers/user_appData";
 import FilePreviewer from "./FilePreviewer";
 
 const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage }) => {
