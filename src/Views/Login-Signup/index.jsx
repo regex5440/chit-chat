@@ -3,7 +3,7 @@ import "./login_signup.sass";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { CircularLoader } from "hd-ui";
-import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueGet } from "../../utils";
+import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueRequest } from "../../utils";
 import ImageSelector from "../../Components/Common/ImageSelector";
 import CCSignupPoint, { setSignupAuthToken } from "../../client/signup_api";
 import ChitChatServer from "../../client/api";
@@ -120,7 +120,7 @@ const SignupContent = () => {
 
   const [dialogError, setDialogError] = useState("");
 
-  const fetchOnce = useUniqueGet(CCSignupPoint);
+  const fetchOnce = useUniqueRequest(CCSignupPoint);
   const usernameChecker = useDebounce(async (e) => {
     const value = e.target.value;
     updateError({ showError: false, message: "" });

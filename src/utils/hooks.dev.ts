@@ -1,9 +1,9 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { useCallback, useRef } from "react";
 
-const useUniqueGet = (axios_instance?: AxiosInstance): Function => {
+const useUniqueRequest = (axios_instance?: AxiosInstance): Function => {
   /* 
-  //* Uses axios under the hood, to provide a data fetching machanism
+  //* Uses axios under the hood, to provide a data fetching mechanism
   //* Does not allow duplicate requests, auto-abort of previous request used with same parameters
   */
   const controller = useRef<AbortController>();
@@ -51,4 +51,4 @@ const useDebounce = (function_to_debounce: Function, delay: number): Function =>
   return callback;
 };
 
-export { useUniqueGet, useDebounce };
+export { useUniqueRequest, useDebounce };

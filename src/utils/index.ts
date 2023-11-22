@@ -1,7 +1,7 @@
 import store from "../library/redux/store";
 import { DateParam } from "./types";
 import { debounce, capitalize } from "./common";
-import { useDebounce, useUniqueGet } from "./hooks.dev";
+import { useDebounce, useUniqueRequest } from "./hooks.dev";
 //@ts-ignore
 import dummyProfileUrl from "../assets/dummy_profile_pic.jpg";
 
@@ -283,4 +283,4 @@ function triggerDownload(url: string, fileName: string) {
 export { debounce, capitalize, convertBytes, copyToClipboard, getAssetURL, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl, triggerDownload };
 
 // Hooks
-export { useUniqueGet, useDebounce };
+export { useUniqueRequest, useDebounce };
