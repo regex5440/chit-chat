@@ -11,7 +11,7 @@ import { ClockIcon, CopyIcon, Cross1Icon, Cross2Icon, DownloadIcon, FileIcon, Fi
 import * as Dialog from "@radix-ui/react-dialog";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { deleteMessageThunk, editMessageThunk } from "../../../library/redux/reducers/user_appData";
-import FilePreviewer from "./FilePreviewer";
+import FilePreviewer from "../../Common/FilePreviewer";
 
 const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage }) => {
   const dispatch = useDispatch();

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "./file_previewer.sass";
+import "./style/file_previewer.sass";
 import { useDispatch } from "react-redux";
 import { updateSelectedFiles } from "../../library/redux/reducers";
 import { Cross1Icon, FileTextIcon, TrashIcon } from "@radix-ui/react-icons";
