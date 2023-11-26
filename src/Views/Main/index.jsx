@@ -22,6 +22,7 @@ export const appLoader = async () => {
   try {
     const me = await store.dispatch(getMyProfile()).unwrap();
     if (me) {
+      document.title = "Chit Chat - Messaging app";
       return true;
     }
   } catch (e) {
