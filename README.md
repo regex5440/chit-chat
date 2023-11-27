@@ -1,6 +1,12 @@
 # Chit-Chat
 
-> A full-fledge messaging and media sharing application created with React.js.
+> Chit-Chat is a full-fledge messaging and media sharing application with features like:
+> - Search people and groups
+> - Create group to chat with multiple people at the same time.
+> - Send, edit, delete messages with seen status of every message.
+> - Send any file or image as attachment. (LIMIT: 25MB)
+> - Stable audio/video calls
+> - Authentication with Google
 
 ## FrontEnd Stack
 
@@ -15,15 +21,16 @@
 
 ## Node version
 
-> `v18.14.0`
+> `>= v18.14.0`
 
 ## Environment
 
 > Create a `.env` file in the root directory and set the following variables:
 
 ```
-CC_ServerDomain=<API Server Domain>
+CC_ServerDomain=<API Server Domain>  #This app limits the resource sharing with CORS.
 CC_IMAGE_BUCKET_URL=<S3 or R2 Bucket URL>
+CC_ASSET_BUCKET_URL=<S3 or R2 Bucket URL>
 CC_OAuthClientID=<Google OAuth Client Id>
 ```
 
