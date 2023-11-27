@@ -123,12 +123,12 @@ export const editMessageThunk = createAsyncThunk("editMessage", async ({ chatId,
   return { id, chatId, messageId, update };
 });
 
-export const deleteMessageThunk = createAsyncThunk("deleteMessage", async ({ chatId, messageId, forAll }, { getState }) => {
+export const deleteMessageThunk = createAsyncThunk("deleteMessage", async ({ chatId, messageId, forAll, attachments = undefined }, { getState }) => {
   const {
     data: { id },
   } = getUserData(getState());
 
-  deleteMessageSocket(chatId, messageId, id, forAll);
+  deleteMessageSocket({ chatId, messageId, fromId: id, attachments }, forAll);
   return { chatId, messageId, fromId: id, forAll };
 });
 

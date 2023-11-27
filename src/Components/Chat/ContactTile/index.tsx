@@ -24,6 +24,7 @@ type CommonAccountProp = {
     key: string;
     url: string;
   };
+  TYPE: UserTileType.CONNECTION | UserTileType.GROUP | UserTileType.USER;
 };
 type ConnectionSpecificProp = {
   unseen_messages_count: number;
@@ -48,7 +49,7 @@ type UserTileGeneric = UserTileType.CONNECTION | UserTileType.USER | UserTileTyp
 
 type UserSpecificProp<T> = T extends UserTileType.CONNECTION ? CommonAccountProp & ConnectionSpecificProp : T extends UserTileType.USER ? CommonAccountProp & UserSearchSpecificProp : GroupSearchSpecificProp;
 
-const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificProp<T>) => {
+const ContactTile = <T extends UserTileGeneric>(prop: UserSpecificProp<T> & RestProps) => {
   const dispatch = useDispatch();
   if (prop.TYPE === UserTileType.CONNECTION) {
     var { last_updated, authors_typing, last_message, isSelected } = useSelector(chatInfoForContactTile(prop.id));
@@ -61,7 +62,7 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
     return `${prop.firstName} ${prop.lastName}`;
   };
   const getProfileStatus = () => {
-    if (prop.unseen_messages_count > 0) {
+    if (prop.TYPE === UserTileType.CONNECTION && prop.unseen_messages_count > 0) {
       return <span className="contact-unread-message-count">{prop.unseen_messages_count}</span>;
     }
   };
@@ -88,9 +89,9 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
     if (prop.TYPE === UserTileType.CONNECTION) {
       if (typing) {
         return <span className="status-typing">typing...</span>;
-      } else if (last_message.type === "text") {
+      } else if (last_message?.type === "text") {
         return last_message?.text;
-      } else if (last_message.type !== "text") {
+      } else if (last_message && last_message.type !== "text") {
         return (
           <em>
             Sent {last_message.type.charAt(0) === "i" ? "an" : "a"} {last_message.type}
@@ -107,7 +108,7 @@ const ContactTile = <T extends UserTileGeneric>(prop: RestProps & UserSpecificPr
     <div className="contact-tile-container" data-type={prop.TYPE}>
       <div className="contact-tile-content" data-active={prop.TYPE !== UserTileType.CONNECTION ? true : isSelected || false} onClick={setSelectedContact}>
         <div className="contact-picture-container">
-          <img src={getImageUrl(prop.avatar)} alt={prop.firstName} className="profile-picture" />
+          <img src={getImageUrl(prop.avatar)} alt={prop.TYPE === UserTileType.GROUP ? prop.name : prop.firstName} className="profile-picture" />
         </div>
         <div className="contact-name" title={getProfileName()}>
           {getProfileName()}
