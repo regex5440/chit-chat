@@ -58,8 +58,8 @@ const editMessage = (chatId, messageId, update, fromId) => {
   socket.emit(SOCKET_HANDLERS.CHAT.MESSAGE.Edit, chatId, messageId, update, fromId);
 };
 
-const deleteMessageSocket = (chatId, messageId, fromId, forAll = false) => {
-  socket.emit(SOCKET_HANDLERS.CHAT.MESSAGE.Delete, chatId, messageId, fromId, forAll);
+const deleteMessageSocket = ({ chatId, messageId, fromId, attachments }, forAll = false) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.MESSAGE.Delete, { chatId, messageId, fromId, attachments }, forAll);
 };
 
 export const SocketComponent = () => {

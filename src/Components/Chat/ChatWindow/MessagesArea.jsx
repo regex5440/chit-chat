@@ -29,15 +29,6 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
       });
       observer.observe(messageContainer.current);
     }
-    if (messageObject.attachments?.length > 0) {
-      const observer = new IntersectionObserver(([entries]) => {
-        if (entries.isIntersecting) {
-          dispatch(sendMessageSeenThunk({ chat_id: ChatId, toUserId: ContactId, messageId: messageObject.id }));
-          observer.disconnect();
-        }
-      });
-      observer.observe(messageContainer.current);
-    }
   }, [messageContainer.current, unseenMessagesCount, isMine]);
 
   let messageStatus = "";
@@ -173,7 +164,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
                 <div>Edit</div>
               </ContextMenu.Item>
             )}
-            <ContextMenu.Item className="option" onClick={() => deleteMessage({ id: messageObject.id, isMine })}>
+            <ContextMenu.Item className="option" onClick={() => deleteMessage({ id: messageObject.id, isMine, attachments: messageObject.attachments })}>
               <TrashIcon />
               <div>Delete</div>
             </ContextMenu.Item>
@@ -201,7 +192,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
   const contactIsTyping = chat?.authors_typing?.includes(ContactId);
 
   const deleteHandler = (forAll = false) => {
-    dispatch(deleteMessageThunk({ chatId: chat.chat_id, messageId: deleteAlertData.id, forAll }));
+    dispatch(deleteMessageThunk({ chatId: chat.chat_id, messageId: deleteAlertData.id, forAll, attachments: deleteAlertData.attachments?.map((attachment) => attachment.key) }));
     setDeleteAlertData(null);
   };
 
