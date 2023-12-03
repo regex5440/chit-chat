@@ -87,6 +87,7 @@
         height: 100%
         width: 100%
         box-sizing: border-box
+        scroll-snap-type: y mandatory
         &::-webkit-scrollbar
             // display: none
         //Message Container
@@ -119,6 +120,8 @@
             width: fit-content
             max-width: min(500px,60%)
             box-sizing: border-box
+            scroll-snap-align: center
+
             @include message-box-others()
             &[data-emojionly=true]
                 font-size: 30px !important
