@@ -35,6 +35,12 @@ const SOCKET_HANDLERS = {
     StatusUpdate: "lastSeenUpdate",
     PictureUpdate: "profilePicUpdate",
   },
+  RTC_SIGNALING: {
+    Offer: "receivedOffer",
+    Answer: "respondedAnswer",
+    Candidate: "iceCandidate",
+    End: "endRTCConnection",
+  },
 };
 
 enum MenuOptionType {
@@ -43,4 +49,13 @@ enum MenuOptionType {
   APP_SETTINGS = "APP_SETTINGS",
 }
 
-export { USER_STATUSES, SOCKET_HANDLERS, MenuOptionType };
+enum CALL_STATUS {
+  CONNECTING = "connecting",
+  CONNECTED = "connected",
+  REJECTED = "rejected",
+  DISCONNECTED = "disconnected",
+  WAITING = "waiting",
+  IDLE = "idle",
+}
+
+export { USER_STATUSES, SOCKET_HANDLERS, MenuOptionType, CALL_STATUS };

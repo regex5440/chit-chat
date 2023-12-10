@@ -47,15 +47,17 @@ const getLastViewableMessage = (messages, userId, index = -1) => {
   }
   return getLastViewableMessage(messages, userId, index - 1);
 };
+const getContactProfile = (userId) => (state) => state.appData.contacts?.data[userId] || null;
+const getChatData = (chatId) => (state) => state.appData.chats[chatId] || null;
 const chatInfoForContactTile = (contact_id) => {
   return createSelector(
     getSelectedContact,
     (state) => state,
     (selectedContact, state) => {
       const userId = state.appData.user.data.id;
-      const contacts = state.appData.contacts.data;
-      const chatId = contacts[contact_id]?.chat_id;
-      const contactsChat = state.appData.chats[chatId];
+      const contact = getContactProfile(contact_id)(state);
+      const chatId = contact?.chat_id;
+      const contactsChat = getChatData(chatId)(state);
 
       const contacts_messages = contactsChat?.messages;
 
@@ -110,6 +112,21 @@ const getTheme = (state) => state.config.theme;
 const getSelectedFiles = (state) => state.config.selectedFiles;
 const getAttachmentMetadata = (state) => state.config.modifications.no_metadata;
 
+// Call selectors
+const getCallUIDetails = (state) => state.call.callUI;
+const getPeerData = (state) => state.call.peer_data;
+const getUserStreamControl = (state) => state.call.controls;
+const getCallStatus = (state) => state.call.callStatus.state;
+const getCallDuration = (state) => state.call.callStatus.duration;
+const getConnectedUser = (state) => state.call.connectedUser;
+const getConnectedUserProfile = createSelector(
+  getConnectedUser,
+  (state) => state,
+  (connectedUser, state) => {
+    return getContactProfile(connectedUser.userId)(state);
+  }
+);
+
 export {
   // UserState
   getUserData,
@@ -117,10 +134,12 @@ export {
   // UserAppData
   getContactsRaw,
   getContactsListSorted,
+  getContactProfile,
   getSelectedContact,
   getSelectedContactProfile,
   selectedContactChatId,
   getTempConnection,
+  getChatData,
   getBlockedUsers,
   isChatAccepted,
   unseenMsgCountSelectedContact,
@@ -134,4 +153,11 @@ export {
   getTheme,
   getSelectedFiles,
   getAttachmentMetadata,
+  getCallUIDetails,
+  getPeerData,
+  getUserStreamControl,
+  getCallStatus,
+  getCallDuration,
+  getConnectedUser,
+  getConnectedUserProfile,
 };

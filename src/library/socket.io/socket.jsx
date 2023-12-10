@@ -1,5 +1,5 @@
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addInitialData, addNewConnectionRequested, addParticipants, addTypingAuthors, clearChat, deleteContact, resetSocketData, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
+import { addInitialData, addNewConnectionRequested, addParticipants, addTypingAuthors, clearChat, deleteContact, resetCallState, resetSocketData, setIceCandidate, setRemoteDescription, showCallerComponent, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getUserData } from "../redux/selectors";
@@ -149,6 +149,36 @@ export const SocketComponent = () => {
     socket.on(SOCKET_HANDLERS.CHAT.NewRequest_Failed, (message) => {
       window.alert(message);
     });
+
+    //RTC Signaling
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Offer, (forChatId, description, callType, fromUserId) => {
+      dispatch(showCallerComponent({ byUser: false, callType, forChatId, chatId: forChatId, contactId: fromUserId }));
+      dispatch(setRemoteDescription(description));
+    });
+
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Answer, (description) => {
+      dispatch(setRemoteDescription(description));
+    });
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Candidate, (candidate) => {
+      dispatch(setIceCandidate(candidate));
+    });
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.End, () => {
+      dispatch(resetCallState());
+    });
   }, [dispatch, userId]);
 };
+
+export const sendOffer = (chatId, desc, callType, userId) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Offer, chatId, desc, callType, userId);
+};
+export const sendAnswer = (chatId, msg) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Answer, chatId, msg);
+};
+export const sendCandidate = (chatId, msg) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Candidate, chatId, msg);
+};
+export const endCall = (chatId) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.End, chatId);
+};
+
 export { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, getSignedURL, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };
