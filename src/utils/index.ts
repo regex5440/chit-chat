@@ -279,8 +279,38 @@ function triggerDownload(url: string, fileName: string) {
   link.download = fileName;
   link.click();
 }
+
+/**
+ * @param {number} sec - Seconds to convert to hours, minutes and remaining seconds format
+ * @param {string} separator - Separator string between hours, minutes and seconds. @default ':'
+ * @example
+ * convertToDuration(100,':') would output 01:40
+ */
+function convertToDuration(sec: number, separator: string = ":") {
+  let seconds = 0,
+    minutes = 0,
+    hours = 0;
+  if (sec >= 60) {
+    let floatingMinutes = sec / 60;
+    minutes = Math.trunc(floatingMinutes);
+    seconds = Math.round((floatingMinutes - minutes) * 60);
+    if (minutes >= 60) {
+      let floatingHours = minutes / 60;
+      hours = Math.trunc(floatingHours);
+      minutes = Math.round((floatingHours - hours) * 60);
+    }
+  } else {
+    seconds = sec;
+  }
+
+  const stringSeconds = String(seconds).padStart(2, "0"),
+    stringMinutes = String(minutes).padStart(2, "0"),
+    stringHours = String(hours).padStart(2, "0");
+
+  return `${hours > 0 ? stringHours + separator : ""}${stringMinutes}${separator}${stringSeconds}`;
+}
 // Common Utils
-export { debounce, capitalize, convertBytes, copyToClipboard, getAssetURL, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl, triggerDownload };
+export { debounce, capitalize, convertBytes, copyToClipboard, getAssetURL, getRandom0To255, getExportedVariables, getFormattedDate, getFormattedTime, dateComparer, msToDays, dateDifference, setLoginStateToken, getLoginStateToken, getImageUrl, triggerDownload, convertToDuration };
 
 // Hooks
 export { useUniqueRequest, useDebounce };

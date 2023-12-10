@@ -12,6 +12,7 @@ import { setAPIHeader } from "../../client/api";
 import { getLoginStateToken, setLoginStateToken } from "../../utils";
 import { SocketComponent } from "../../library/socket.io/socket";
 import { MainWindow } from "../../Context/layoutFunctions";
+import CallUIHandler from "../CallHandler";
 
 export const appLoader = async () => {
   const token = getLoginStateToken();
@@ -43,27 +44,30 @@ const App = () => {
     }
   };
   return (
-    <Provider store={store}>
-      <SocketComponent />
-      <div className="app-container" ref={mainApp}>
-        <div className="app-container__app-window">
-          <div className="story-container">
-            <StoriesContainer />
-          </div>
-          <div className="profile-container">
-            <ProfileTab />
-          </div>
-          <div className="chat-list">
-            <ContactList />
-          </div>
-          <div className="chat-window">
-            <MainWindow.Provider value={scrollTo}>
-              <ChatWindow />
-            </MainWindow.Provider>
+    <>
+      <Provider store={store}>
+        <SocketComponent />
+        <div className="app-container" ref={mainApp}>
+          <div className="app-container__app-window">
+            <div className="story-container">
+              <StoriesContainer />
+            </div>
+            <div className="profile-container">
+              <ProfileTab />
+            </div>
+            <div className="chat-list">
+              <ContactList />
+            </div>
+            <div className="chat-window">
+              <MainWindow.Provider value={scrollTo}>
+                <ChatWindow />
+              </MainWindow.Provider>
+            </div>
           </div>
         </div>
-      </div>
-    </Provider>
+        <CallUIHandler />
+      </Provider>
+    </>
   );
 };
 

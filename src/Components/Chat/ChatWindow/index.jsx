@@ -2,12 +2,12 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
 import { useDispatch, useSelector } from "react-redux";
-import { getDeviceDetails, getSelectedContact, getSelectedContactProfile, isChatAccepted } from "../../../library/redux/selectors";
-import { USER_STATUSES } from "../../../utils/enums";
-import { dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../utils";
+import { getCallDuration, getCallStatus, getCallUIDetails, getDeviceDetails, getSelectedContact, getSelectedContactProfile, getUserStreamControl, isChatAccepted } from "../../../library/redux/selectors";
+import { CALL_STATUS, USER_STATUSES } from "../../../utils/enums";
+import { convertToDuration, dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../utils";
 import ThreeDot from "../../Common/ThreeDot";
-import { acceptRequestThunk, clearChatThunk, removeConnectionThunk, updateSelectedContact } from "../../../library/redux/reducers";
-import { LeftArrow as BackIcon } from "../../../assets/icons";
+import { acceptRequestThunk, clearChatThunk, enableAudio, enableVideo, minimizeComponent, removeConnectionThunk, showCallerComponent, updateSelectedContact } from "../../../library/redux/reducers";
+import { LeftArrow as BackIcon, MicrophoneIcon, TelephoneIcon, VideoIcon } from "../../../assets/icons";
 import * as Popover from "@radix-ui/react-popover";
 import { MainWindow } from "../../../Context/layoutFunctions";
 
@@ -26,7 +26,10 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const device = useSelector(getDeviceDetails);
   const scrollTo = useContext(MainWindow);
   const header = useRef(null);
-
+  const callUIDetails = useSelector(getCallUIDetails);
+  const mediaController = useSelector(getUserStreamControl);
+  const callStatus = useSelector(getCallStatus);
+  const duration = useSelector(getCallDuration);
   useEffect(() => {
     if (ContactProfile) {
       scrollTo("end");
@@ -62,9 +65,8 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
 
   const renderProfileDetails = () => {
     return (
-      <div className="profile-container">
+      <div className="profile-overview-container">
         {device.type === "mobile" && <BackIcon width="25px" style={{ marginRight: "5px" }} stroke={"var(--icon-stroke)"} fill={"var(--icon-stroke)"} onClick={moveToMainWindow} />}
-
         <div className="profile-picture-container">
           <img src={getImageUrl(ContactProfile.avatar)} alt={ContactProfile.firstName} className="profile-picture" />
         </div>
@@ -87,7 +89,21 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
     removeContactHandler(block);
     closeModal();
   };
-  const renderCallingOption = () => <div></div>;
+
+  const initiateCall = (e) => {
+    const callType = e.currentTarget.dataset.type;
+    dispatch(showCallerComponent({ byUser: true, callType, contactId: ContactProfile.id, chatId: ContactProfile.chat_id }));
+  };
+  const renderCallingOption = () => (
+    <>
+      <button className="call-option" onClick={initiateCall} data-type="video" title="Video Call">
+        <VideoIcon height="30px" width="30px" />
+      </button>
+      <button className="call-option" onClick={initiateCall} data-type="audio" title="Voice Call">
+        <TelephoneIcon height="30px" width="30px" />
+      </button>
+    </>
+  );
   return (
     <header className="chat-area__header-container">
       <div className="chat-area__header-content">
@@ -116,6 +132,27 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
           </Popover.Root>
         </div>
       </div>
+      {callUIDetails.isMinimized && (
+        <div className="chat-area__caller-header" onClick={() => dispatch(minimizeComponent(false))}>
+          <div className="call-details">
+            <span style={{ textTransform: "capitalize" }}>{callStatus === CALL_STATUS.CONNECTED ? convertToDuration(duration) : callStatus}</span>
+          </div>
+          <div className="call-controls" onClick={(e) => e.stopPropagation()}>
+            <div className="option">
+              <input type="checkbox" id="call-header-camera" hidden checked={mediaController.videoEnabled} onChange={(e) => dispatch(enableVideo(e.target.checked))} />
+              <label htmlFor="call-header-camera">
+                <VideoIcon height={16} width={16} />
+              </label>
+            </div>
+            <div className="option">
+              <input type="checkbox" id="call-header-voice" hidden checked={mediaController.audioEnabled} onChange={(e) => dispatch(enableAudio(e.target.checked))} />
+              <label htmlFor="call-header-voice">
+                <MicrophoneIcon height={16} width={16} />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

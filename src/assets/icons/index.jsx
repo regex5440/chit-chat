@@ -15,5 +15,7 @@ import ExclamationIcon from "./exclamation.svg";
 import LeftArrow from "./left-arrow.svg";
 import SendIcon from "./send.svg";
 import ClockIcon from "./clock.svg";
+import VideoIcon from "./video.svg";
+import TelephoneIcon from "./telephone.svg";
 
-export { ClockIcon, ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow, SendIcon };
+export { ClockIcon, ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow, SendIcon, VideoIcon, TelephoneIcon };
