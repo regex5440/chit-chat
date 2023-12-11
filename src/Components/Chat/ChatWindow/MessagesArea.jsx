@@ -76,10 +76,10 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
                       header={
                         <div className="preview-header">
                           <div>
-                            <Dialog.Title className="title" style={{ margin: 0, lineHeight: 0 }}>
+                            <Dialog.Title className="title" style={{ margin: 0 }}>
                               Attachment
                             </Dialog.Title>
-                            <Dialog.Description>{attachments.length} Files</Dialog.Description>
+                            <Dialog.Description style={{ margin: 0 }}>{attachments.length} Files</Dialog.Description>
                           </div>
                           <div className="file-actions">
                             <div className="btn" title={"Download"} onClick={() => triggerDownload(getAssetURL(file.key))}>
