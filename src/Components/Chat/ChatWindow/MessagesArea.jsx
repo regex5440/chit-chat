@@ -13,11 +13,13 @@ import * as ContextMenu from "@radix-ui/react-context-menu";
 import { deleteMessageThunk, editMessageThunk } from "../../../library/redux/reducers/user_appData";
 import FilePreviewer from "../../Common/FilePreviewer";
 
+const emojiRegEx = /^[\p{Emoji}\s]+$/u;
 const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage }) => {
   const dispatch = useDispatch();
   const messageContainer = useRef(null);
   const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
   const isMine = messageObject.sender_id !== ContactId;
+  const interval = useRef(null);
   useEffect(() => {
     if (!isMine && messageContainer.current && unseenMessagesCount > 0) {
       //* chat.last_updated is just to update the observer to latest message
@@ -44,6 +46,9 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
   const copyHandler = () => {
     copyToClipboard(messageObject.text);
   };
+  const multipleDownloadHandler = () => {
+    alert("This option is temporarily unavailable!");
+  };
   const renderAttachments = () => {
     const attachments = messageObject.attachments || [];
     if (attachments.length === 0) return null;
@@ -57,7 +62,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
                 <Dialog.Trigger asChild>
                   <div className="image">
                     <img src={getAssetURL(file.key)} loading="lazy" />
-                    {attachments.length > 6 && index === 5 && <div className="image-count">+{attachments.length - 6}</div>}
+                    {attachments.length > maxImageCountToShow && index === 5 && <div className="image-count">+{attachments.length - maxImageCountToShow}</div>}
                   </div>
                 </Dialog.Trigger>
                 <Dialog.Portal>
@@ -139,7 +144,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
     <>
       <ContextMenu.Root>
         <ContextMenu.Trigger asChild>
-          <div className="message message-box" data-mine={isMine} ref={messageContainer} data-emojionly={messageObject.type === "text" && messageObject.text.match(/^[\p{Emoji}\s]+$/u)?.[0].match(/[^0-9]+/g)?.[0] ? true : false} data-type={messageObject.type}>
+          <div className="message message-box" data-mine={isMine} ref={messageContainer} data-emojionly={messageObject.type === "text" && messageObject.text.match(emojiRegEx)?.[0].match(/[^0-9]+/g)?.[0] ? true : false} data-type={messageObject.type}>
             {isMine && <span className="message-status">{messageStatus}</span>}
             {renderAttachments()}
             {messageObject.text && <span className="message-text">{messageObject.text}</span>}
@@ -168,6 +173,18 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
               <TrashIcon />
               <div>Delete</div>
             </ContextMenu.Item>
+            {["image", "document"].includes(messageObject.type) &&
+              (messageObject.attachments.length > 1 ? (
+                <ContextMenu.Item className="option" onClick={multipleDownloadHandler}>
+                  <DownloadIcon />
+                  Download All
+                </ContextMenu.Item>
+              ) : (
+                <ContextMenu.Item className="option" onClick={() => triggerDownload(getAssetURL(messageObject.attachments[0].key, messageObject.attachments[0].name))}>
+                  <DownloadIcon />
+                  Download
+                </ContextMenu.Item>
+              ))}
           </ContextMenu.Content>
         </ContextMenu.Portal>
       </ContextMenu.Root>
