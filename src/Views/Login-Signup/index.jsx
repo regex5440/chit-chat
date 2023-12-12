@@ -21,7 +21,7 @@ const LoginContent = () => {
 
   const loginHandler = async (e) => {
     e.preventDefault();
-    const [username, password] = [e.target.username.value?.trim(), e.target.password.value?.trim()];
+    const [username, password] = [e.target.username.value?.trim()?.toLowerCase(), e.target.password.value?.trim()];
     if (username.length > 3 && password.length > 0) {
       try {
         setProgress(true);
@@ -122,7 +122,7 @@ const SignupContent = () => {
 
   const fetchOnce = useUniqueRequest(CCSignupPoint);
   const usernameChecker = useDebounce(async (e) => {
-    const value = e.target.value;
+    const value = e.target.value?.trim()?.toLowerCase();
     updateError({ showError: false, message: "" });
     setSignupFlags((state) => ({ ...state, usernameAvailable: null }));
     if (/^[a-zA-Z0-\_\.]{3,20}$/.test(value)) {
@@ -131,7 +131,7 @@ const SignupContent = () => {
         const { success, data, message } = await fetchOnce(`/username_checker?username=${value}`, "GET");
         if (success && data.available) {
           setSignupFlags((state) => ({ ...state, usernameAvailable: "available" }));
-          setSignupForm((state) => ({ ...state, usernameSelected: e.target.value }));
+          setSignupForm((state) => ({ ...state, usernameSelected: value }));
           updateError({ showError: false });
         } else {
           setSignupFlags((state) => ({ ...state, usernameAvailable: "unavailable" }));
