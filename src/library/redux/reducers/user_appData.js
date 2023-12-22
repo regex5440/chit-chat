@@ -34,7 +34,7 @@ const appDataInitialState = {
 };
 
 export const getMyProfile = createAsyncThunk("fetchMyData", async (authToken) => {
-  let { success, data } = await ChitChatServer.get(SERVER_GET_PATHS.my_profile, { timeout: 4000 });
+  let { success, data } = await ChitChatServer.get(SERVER_GET_PATHS.my_profile, { timeout: 5000 });
   if (success) return { ...data, authToken };
   setLoginStateToken("");
   return "";

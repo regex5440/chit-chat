@@ -36,10 +36,14 @@ const SOCKET_HANDLERS = {
     PictureUpdate: "profilePicUpdate",
   },
   RTC_SIGNALING: {
-    Offer: "receivedOffer",
-    Answer: "respondedAnswer",
+    Offer: "Offer",
+    Answer: "Answer",
     Candidate: "iceCandidate",
     End: "endRTCConnection",
+    Reconnect: "reconnectionRequest",
+    Reconnect_RESP: "reconnectionResponse",
+    CallInitiator: "callInitiator",
+    CallInitiator_RESP: "responseToCallInitiator",
   },
 };
 
@@ -56,6 +60,8 @@ enum CALL_STATUS {
   DISCONNECTED = "disconnected",
   WAITING = "waiting",
   IDLE = "idle",
+  RECONNECTING = "reconnecting",
+  NO_RESPONSE = "no response",
 }
 
 export { USER_STATUSES, SOCKET_HANDLERS, MenuOptionType, CALL_STATUS };

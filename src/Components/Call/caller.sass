@@ -9,6 +9,22 @@
     overflow: hidden
     font-family: var(--frame-font)
     background: #0e0e0e
+    &__loading
+        position: absolute
+        top: 50%
+        left: 50%
+        transform: translate(-50%,-50%)
+        z-index: 998
+        p
+            margin-left: 5px
+    &__overlay
+        position: absolute
+        height: 100%
+        width: 100%
+        inset: 0
+        background: var(--overlay-color)
+        display: flex
+        z-index: 997
     .calling-error
         font-size: 22px
         height: 100%
@@ -50,6 +66,7 @@
         justify-content: space-between
         padding: 20px 40px
         color: $textColor
+        z-index: 999
         // background:
         .caller-info
             .caller-name
@@ -63,6 +80,7 @@
         bottom: 0
         left: 0
         width: inherit
+        z-index: 999
         .option-container
             transform: translateY(110%)
             transition: transform 0.4s ease

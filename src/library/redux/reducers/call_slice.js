@@ -26,10 +26,6 @@ const initialState = {
     userId: null,
     chatId: null,
   },
-  peer_data: {
-    remoteDescription: null,
-    iceCandidates: null,
-  },
   qualityControl: {
     height: window.innerHeight,
     width: window.innerWidth,
@@ -78,15 +74,6 @@ const callSlice = createSlice({
     minimizeComponent: (state, action) => {
       state.callUI.isMinimized = action.payload;
     },
-    setRemoteDescription: (state, action) => {
-      state.peer_data.remoteDescription = action.payload;
-    },
-    setIceCandidate: (state, action) => {
-      let stateCandidate = state.peer_data.iceCandidates;
-      if (stateCandidate === null) {
-        state.peer_data.iceCandidates = action.payload;
-      }
-    },
     setDuration: (state, action) => {
       state.callStatus.duration = action.payload;
     },
@@ -108,12 +95,11 @@ const callSlice = createSlice({
       state.connectedUser = initialState.connectedUser;
       state.controls = initialState.controls;
       state.durationInterval = initialState.durationInterval;
-      state.peer_data = initialState.peer_data;
       state.qualityControl = initialState.qualityControl;
     },
   },
 });
 
-export const { resetCallState, enableAudio, enableVideo, setIceCandidate, setRemoteDescription, showCallerComponent, setDuration, minimizeComponent, setCallStatus, setUser } = callSlice.actions;
+export const { resetCallState, enableAudio, enableVideo, showCallerComponent, setDuration, minimizeComponent, setCallStatus, setUser } = callSlice.actions;
 
 export default callSlice.reducer;

@@ -1,11 +1,13 @@
 import { SOCKET_HANDLERS } from "../../utils/enums";
-import { addInitialData, addNewConnectionRequested, addParticipants, addTypingAuthors, clearChat, deleteContact, resetCallState, resetSocketData, setIceCandidate, setRemoteDescription, showCallerComponent, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
+import { addInitialData, addNewConnectionRequested, addParticipants, addTypingAuthors, clearChat, deleteContact, resetSocketData, showCallerComponent, updateChat, updateChatSeenStatus, updateUserStatus } from "../redux/reducers";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getUserData } from "../redux/selectors";
 import { getLoginStateToken } from "../../utils";
 import { io } from "socket.io-client";
 import { deleteMessage, updateMessage } from "../redux/reducers/user_appData";
+import RTCElement from "../../Context/rtc_eventElement";
+import { RTCEndEvent, RTCIceReceived, RTCReconnectEvent, RTCRemoteDescription } from "../../utils/events";
 
 let socket = null;
 
@@ -151,25 +153,77 @@ export const SocketComponent = () => {
     });
 
     //RTC Signaling
-    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Offer, (forChatId, description, callType, fromUserId) => {
-      dispatch(showCallerComponent({ byUser: false, callType, forChatId, chatId: forChatId, contactId: fromUserId }));
-      dispatch(setRemoteDescription(description));
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.CallInitiator, (chatId, callType, fromUserId) => {
+      dispatch(showCallerComponent({ byUser: false, callType, chatId, contactId: fromUserId }));
+    });
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Reconnect, (chatId, fromUserId) => {
+      RTCElement.ReconnectionOffer = "received";
+      RTCElement.dispatchEvent(RTCReconnectEvent);
+    });
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Offer, (description) => {
+      // dispatch(setRemoteDescription(description));
+      RTCElement.remoteSDP = description;
+      RTCElement.dispatchEvent(RTCRemoteDescription);
     });
 
     socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Answer, (description) => {
-      dispatch(setRemoteDescription(description));
+      RTCElement.remoteSDP = description;
+      RTCElement.dispatchEvent(RTCRemoteDescription);
     });
     socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Candidate, (candidate) => {
-      dispatch(setIceCandidate(candidate));
+      if (!RTCElement.iceCandidate) {
+        RTCElement.iceCandidate = candidate;
+      }
+      RTCElement.dispatchEvent(RTCIceReceived);
     });
     socket.on(SOCKET_HANDLERS.RTC_SIGNALING.End, () => {
-      dispatch(resetCallState());
+      RTCElement.dispatchEvent(RTCEndEvent);
     });
   }, [dispatch, userId]);
 };
+export const sendCallInitiator = async (chatId, callType, userId) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.CallInitiator, chatId, callType, userId);
+  return new Promise((resolve, reject) => {
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.CallInitiator_RESP, (personId) => {
+      timer && clearInterval(timer);
+      resolve(personId);
+    });
+    var timer = setInterval(() => {
+      socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.CallInitiator, chatId, callType, userId);
+    }, 2000);
+    setTimeout(() => {
+      clearInterval(timer);
+      reject("No Response");
+    }, 60 * 1000);
+  });
+};
 
-export const sendOffer = (chatId, desc, callType, userId) => {
-  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Offer, chatId, desc, callType, userId);
+export const sendReconnectInitiator = async (chatId, userId) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Reconnect, chatId, userId);
+  return new Promise((resolve, reject) => {
+    socket.on(SOCKET_HANDLERS.RTC_SIGNALING.Reconnect_RESP, (personId) => {
+      timer && clearInterval(timer);
+      resolve(personId);
+    });
+    var timer = setInterval(() => {
+      socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Reconnect, chatId, userId);
+    }, 2000);
+    setTimeout(() => {
+      clearInterval(timer);
+      reject("No Response");
+    }, 15 * 1000);
+  });
+};
+
+export const sendReconnectInitiatorResponse = (chatId, personId) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Reconnect_RESP, chatId, personId);
+};
+
+export const sendCallInitiatorResponse = (chatId, personId) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.CallInitiator_RESP, chatId, personId);
+};
+export const sendOffer = (chatId, desc) => {
+  socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Offer, chatId, desc);
 };
 export const sendAnswer = (chatId, msg) => {
   socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.Answer, chatId, msg);

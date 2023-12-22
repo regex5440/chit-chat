@@ -1,18 +1,23 @@
 import { ArrowBottomLeftIcon, CameraIcon, CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
 import "./caller.sass";
 import { MicrophoneIcon } from "../../assets/icons";
-import { ChangeEventHandler, ReactElement, useEffect, useRef, useState } from "react";
+import { ChangeEventHandler, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { enableAudio, enableVideo, minimizeComponent, resetCallState, setCallStatus, setDuration } from "../../library/redux/reducers";
 import { getCallStatus, getCallUIDetails, getConnectedUser, getConnectedUserProfile, getPeerData, getUserData, getUserStreamControl } from "../../library/redux/selectors";
-import { endCall, sendAnswer, sendCandidate, sendOffer } from "../../library/socket.io/socket";
+import { endCall, sendAnswer, sendCallInitiator, sendCallInitiatorResponse, sendCandidate, sendOffer } from "../../library/socket.io/socket";
 import { convertToDuration, useDebounce } from "../../utils";
 import React from "react";
 import { CALL_STATUS } from "../../utils/enums";
+import RTCElement from "../../Context/rtc_eventElement";
+import { RTCEndEvent, RTCIceReceived, RTCRemoteDescription } from "../../utils/events";
+import { CircularLoader } from "hd-ui";
 
 const Caller = () => {
   const [userStream, setUserStream] = useState(new MediaStream());
   const [remoteStream, setRemoteStream] = useState(new MediaStream());
+  const [loading, setLoading] = useState(false);
+  const [errorForUI, setErrorForUI] = useState<string | ReactElement>("");
   const streamingArea = useRef<HTMLVideoElement>(null);
   const videoPreviewer = useRef<HTMLVideoElement>(null);
   const callStatusContainer = useRef<HTMLDivElement>(null);
@@ -20,78 +25,37 @@ const Caller = () => {
   const mediaControls = useSelector(getUserStreamControl);
   const callUIDetails = useSelector(getCallUIDetails);
   const currentCallStatus = useSelector(getCallStatus);
-  const peerData = useSelector(getPeerData);
+  // const peerData = useSelector(getPeerData);
   const connectedUser = useSelector(getConnectedUser);
   const connectedUserProfile = useSelector(getConnectedUserProfile);
   const myProfile = useSelector(getUserData);
-  const peerConnection = useRef(
-    new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-        },
-        {
-          urls: "turn:openrelay.metered.ca:80",
-          username: "openrelayproject",
-          credential: "openrelayproject",
-        },
-      ],
-    })
-  ); //TODO: Created STUN and TURN server of my own
+  const peerConnection = useRef<RTCPeerConnection>();
   const candidates = useRef<RTCIceCandidate[]>([]);
   const sendCandidatesDebounced = useDebounce(() => {
     sendCandidate(connectedUser.chatId, candidates.current);
   }, 700);
-  const [errorForUI, setErrorForUI] = useState<string | ReactElement>("");
   const durationInterval = useRef<number | null>(null);
   const duration = useRef(0);
-
-  useEffect(() => {
-    //TODO: handle permission denied
-    //TODO: change video aspect ratio based on device orientation (for one time only)
-    navigator.mediaDevices
-      ?.getUserMedia({
-        video: {
-          frameRate: {
-            min: 30,
-            ideal: 45,
-            max: 60,
-          },
-        },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      })
-      .then((stream) => {
-        if (stream.active && streamingArea.current) {
-          console.log("1. Got the user media");
-          setUserStream(stream);
-          stream.getTracks().forEach((track) => {
-            if (track.kind === "video") {
-              track.enabled = mediaControls.videoEnabled;
-            }
-            peerConnection.current.addTrack(track, stream);
-          });
-          streamingArea.current.srcObject = stream;
-          dispatch(setCallStatus(CALL_STATUS.CONNECTING));
-          if (callUIDetails.userInitiated) {
-            startCallHandler();
-          }
-        } else {
-          endCallHandler();
-          console.log("Permission Denied");
-        }
-      })
-      .catch((e) => {
-        endCallHandler();
-        setErrorForUI(
-          <>
-            <h2>Permission Denied!</h2>Please allow camera and microphone access in your browser’s settings.
-          </>
-        );
-        console.log(e);
-      });
+  const endCallIn = useRef(60); //Seconds
+  const endCallInterval = useRef<null | number>(null);
+  const runDuration = useCallback(() => {
+    durationInterval.current = setInterval(() => {
+      duration.current++;
+      dispatch(setDuration(duration.current));
+      if (callStatusContainer.current) {
+        callStatusContainer.current.textContent = convertToDuration(duration.current);
+      }
+    }, 1000);
+  }, []);
+  const stopDuration = useCallback((reset = false) => {
+    durationInterval.current && clearInterval(durationInterval.current);
+    durationInterval.current = null;
+    if (reset) {
+      duration.current = 0;
+    }
+  }, []);
+  const setRTCEventListeners = useCallback(() => {
+    if (!peerConnection.current) return;
     peerConnection.current.ontrack = (e) => {
       console.log("Received", e.track, e.streams);
       if (e.track) {
@@ -113,33 +77,38 @@ const Caller = () => {
     peerConnection.current.addEventListener(
       "connectionstatechange",
       (event) => {
-        switch (peerConnection.current.connectionState) {
+        switch (peerConnection.current?.connectionState) {
           case "new":
           case "connecting":
+            setLoading(true);
             console.log("STATE: Connecting…");
             break;
           case "connected":
-            durationInterval.current = setInterval(() => {
-              duration.current++;
-              dispatch(setDuration(duration.current));
-              if (callStatusContainer.current) {
-                callStatusContainer.current.textContent = convertToDuration(duration.current);
-              }
-            }, 1000);
+            runDuration();
+            stopNoPickerTimer();
             dispatch(setCallStatus(CALL_STATUS.CONNECTED));
+            setLoading(false);
+            RTCElement.CALL_RESPONSE = undefined;
+            RTCElement.remoteSDP = undefined;
+            RTCElement.iceCandidate = undefined;
             console.log("STATE: Connected");
             break;
           case "disconnected":
-            dispatch(setCallStatus(CALL_STATUS.DISCONNECTED));
-            durationInterval.current && clearInterval(durationInterval.current);
-            durationInterval.current = null;
+            stopDuration(true);
+            setLoading(false);
+            endCallHandler(true);
             console.log("STATE: Disconnected");
             break;
           case "closed":
             console.log("STATE: Offline");
+            setLoading(false);
             break;
           case "failed":
             console.log("STATE: Error");
+            setLoading(false);
+            stopDuration(true);
+            stopNoPickerTimer();
+            endCallHandler(event);
             break;
           default:
             console.log("STATE: Unknown");
@@ -149,20 +118,143 @@ const Caller = () => {
       },
       false
     );
-    return () => {
-      peerConnection.current.close();
-    };
-  }, [setUserStream, sendCandidatesDebounced]);
+  }, []);
+  const closeConnection = () => {
+    RTCElement.iceCandidate = undefined;
+    RTCElement.remoteSDP = undefined;
+    RTCElement.CALL_RESPONSE = false;
+    peerConnection.current?.close();
+  };
+  const pauseDuration = () => {
+    durationInterval.current && clearInterval(durationInterval.current);
+  };
+  const startNoPickupTimer = () => {
+    pauseDuration();
+    endCallInterval.current = setInterval(() => {
+      endCallIn.current--;
+      if (endCallIn.current === 0) {
+        endCallHandler(true);
+      }
+    }, 1000);
+  };
+  const stopNoPickerTimer = () => {
+    if (endCallInterval.current) {
+      clearInterval(endCallInterval.current);
+      endCallIn.current = 60;
+    }
+  };
+
+  async function setupRTC(stream: MediaStream) {
+    console.log("Setting new RTC instance");
+    closeConnection();
+    peerConnection.current = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+        },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
+      ],
+    });
+    stream.getTracks().forEach((track) => {
+      if (track.kind === "video") {
+        track.enabled = mediaControls.videoEnabled;
+      }
+      peerConnection.current?.addTrack(track, stream);
+      console.log("SettingTrack:", track.kind);
+    });
+    setRTCEventListeners();
+    try {
+      if (callUIDetails.userInitiated) {
+        await sendCallInitiator(connectedUser.chatId, mediaControls.videoEnabled ? "video" : "audio", myProfile.data.id);
+        dispatch(setCallStatus(CALL_STATUS.WAITING));
+        startCallHandler();
+      } else {
+        sendCallInitiatorResponse(connectedUser.chatId, connectedUser.userId);
+      }
+    } catch (e) {
+      console.log("ERROR", e);
+      dispatch(setCallStatus(CALL_STATUS.NO_RESPONSE));
+      endCallHandler(e);
+    }
+  }
+  const setRTCRemoteSDP = () => {
+    if (RTCElement.remoteSDP) {
+      console.log("2 Received", RTCElement.remoteSDP);
+      peerConnection.current?.setRemoteDescription(new RTCSessionDescription(RTCElement.remoteSDP));
+      console.log("CALL_STATUS", currentCallStatus);
+    }
+  };
+  const setRTCIceCandidate = () => {
+    console.log("3 IceCandidateReceived", RTCElement.iceCandidate);
+    if (RTCElement.iceCandidate?.length ?? 0 > 0) {
+      RTCElement.iceCandidate?.forEach((candidate: RTCIceCandidate) => {
+        peerConnection.current?.addIceCandidate(new RTCIceCandidate(candidate));
+      });
+    }
+  };
 
   useEffect(() => {
+    navigator.mediaDevices
+      ?.getUserMedia({
+        video: {
+          frameRate: {
+            min: 30,
+            ideal: 45,
+            max: 60,
+          },
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      })
+      .then((stream) => {
+        if (stream.active && streamingArea.current) {
+          console.log("1. Got the user media");
+          setUserStream(stream);
+          dispatch(setCallStatus(CALL_STATUS.CONNECTING));
+          streamingArea.current.srcObject = stream;
+          window.addEventListener("offline", startNoPickupTimer);
+          RTCElement.addEventListener(RTCEndEvent.type, endCallHandler);
+          RTCElement.addEventListener(RTCRemoteDescription.type, setRTCRemoteSDP);
+          RTCElement.addEventListener(RTCIceReceived.type, setRTCIceCandidate);
+          setupRTC(stream);
+        } else {
+          endCallHandler(true);
+          console.log("Permission Denied");
+        }
+      })
+      .catch((e) => {
+        endCallHandler(true);
+        setErrorForUI(
+          <>
+            <h2>Permission Denied!</h2>Please allow camera and microphone access in your browser’s settings.
+          </>
+        );
+        console.log(e);
+      });
+    return () => {
+      window.removeEventListener("offline", startNoPickupTimer);
+      RTCElement.removeEventListener(RTCEndEvent.type, endCallHandler);
+      RTCElement.removeEventListener(RTCRemoteDescription.type, setRTCRemoteSDP);
+      RTCElement.removeEventListener(RTCIceReceived.type, setRTCIceCandidate);
+
+      stopNoPickerTimer();
+      durationInterval.current && clearInterval(durationInterval.current);
+      duration.current = 0;
+    };
+  }, [setUserStream]);
+
+  useEffect(() => {
+    //Responsible for setting stream to different video elements
     if (streamingArea.current && videoPreviewer.current) {
       if (currentCallStatus === CALL_STATUS.CONNECTED) {
         streamingArea.current.srcObject = remoteStream;
         videoPreviewer.current.srcObject = userStream;
-
-        if (remoteStream) {
-          remoteStream.getVideoTracks()[0]?.applyConstraints({ aspectRatio: window.innerWidth / window.innerHeight });
-        }
       } else {
         streamingArea.current.srcObject = userStream;
       }
@@ -170,7 +262,7 @@ const Caller = () => {
   }, [currentCallStatus, remoteStream, userStream]);
 
   useEffect(() => {
-    // Keep audio/video toggle buttons in sync with track enabled
+    // Keep audio/video buttons in sync with track issues and set initialValues
     userStream?.getTracks().forEach((track) => {
       if (track.kind === "audio") {
         track.onmute = () => {
@@ -196,6 +288,7 @@ const Caller = () => {
   }, [userStream]);
 
   useEffect(() => {
+    // Keep buttons in sync with audio/video
     userStream.getTracks().forEach((track) => {
       if (track.kind === "video") {
         track.enabled = mediaControls.videoEnabled;
@@ -206,22 +299,6 @@ const Caller = () => {
     });
   }, [userStream, mediaControls]);
 
-  useEffect(() => {
-    if (userStream) {
-      if (peerData.remoteDescription !== null && !peerConnection.current.remoteDescription) {
-        peerConnection.current.setRemoteDescription(new RTCSessionDescription(peerData.remoteDescription));
-        console.log("2 Received", peerData.remoteDescription.type);
-      }
-      if (peerData.iceCandidates !== null) {
-        console.log("3 IceCandidateReceived");
-
-        peerData.iceCandidates?.forEach((candidate: RTCIceCandidate) => {
-          peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-      }
-    }
-  }, [userStream, peerData]);
-
   // Options handlers
   const videoOptionHandler: ChangeEventHandler<HTMLInputElement> = (e) => {
     const checked = e.target.checked;
@@ -231,20 +308,22 @@ const Caller = () => {
     const checked = e.target.checked;
     dispatch(enableAudio(checked));
   };
-  const endCallHandler = () => {
-    //TODO: End call gracefully and provide option for caller even after call end/not connected/rejected etc.
+  function endCallHandler(e: Event | any) {
+    //TODO: End call gracefully if rejected or not picker by callee
+    closeConnection();
     userStream?.getTracks().forEach((track) => {
       track.stop();
     });
-    peerConnection.current.close();
     dispatch(resetCallState(true));
-    endCall(connectedUser.chatId);
+    if (e?.type !== RTCEndEvent.type) {
+      endCall(connectedUser.chatId);
+    }
     //TODO: Leave a message with call duration and type in chat from caller side
-  };
+  }
   const answerCallHandler = () => {
     //TODO: better handling of calling answer
-    peerConnection.current.createAnswer().then((value) => {
-      peerConnection.current.setLocalDescription(value);
+    peerConnection.current?.createAnswer().then((value) => {
+      peerConnection.current?.setLocalDescription(value);
       sendAnswer(connectedUser.chatId, value);
       console.log("2. Send", value.type);
     });
@@ -253,9 +332,11 @@ const Caller = () => {
     dispatch(minimizeComponent(true));
   };
   const startCallHandler = () => {
-    peerConnection.current.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((value) => {
-      peerConnection.current.setLocalDescription(value);
-      sendOffer(connectedUser.chatId, value, mediaControls.videoEnabled ? "video" : "audio", myProfile.data.id);
+    console.log("Sending offer");
+    peerConnection.current?.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((value) => {
+      peerConnection.current?.setLocalDescription(value);
+      sendOffer(connectedUser.chatId, value);
+      startNoPickupTimer();
       console.log("2. Send", value.type);
     });
   };
@@ -274,7 +355,7 @@ const Caller = () => {
               <CameraIcon width={24} height={24} />
             </label>
           </div>
-          <div className="option" title="End Call" id="end-call" onClick={endCallHandler}>
+          <div className="option" title="End Call" id="end-call" onClick={() => endCallHandler(true)}>
             <span>
               <Cross2Icon width={30} height={30} />
             </span>
@@ -287,7 +368,7 @@ const Caller = () => {
           </div>
         </div>
       );
-    } else if (currentCallStatus !== CALL_STATUS.CONNECTED) {
+    } else if (currentCallStatus === CALL_STATUS.CONNECTING) {
       return (
         <div className="option-container">
           <div className="option" title="Accept Call" onClick={answerCallHandler}>
@@ -295,7 +376,7 @@ const Caller = () => {
               <CheckIcon width={30} height={30} />
             </span>
           </div>
-          <div className="option" title="Reject Call" id="end-call" onClick={endCallHandler}>
+          <div className="option" title="Reject Call" id="end-call" onClick={() => endCallHandler(true)}>
             <span>
               <Cross2Icon width={30} height={30} />
             </span>
@@ -319,6 +400,8 @@ const Caller = () => {
         return "Call ended";
       case CALL_STATUS.REJECTED:
         return "Call denied";
+      case CALL_STATUS.NO_RESPONSE:
+        return "No Response";
       default:
         return "";
     }
@@ -329,6 +412,15 @@ const Caller = () => {
         <div className="calling-error">{errorForUI}</div>
       ) : (
         <>
+          {loading && (
+            <>
+              <div className="chit-chat-call__overlay"></div>
+              <div className="chit-chat-call__loading">
+                <CircularLoader size={70} riderColor={"var(--icon-stroke)"} />
+                <p>Loading...</p>
+              </div>
+            </>
+          )}
           <div className="chit-chat-call__stream-area">
             <video ref={streamingArea} autoPlay muted={currentCallStatus !== CALL_STATUS.CONNECTED} />
           </div>

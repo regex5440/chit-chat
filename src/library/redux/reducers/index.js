@@ -2,7 +2,7 @@ import { addParticipants, clearChat, deleteContact, updateSelectedContact, addTy
 
 import { toggleClockHour, toggleDarkMode, updateAttachmentMetadata, updateSelectedFiles } from "./app_settings";
 
-import { resetCallState, setIceCandidate, setRemoteDescription, showCallerComponent, setDuration, minimizeComponent, setCallStatus, enableAudio, enableVideo, setUser } from "./call_slice";
+import { resetCallState, showCallerComponent, setDuration, minimizeComponent, setCallStatus, enableAudio, enableVideo, setUser } from "./call_slice";
 
 export {
   // AppSettings
@@ -12,7 +12,7 @@ export {
   updateAttachmentMetadata,
 };
 
-export { resetCallState, setIceCandidate, setRemoteDescription, showCallerComponent, setDuration, minimizeComponent, setCallStatus, enableAudio, enableVideo, setUser };
+export { resetCallState, showCallerComponent, setDuration, minimizeComponent, setCallStatus, enableAudio, enableVideo, setUser };
 
 export {
   // User AppData Slice
