@@ -31,6 +31,8 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
   const theme = useSelector(getTheme);
   const attachmentFiles = [...useSelector(getSelectedFiles)];
   const [sendingAttachments, setSendingAttachments] = useState(false);
+  const [visibleEmojiContainer, setEmojiContainerVisible] = useState(false);
+  const [visibleAttachmentPicker, setVisibleAttachmentPicker] = useState(false);
   const debouncedInput = useDebounce(() => {
     typingStarted.current = false;
     dispatch(updateTypingThunk(false));
@@ -49,6 +51,15 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
     } else {
       textArea.current?.focus();
     }
+    if (textArea.current) {
+      textArea.current.onfocus = () => {
+        setEmojiContainerVisible(false);
+        setVisibleAttachmentPicker(false);
+      };
+    }
+    return () => {
+      if (textArea.current) textArea.current.onfocus = undefined;
+    };
   }, []);
 
   const inputHandler = (e) => {
@@ -183,56 +194,77 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
       }
     };
   };
+  const showEmojiContainer = () => {
+    setVisibleAttachmentPicker(false);
+    setEmojiContainerVisible((state) => !state);
+  };
+  const showAttachmentPicker = () => {
+    setEmojiContainerVisible(false);
+    setVisibleAttachmentPicker((state) => !state);
+  };
 
   return (
     <>
       {sendingAttachments && <LinearLoader height="5px" width="100%" riderColor="var(--icon-stroke)" trackColor="var(--window-background)" withProgress={false} />}
       <div className="user-chat-option" data-unselectable={tempContact?.restricted ? true : false}>
         <div className="user-chat-option__container option">
-          <PopOver.Root>
-            <PopOver.Trigger asChild>
-              <div className="option__emoji click-icon" title="Emoticons">
-                <SmileyEmoji height="24" width="24" />
-              </div>
-            </PopOver.Trigger>
-            <PopOver.Portal>
-              <PopOver.Content>
-                <EmojiPicker
-                  width={300}
-                  onEmojiClick={(emoji) => {
-                    setInput((prev) => prev + emoji.emoji);
-                  }}
-                  autoFocusSearch={true}
-                  theme={theme.preferred === "dark" ? "dark" : "light"}
-                />
-                <PopOver.Arrow style={{ fill: "var(--window-background)" }} />
-              </PopOver.Content>
-            </PopOver.Portal>
-          </PopOver.Root>
-          <DropDownMenu.Root>
-            <DropDownMenu.Trigger asChild>
-              <div className="option__attachments click-icon" title="Attachments">
-                <PaperClipIcon height="24" width="24" />
-              </div>
-            </DropDownMenu.Trigger>
-            <DropDownMenu.Portal>
-              <DropDownMenu.Content className="chat-input__attachment-options">
-                <DropDownMenu.Item className="attachment-option" onClick={() => attachmentHandler("image")}>
-                  <span className="icon">
-                    <ImageIcon height="26" width="26" />
-                  </span>
-                  <span className="text">Image</span>
-                </DropDownMenu.Item>
-                <DropDownMenu.Item className="attachment-option" onClick={() => attachmentHandler("document")}>
-                  <span className="icon">
-                    <FileIcon height="26" width="26" />
-                  </span>
-                  <span className="text">Document</span>
-                </DropDownMenu.Item>
-                <DropDownMenu.Arrow style={{ fill: "var(--window-background)" }} />
-              </DropDownMenu.Content>
-            </DropDownMenu.Portal>
-          </DropDownMenu.Root>
+          {deviceDetails.type !== "mobile" ? (
+            <PopOver.Root>
+              <PopOver.Trigger asChild>
+                <div className="option__emoji click-icon" title="Emoticons">
+                  <SmileyEmoji height="24" width="24" />
+                </div>
+              </PopOver.Trigger>
+              <PopOver.Portal>
+                <PopOver.Content>
+                  <EmojiPicker
+                    width={300}
+                    onEmojiClick={(emoji) => {
+                      setInput((prev) => prev + emoji.emoji);
+                    }}
+                    autoFocusSearch={true}
+                    theme={theme.preferred === "dark" ? "dark" : "light"}
+                    previewConfig={{ showPreview: true }}
+                  />
+                  <PopOver.Arrow style={{ fill: "var(--window-background)" }} />
+                </PopOver.Content>
+              </PopOver.Portal>
+            </PopOver.Root>
+          ) : (
+            <div className="option__emoji click-icon" title="Emoticons" onMouseDown={showEmojiContainer}>
+              <SmileyEmoji height="24" width="24" />
+            </div>
+          )}
+          {deviceDetails.type !== "mobile" ? (
+            <DropDownMenu.Root>
+              <DropDownMenu.Trigger asChild>
+                <div className="option__attachments click-icon" title="Attachments">
+                  <PaperClipIcon height="24" width="24" />
+                </div>
+              </DropDownMenu.Trigger>
+              <DropDownMenu.Portal>
+                <DropDownMenu.Content className="chat-input__attachment-options">
+                  <DropDownMenu.Item className="attachment-option" onClick={() => attachmentHandler("image")}>
+                    <span className="icon">
+                      <ImageIcon height="26" width="26" />
+                    </span>
+                    <span className="text">Image</span>
+                  </DropDownMenu.Item>
+                  <DropDownMenu.Item className="attachment-option" onClick={() => attachmentHandler("document")}>
+                    <span className="icon">
+                      <FileIcon height="26" width="26" />
+                    </span>
+                    <span className="text">Document</span>
+                  </DropDownMenu.Item>
+                  <DropDownMenu.Arrow style={{ fill: "var(--window-background)" }} />
+                </DropDownMenu.Content>
+              </DropDownMenu.Portal>
+            </DropDownMenu.Root>
+          ) : (
+            <div className="option__attachments click-icon" title="Attachments" onMouseDown={showAttachmentPicker}>
+              <PaperClipIcon height="24" width="24" />
+            </div>
+          )}
           <form className="option__input" onSubmit={submitHandler}>
             {deviceDetails.type === "mobile" ? <textarea placeholder="Type a message or send a voice note" onChange={debouncedInput} onInput={inputHandler} value={messageText} ref={textArea} /> : <input type="text" placeholder="Type a message or send a voice note" onChange={debouncedInput} onInput={inputHandler} value={messageText} ref={textArea} />}
           </form>
@@ -246,6 +278,35 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
             </div>
           )}
         </div>
+        {visibleEmojiContainer && (
+          <EmojiPicker
+            width={"100%"}
+            height={300}
+            onEmojiClick={(emoji) => {
+              setInput((prev) => prev + emoji.emoji);
+            }}
+            theme={theme.preferred === "dark" ? "dark" : "light"}
+            previewConfig={{ showPreview: false }}
+            autoFocusSearch={false}
+            searchDisabled={true}
+          />
+        )}
+        {visibleAttachmentPicker && (
+          <div className="chat-input__attachment-options" data-device="mobile">
+            <div className="attachment-option" onClick={() => attachmentHandler("image")}>
+              <span className="icon">
+                <ImageIcon height="26" width="26" />
+              </span>
+              <span className="text">Image</span>
+            </div>
+            <div className="attachment-option" onClick={() => attachmentHandler("document")}>
+              <span className="icon">
+                <FileIcon height="26" width="26" />
+              </span>
+              <span className="text">Document</span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

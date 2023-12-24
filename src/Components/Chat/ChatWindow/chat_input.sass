@@ -1,6 +1,5 @@
 @import '@theme-variables'
 .user-chat-option
-    height: $chat-window-input-area-height
     width: 100%
     box-sizing: border-box
     background: var(--window-background)
@@ -16,7 +15,7 @@
         display: flex
         align-items: flex-end
         justify-content: space-between
-        height: 100%
+        height: $chat-window-input-area-height
         .option__input
             width: 100%
             height: 100%
@@ -59,6 +58,9 @@
     box-shadow: 1px 2px 10px var(--option-modal-shadow)
     background: var(--modal-background-primary)
     font-family: var(--frame-font)
+    &[data-device='mobile']
+        grid-auto-columns: unset
+        justify-content: space-evenly
     .attachment-option
         display: flex
         flex-direction: column
