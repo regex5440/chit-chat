@@ -51,6 +51,9 @@
         height: calc(200px * 9/16)
         box-shadow: 0 0 7px 1px $shadow
         cursor: pointer
+        display: none
+        &[data-visible=true]
+            display: block
         video
             transform: scaleX(-1)
             height: inherit
@@ -112,7 +115,7 @@
                     overflow: hidden
                     backdrop-filter: invert(10%)
                     &[for='camera-control'] path
-                        fill: $textColor
+                        stroke: $textColor
                     &[for="microphone-control"] path
                         stroke: $textColor
                     &:hover
@@ -175,3 +178,7 @@
         &__top-menu
             padding: 10px
             align-items: center
+        &__option-area
+            .option
+                label,span
+                    width: 50px !important

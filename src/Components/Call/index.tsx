@@ -1,21 +1,21 @@
 import { ArrowBottomLeftIcon, CameraIcon, CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
 import "./caller.sass";
-import { MicrophoneIcon } from "../../assets/icons";
+import { MicrophoneIcon, VideoIcon } from "../../assets/icons";
 import { ChangeEventHandler, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { enableAudio, enableVideo, minimizeComponent, resetCallState, setCallStatus, setDuration } from "../../library/redux/reducers";
 import { getCallStatus, getCallUIDetails, getConnectedUser, getConnectedUserProfile, getPeerData, getUserData, getUserStreamControl } from "../../library/redux/selectors";
-import { endCall, sendAnswer, sendCallInitiator, sendCallInitiatorResponse, sendCandidate, sendOffer } from "../../library/socket.io/socket";
+import { endCall, sendAnswer, sendCallInitiator, sendCallInitiatorResponse, sendCandidate, sendOffer, sendReconnectInitiator, sendReconnectInitiatorResponse } from "../../library/socket.io/socket";
 import { convertToDuration, useDebounce } from "../../utils";
 import React from "react";
 import { CALL_STATUS } from "../../utils/enums";
 import RTCElement from "../../Context/rtc_eventElement";
-import { RTCEndEvent, RTCIceReceived, RTCRemoteDescription } from "../../utils/events";
+import { RTCEndEvent, RTCIceReceived, RTCReconnectEvent, RTCRemoteDescription } from "../../utils/events";
 import { CircularLoader } from "hd-ui";
+import WebRTCConnection from "../../utils/webrtc";
 
 const Caller = () => {
-  const [userStream, setUserStream] = useState(new MediaStream());
-  const [remoteStream, setRemoteStream] = useState(new MediaStream());
+  const userStream = useRef<MediaStream>();
   const [loading, setLoading] = useState(false);
   const [errorForUI, setErrorForUI] = useState<string | ReactElement>("");
   const streamingArea = useRef<HTMLVideoElement>(null);
@@ -25,181 +25,34 @@ const Caller = () => {
   const mediaControls = useSelector(getUserStreamControl);
   const callUIDetails = useSelector(getCallUIDetails);
   const currentCallStatus = useSelector(getCallStatus);
-  // const peerData = useSelector(getPeerData);
   const connectedUser = useSelector(getConnectedUser);
   const connectedUserProfile = useSelector(getConnectedUserProfile);
   const myProfile = useSelector(getUserData);
-  const peerConnection = useRef<RTCPeerConnection>();
-  const candidates = useRef<RTCIceCandidate[]>([]);
-  const sendCandidatesDebounced = useDebounce(() => {
-    sendCandidate(connectedUser.chatId, candidates.current);
-  }, 700);
-  const durationInterval = useRef<number | null>(null);
-  const duration = useRef(0);
-  const endCallIn = useRef(60); //Seconds
-  const endCallInterval = useRef<null | number>(null);
-  const runDuration = useCallback(() => {
-    durationInterval.current = setInterval(() => {
-      duration.current++;
-      dispatch(setDuration(duration.current));
-      if (callStatusContainer.current) {
-        callStatusContainer.current.textContent = convertToDuration(duration.current);
-      }
-    }, 1000);
-  }, []);
-  const stopDuration = useCallback((reset = false) => {
-    durationInterval.current && clearInterval(durationInterval.current);
-    durationInterval.current = null;
-    if (reset) {
-      duration.current = 0;
-    }
-  }, []);
-  const setRTCEventListeners = useCallback(() => {
-    if (!peerConnection.current) return;
-    peerConnection.current.ontrack = (e) => {
-      console.log("Received", e.track, e.streams);
-      if (e.track) {
-        remoteStream.addTrack(e.track);
-      }
-    };
-    peerConnection.current.onicecandidate = (e) => {
-      console.log("IceCandidateCreated");
-      if (e.candidate === null) return;
-      candidates.current.push(e.candidate);
-      sendCandidatesDebounced();
-    };
-    peerConnection.current.onicecandidateerror = (e) => {
-      console.log("CandidateError", e);
-    };
-    peerConnection.current.onnegotiationneeded = (e) => {
-      console.log("NegotiationNeed", e);
-    };
-    peerConnection.current.addEventListener(
-      "connectionstatechange",
-      (event) => {
-        switch (peerConnection.current?.connectionState) {
-          case "new":
-          case "connecting":
-            setLoading(true);
-            console.log("STATE: Connecting…");
-            break;
-          case "connected":
-            runDuration();
-            stopNoPickerTimer();
-            dispatch(setCallStatus(CALL_STATUS.CONNECTED));
-            setLoading(false);
-            RTCElement.CALL_RESPONSE = undefined;
-            RTCElement.remoteSDP = undefined;
-            RTCElement.iceCandidate = undefined;
-            console.log("STATE: Connected");
-            break;
-          case "disconnected":
-            stopDuration(true);
-            setLoading(false);
-            endCallHandler(true);
-            console.log("STATE: Disconnected");
-            break;
-          case "closed":
-            console.log("STATE: Offline");
-            setLoading(false);
-            break;
-          case "failed":
-            console.log("STATE: Error");
-            setLoading(false);
-            stopDuration(true);
-            stopNoPickerTimer();
-            endCallHandler(event);
-            break;
-          default:
-            console.log("STATE: Unknown");
-            break;
-        }
-        console.log(event);
-      },
-      false
-    );
-  }, []);
-  const closeConnection = () => {
-    RTCElement.iceCandidate = undefined;
-    RTCElement.remoteSDP = undefined;
-    RTCElement.CALL_RESPONSE = false;
-    peerConnection.current?.close();
-  };
-  const pauseDuration = () => {
-    durationInterval.current && clearInterval(durationInterval.current);
-  };
-  const startNoPickupTimer = () => {
-    pauseDuration();
-    endCallInterval.current = setInterval(() => {
-      endCallIn.current--;
-      if (endCallIn.current === 0) {
-        endCallHandler(true);
-      }
-    }, 1000);
-  };
-  const stopNoPickerTimer = () => {
-    if (endCallInterval.current) {
-      clearInterval(endCallInterval.current);
-      endCallIn.current = 60;
-    }
-  };
+  const rtcConnection = useRef<WebRTCConnection>();
+  const endCallTimeout = useRef<null | number>(null);
+  const reconnecting = useRef(false);
 
-  async function setupRTC(stream: MediaStream) {
-    console.log("Setting new RTC instance");
-    closeConnection();
-    peerConnection.current = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-        },
-        {
-          urls: "turn:openrelay.metered.ca:80",
-          username: "openrelayproject",
-          credential: "openrelayproject",
-        },
-      ],
-    });
-    stream.getTracks().forEach((track) => {
-      if (track.kind === "video") {
-        track.enabled = mediaControls.videoEnabled;
-      }
-      peerConnection.current?.addTrack(track, stream);
-      console.log("SettingTrack:", track.kind);
-    });
-    setRTCEventListeners();
-    try {
-      if (callUIDetails.userInitiated) {
-        await sendCallInitiator(connectedUser.chatId, mediaControls.videoEnabled ? "video" : "audio", myProfile.data.id);
-        dispatch(setCallStatus(CALL_STATUS.WAITING));
-        startCallHandler();
+  async function reconnectConnection(e: Event | undefined = undefined) {
+    //TODO: Trigger it from caller, switched networks.
+    if (callUIDetails.visible) {
+      console.log("Reconnecting...");
+      reconnecting.current = true;
+      rtcConnection.current?.terminate();
+      await setupRTC();
+      if (e === undefined) {
+        await sendReconnectInitiator(connectedUser.chatId, connectedUser.userId);
       } else {
-        sendCallInitiatorResponse(connectedUser.chatId, connectedUser.userId);
+        sendReconnectInitiatorResponse(connectedUser.chatId, myProfile.data.id);
       }
-    } catch (e) {
-      console.log("ERROR", e);
-      dispatch(setCallStatus(CALL_STATUS.NO_RESPONSE));
-      endCallHandler(e);
+      if (callUIDetails.userInitiated) {
+        const offer = await startCallHandler();
+        sendOffer(connectedUser.chatId, offer);
+      }
     }
   }
-  const setRTCRemoteSDP = () => {
-    if (RTCElement.remoteSDP) {
-      console.log("2 Received", RTCElement.remoteSDP);
-      peerConnection.current?.setRemoteDescription(new RTCSessionDescription(RTCElement.remoteSDP));
-      console.log("CALL_STATUS", currentCallStatus);
-    }
-  };
-  const setRTCIceCandidate = () => {
-    console.log("3 IceCandidateReceived", RTCElement.iceCandidate);
-    if (RTCElement.iceCandidate?.length ?? 0 > 0) {
-      RTCElement.iceCandidate?.forEach((candidate: RTCIceCandidate) => {
-        peerConnection.current?.addIceCandidate(new RTCIceCandidate(candidate));
-      });
-    }
-  };
-
-  useEffect(() => {
-    navigator.mediaDevices
-      ?.getUserMedia({
+  async function setupRTC() {
+    try {
+      const stream = await navigator.mediaDevices?.getUserMedia({
         video: {
           frameRate: {
             min: 30,
@@ -211,59 +64,151 @@ const Caller = () => {
           echoCancellation: true,
           noiseSuppression: true,
         },
-      })
-      .then((stream) => {
-        if (stream.active && streamingArea.current) {
-          console.log("1. Got the user media");
-          setUserStream(stream);
-          dispatch(setCallStatus(CALL_STATUS.CONNECTING));
-          streamingArea.current.srcObject = stream;
-          window.addEventListener("offline", startNoPickupTimer);
-          RTCElement.addEventListener(RTCEndEvent.type, endCallHandler);
-          RTCElement.addEventListener(RTCRemoteDescription.type, setRTCRemoteSDP);
-          RTCElement.addEventListener(RTCIceReceived.type, setRTCIceCandidate);
-          setupRTC(stream);
-        } else {
-          endCallHandler(true);
-          console.log("Permission Denied");
-        }
-      })
-      .catch((e) => {
-        endCallHandler(true);
-        setErrorForUI(
-          <>
-            <h2>Permission Denied!</h2>Please allow camera and microphone access in your browser’s settings.
-          </>
-        );
-        console.log(e);
       });
-    return () => {
-      window.removeEventListener("offline", startNoPickupTimer);
-      RTCElement.removeEventListener(RTCEndEvent.type, endCallHandler);
-      RTCElement.removeEventListener(RTCRemoteDescription.type, setRTCRemoteSDP);
-      RTCElement.removeEventListener(RTCIceReceived.type, setRTCIceCandidate);
-
-      stopNoPickerTimer();
-      durationInterval.current && clearInterval(durationInterval.current);
-      duration.current = 0;
-    };
-  }, [setUserStream]);
-
-  useEffect(() => {
-    //Responsible for setting stream to different video elements
-    if (streamingArea.current && videoPreviewer.current) {
-      if (currentCallStatus === CALL_STATUS.CONNECTED) {
-        streamingArea.current.srcObject = remoteStream;
-        videoPreviewer.current.srcObject = userStream;
-      } else {
-        streamingArea.current.srcObject = userStream;
+      if (stream?.active === true) {
+        userStream.current = stream;
+        keepUserStreamInSync();
+        dispatch(setCallStatus(CALL_STATUS.CONNECTING));
+        rtcConnection.current = new WebRTCConnection({
+          iceServers: [
+            {
+              urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+            },
+            {
+              urls: "turn:openrelay.metered.ca:80",
+              username: "openrelayproject",
+              credential: "openrelayproject",
+            },
+          ],
+        });
+        if (streamingArea.current) {
+          streamingArea.current.srcObject = stream;
+        }
+        rtcConnection.current.setStream = stream;
+        rtcConnection.current.onConnectionStateChange = (state) => {
+          console.log(state);
+          switch (state) {
+            case "connected":
+              reconnecting.current = false;
+              stopNoPickTimer();
+              dispatch(setCallStatus(CALL_STATUS.CONNECTED));
+              setLoading(false);
+              if (rtcConnection.current) {
+                setVideoSrc(rtcConnection.current.remoteStream);
+              }
+              break;
+            case "connecting":
+              setLoading(true);
+              break;
+            case "disconnected":
+              if (currentCallStatus === CALL_STATUS.CONNECTED) {
+                startNoPickTimer();
+                //TODO: Reconnect here
+              }
+              break;
+            case "failed":
+              reconnecting.current = false;
+              stopNoPickTimer();
+              endCallHandler(true);
+              break;
+            default:
+              setLoading(false);
+          }
+        };
+        // rtcConnection.current.onRemoteStreamAdded = (remoteStream) => {
+        //   setVideoSrc(stream,remoteStream);
+        // };
+        rtcConnection.current.onIceCandidate = (candidates) => {
+          sendCandidate(connectedUser.chatId, candidates);
+        };
       }
+    } catch (e) {
+      endCallHandler(true);
+      setErrorForUI(
+        <>
+          <h2>Permission Denied!</h2>Please allow camera and microphone access in your browser’s settings.
+        </>
+      );
+      console.log(e);
     }
-  }, [currentCallStatus, remoteStream, userStream]);
+  }
+  function setVideoSrc(remoteStream: MediaStream) {
+    if (streamingArea.current && videoPreviewer.current) {
+      videoPreviewer.current.srcObject = userStream.current as MediaStream;
+      streamingArea.current.srcObject = remoteStream;
+      console.log("Stream set");
+    }
+  }
+  function closeConnection() {
+    rtcConnection.current?.terminate();
+  }
+  function stopNoPickTimer() {
+    if (endCallTimeout.current) {
+      clearTimeout(endCallTimeout.current);
+    }
+  }
+  function startNoPickTimer() {
+    endCallTimeout.current = setTimeout(() => {
+      endCallHandler(true);
+    }, 30 * 1000) as any; // Call not picked timing
+  }
+  function remoteDescriptionReceiver(e: Event) {
+    if (RTCElement.remoteSDP && rtcConnection.current) {
+      rtcConnection.current.setRemoteDescription = RTCElement.remoteSDP;
+      if (RTCElement.remoteSDP?.type === "offer" && reconnecting.current) {
+        answerCallHandler().then((answer) => sendAnswer(connectedUser.chatId, answer));
+      }
+      RTCElement.remoteSDP = undefined;
+    }
+  }
+  function remoteIceReceiver() {
+    if (RTCElement.iceCandidate && rtcConnection.current) {
+      rtcConnection.current.setRemoteIceCandidates = RTCElement.iceCandidate;
+      RTCElement.iceCandidate = undefined;
+    }
+  }
+  function endConnectionReceiver() {
+    endCallHandler(true);
+  }
+  useEffect(() => {
+    setupRTC().then(async (v) => {
+      if (callUIDetails.userInitiated) {
+        await sendCallInitiator(connectedUser.chatId, mediaControls.videoEnabled ? "video" : "audio", myProfile.data.id);
+        startCallHandler();
+      } else {
+        sendCallInitiatorResponse(connectedUser.chatId, myProfile.data.id);
+      }
+    });
+
+    RTCElement.addEventListener(RTCReconnectEvent.type, reconnectConnection);
+    RTCElement.addEventListener(RTCRemoteDescription.type, remoteDescriptionReceiver);
+    RTCElement.addEventListener(RTCIceReceived.type, remoteIceReceiver);
+    RTCElement.addEventListener(RTCEndEvent.type, endConnectionReceiver);
+    return () => {
+      RTCElement.removeEventListener(RTCReconnectEvent.type, reconnectConnection);
+      RTCElement.removeEventListener(RTCRemoteDescription.type, remoteDescriptionReceiver);
+      RTCElement.removeEventListener(RTCIceReceived.type, remoteIceReceiver);
+      RTCElement.removeEventListener(RTCEndEvent.type, endConnectionReceiver);
+      userStream.current?.getTracks().forEach((track) => {
+        track.stop();
+      });
+    };
+  }, []);
 
   useEffect(() => {
-    // Keep audio/video buttons in sync with track issues and set initialValues
-    userStream?.getTracks().forEach((track) => {
+    // Control media tracks mute state
+    userStream.current?.getTracks().forEach((track) => {
+      if (track.kind === "video") {
+        track.enabled = mediaControls.videoEnabled;
+      }
+      if (track.kind === "audio") {
+        track.enabled = mediaControls.audioEnabled;
+      }
+    });
+  }, [mediaControls]);
+
+  function keepUserStreamInSync() {
+    userStream.current?.getTracks().forEach((track) => {
       if (track.kind === "audio") {
         track.onmute = () => {
           dispatch(enableAudio(false));
@@ -280,24 +225,7 @@ const Caller = () => {
         };
       }
     });
-    return () => {
-      userStream?.getTracks().forEach((track) => {
-        track.stop();
-      });
-    };
-  }, [userStream]);
-
-  useEffect(() => {
-    // Keep buttons in sync with audio/video
-    userStream.getTracks().forEach((track) => {
-      if (track.kind === "video") {
-        track.enabled = mediaControls.videoEnabled;
-      }
-      if (track.kind === "audio") {
-        track.enabled = mediaControls.audioEnabled;
-      }
-    });
-  }, [userStream, mediaControls]);
+  }
 
   // Options handlers
   const videoOptionHandler: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -311,7 +239,7 @@ const Caller = () => {
   function endCallHandler(e: Event | any) {
     //TODO: End call gracefully if rejected or not picker by callee
     closeConnection();
-    userStream?.getTracks().forEach((track) => {
+    userStream.current?.getTracks().forEach((track) => {
       track.stop();
     });
     dispatch(resetCallState(true));
@@ -320,25 +248,22 @@ const Caller = () => {
     }
     //TODO: Leave a message with call duration and type in chat from caller side
   }
-  const answerCallHandler = () => {
+  const answerCallHandler = async () => {
     //TODO: better handling of calling answer
-    peerConnection.current?.createAnswer().then((value) => {
-      peerConnection.current?.setLocalDescription(value);
-      sendAnswer(connectedUser.chatId, value);
-      console.log("2. Send", value.type);
-    });
+    const answer = await rtcConnection.current?.answerCall();
+    sendAnswer(connectedUser.chatId, answer);
+    console.log("2. Send", answer);
   };
   const minimizeHandler = () => {
     dispatch(minimizeComponent(true));
   };
-  const startCallHandler = () => {
+  const startCallHandler = async () => {
     console.log("Sending offer");
-    peerConnection.current?.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((value) => {
-      peerConnection.current?.setLocalDescription(value);
-      sendOffer(connectedUser.chatId, value);
-      startNoPickupTimer();
-      console.log("2. Send", value.type);
-    });
+    const offer = await rtcConnection.current?.initiateCall();
+    sendOffer(connectedUser.chatId, offer);
+    dispatch(setCallStatus(CALL_STATUS.WAITING));
+    startNoPickTimer();
+    console.log("2. Send", offer?.type);
   };
   const renderOptions = () => {
     /*
@@ -352,7 +277,7 @@ const Caller = () => {
           <div className="option">
             <input type="checkbox" id="camera-control" checked={mediaControls.videoEnabled} onChange={videoOptionHandler} />
             <label htmlFor="camera-control">
-              <CameraIcon width={24} height={24} />
+              <VideoIcon width={24} height={24} />
             </label>
           </div>
           <div className="option" title="End Call" id="end-call" onClick={() => endCallHandler(true)}>
@@ -427,12 +352,9 @@ const Caller = () => {
           <div className="chit-chat-call__option-area" data-visible={true}>
             {renderOptions()}
           </div>
-          {currentCallStatus === CALL_STATUS.CONNECTED && (
-            <div className="chit-chat-call__user-video">
-              <video ref={videoPreviewer} autoPlay muted />
-            </div>
-          )}
-
+          <div className="chit-chat-call__user-video" data-visible={currentCallStatus === CALL_STATUS.CONNECTED}>
+            <video ref={videoPreviewer} autoPlay muted />
+          </div>
           <div className="chit-chat-call__top-menu">
             <div className="caller-info">
               <div className="caller-name">
