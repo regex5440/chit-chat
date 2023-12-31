@@ -154,11 +154,11 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
     }
   };
 
+  /**
+   * @param {String} type - The type of attachment to be sent [image, document]
+   * @returns {void}
+   */
   const attachmentHandler = (type) => {
-    /**
-     * @param {String} type - The type of attachment to be sent [image, document]
-     * @returns {void}
-     */
     const imageInput = document.createElement("input");
     imageInput.type = "file";
     if (type === "image") {
@@ -190,6 +190,7 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
       }
 
       if (allFilesUnderSize) {
+        setVisibleAttachmentPicker(false);
         dispatch(updateSelectedFiles(serializedFiles));
       }
     };
