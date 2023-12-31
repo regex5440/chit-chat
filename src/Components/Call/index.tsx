@@ -1,10 +1,10 @@
-import { ArrowBottomLeftIcon, CameraIcon, CheckIcon, Cross2Icon } from "@radix-ui/react-icons";
+import { ArrowBottomLeftIcon, CameraIcon, CheckIcon, Cross2Icon, UpdateIcon } from "@radix-ui/react-icons";
 import "./caller.sass";
 import { MicrophoneIcon, VideoIcon } from "../../assets/icons";
-import { ChangeEventHandler, ReactElement, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, MouseEvent, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { enableAudio, enableVideo, minimizeComponent, resetCallState, setCallStatus, setDuration } from "../../library/redux/reducers";
-import { getCallStatus, getCallUIDetails, getConnectedUser, getConnectedUserProfile, getPeerData, getUserData, getUserStreamControl } from "../../library/redux/selectors";
+import { getCallStatus, getCallUIDetails, getConnectedUser, getConnectedUserProfile, getDeviceDetails, getPeerData, getUserData, getUserStreamControl } from "../../library/redux/selectors";
 import { endCall, sendAnswer, sendCallInitiator, sendCallInitiatorResponse, sendCandidate, sendOffer, sendReconnectInitiator, sendReconnectInitiatorResponse } from "../../library/socket.io/socket";
 import { convertToDuration, useDebounce } from "../../utils";
 import React from "react";
@@ -14,8 +14,23 @@ import { RTCEndEvent, RTCIceReceived, RTCReconnectEvent, RTCRemoteDescription } 
 import { CircularLoader } from "hd-ui";
 import WebRTCConnection from "../../utils/webrtc";
 
+const UserStreamConstraints: MediaStreamConstraints = {
+  video: {
+    frameRate: {
+      min: 30,
+      ideal: 45,
+      max: 60,
+    },
+  },
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+  },
+};
+
 const Caller = () => {
-  const userStream = useRef<MediaStream>();
+  const userStream = useRef<MediaStream>(new MediaStream());
+  const [callType, switchCallType] = useState<"audio" | "video">("audio");
   const [loading, setLoading] = useState(false);
   const [errorForUI, setErrorForUI] = useState<string | ReactElement>("");
   const streamingArea = useRef<HTMLVideoElement>(null);
@@ -27,9 +42,15 @@ const Caller = () => {
   const currentCallStatus = useSelector(getCallStatus);
   const connectedUser = useSelector(getConnectedUser);
   const connectedUserProfile = useSelector(getConnectedUserProfile);
+  const userDevice = useSelector(getDeviceDetails);
   const myProfile = useSelector(getUserData);
   const rtcConnection = useRef<WebRTCConnection>();
   const endCallTimeout = useRef<null | number>(null);
+  const [selectedVideoDevice, setSelectedVideoDevice] = useState<number>(0);
+  const [selectedAudioDevice, setSelectedAudioDevice] = useState<number>(0);
+  const videoInputDevices = useRef<MediaDeviceInfo[]>([]);
+  const audioInputDevices = useRef<MediaDeviceInfo[]>([]);
+  const audioOutputDevices = useRef<MediaDeviceInfo[]>([]);
   const reconnecting = useRef(false);
 
   async function reconnectConnection(e: Event | undefined = undefined) {
@@ -52,21 +73,11 @@ const Caller = () => {
   }
   async function setupRTC() {
     try {
-      const stream = await navigator.mediaDevices?.getUserMedia({
-        video: {
-          frameRate: {
-            min: 30,
-            ideal: 45,
-            max: 60,
-          },
-        },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      });
+      const stream = await navigator.mediaDevices?.getUserMedia(UserStreamConstraints);
       if (stream?.active === true) {
-        userStream.current = stream;
+        stream.getTracks().forEach((track) => {
+          userStream.current.addTrack(track);
+        });
         keepUserStreamInSync();
         dispatch(setCallStatus(CALL_STATUS.CONNECTING));
         rtcConnection.current = new WebRTCConnection({
@@ -115,9 +126,6 @@ const Caller = () => {
               setLoading(false);
           }
         };
-        // rtcConnection.current.onRemoteStreamAdded = (remoteStream) => {
-        //   setVideoSrc(stream,remoteStream);
-        // };
         rtcConnection.current.onIceCandidate = (candidates) => {
           sendCandidate(connectedUser.chatId, candidates);
         };
@@ -134,7 +142,7 @@ const Caller = () => {
   }
   function setVideoSrc(remoteStream: MediaStream) {
     if (streamingArea.current && videoPreviewer.current) {
-      videoPreviewer.current.srcObject = userStream.current as MediaStream;
+      videoPreviewer.current.srcObject = userStream.current;
       streamingArea.current.srcObject = remoteStream;
       console.log("Stream set");
     }
@@ -170,7 +178,25 @@ const Caller = () => {
   function endConnectionReceiver() {
     endCallHandler(true);
   }
+  async function setAvailableDevices() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    devices.forEach((device) => {
+      // if (device.deviceId === "default") return;
+      switch (device.kind) {
+        case "audioinput":
+          audioInputDevices.current.push(device);
+          break;
+        case "audiooutput":
+          audioOutputDevices.current.push(device);
+          break;
+        case "videoinput":
+          videoInputDevices.current.push(device);
+          break;
+      }
+    });
+  }
   useEffect(() => {
+    setAvailableDevices();
     setupRTC().then(async (v) => {
       if (callUIDetails.userInitiated) {
         await sendCallInitiator(connectedUser.chatId, mediaControls.videoEnabled ? "video" : "audio", myProfile.data.id);
@@ -189,7 +215,7 @@ const Caller = () => {
       RTCElement.removeEventListener(RTCRemoteDescription.type, remoteDescriptionReceiver);
       RTCElement.removeEventListener(RTCIceReceived.type, remoteIceReceiver);
       RTCElement.removeEventListener(RTCEndEvent.type, endConnectionReceiver);
-      userStream.current?.getTracks().forEach((track) => {
+      userStream.current.getTracks().forEach((track) => {
         track.stop();
       });
     };
@@ -197,7 +223,7 @@ const Caller = () => {
 
   useEffect(() => {
     // Control media tracks mute state
-    userStream.current?.getTracks().forEach((track) => {
+    userStream.current.getTracks().forEach((track) => {
       if (track.kind === "video") {
         track.enabled = mediaControls.videoEnabled;
       }
@@ -208,7 +234,7 @@ const Caller = () => {
   }, [mediaControls]);
 
   function keepUserStreamInSync() {
-    userStream.current?.getTracks().forEach((track) => {
+    userStream.current.getTracks().forEach((track) => {
       if (track.kind === "audio") {
         track.onmute = () => {
           dispatch(enableAudio(false));
@@ -239,7 +265,7 @@ const Caller = () => {
   function endCallHandler(e: Event | any) {
     //TODO: End call gracefully if rejected or not picker by callee
     closeConnection();
-    userStream.current?.getTracks().forEach((track) => {
+    userStream.current.getTracks().forEach((track) => {
       track.stop();
     });
     dispatch(resetCallState(true));
@@ -265,6 +291,30 @@ const Caller = () => {
     startNoPickTimer();
     console.log("2. Send", offer?.type);
   };
+  async function switchCameraView(e: MouseEvent<HTMLDivElement>) {
+    if (userStream.current) {
+      const nextVideoInputIndex = (selectedVideoDevice + 1) % videoInputDevices.current.length;
+      const device = videoInputDevices.current[nextVideoInputIndex];
+      console.log("selected device", device);
+      const oldVideoTrack = userStream.current.getVideoTracks()[0];
+      oldVideoTrack.stop();
+      const newVideoStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          deviceId: device.deviceId,
+        },
+      });
+      const newVideoTrack = newVideoStream.getVideoTracks()[0];
+      newVideoTrack.enabled = mediaControls.videoEnabled;
+      userStream.current.removeTrack(oldVideoTrack);
+      userStream.current.addTrack(newVideoTrack);
+      keepUserStreamInSync();
+      if (rtcConnection.current) {
+        rtcConnection.current.setNewTrack = newVideoTrack;
+      }
+      setSelectedVideoDevice(nextVideoInputIndex);
+    }
+  }
   const renderOptions = () => {
     /*
      * //TODO: More options are device based
@@ -291,6 +341,13 @@ const Caller = () => {
               <MicrophoneIcon width="26" height="26" />
             </label>
           </div>
+          {userDevice.type === "mobile" && (
+            <div className="option" title="Switch Camera" id="camera-switch" onClick={switchCameraView}>
+              <span>
+                <UpdateIcon width={30} height={30} />
+              </span>
+            </div>
+          )}
         </div>
       );
     } else if (currentCallStatus === CALL_STATUS.CONNECTING) {
@@ -352,8 +409,8 @@ const Caller = () => {
           <div className="chit-chat-call__option-area" data-visible={true}>
             {renderOptions()}
           </div>
-          <div className="chit-chat-call__user-video" data-visible={currentCallStatus === CALL_STATUS.CONNECTED}>
-            <video ref={videoPreviewer} autoPlay muted />
+          <div className="chit-chat-call__user-video" data-visible={currentCallStatus === CALL_STATUS.CONNECTED && callType === "video"}>
+            <video ref={videoPreviewer} autoPlay muted data-camera={selectedVideoDevice === 0 ? "front" : "rear"} />
           </div>
           <div className="chit-chat-call__top-menu">
             <div className="caller-info">

@@ -76,6 +76,14 @@ export default class WebRTCConnection {
       this.#peerConnection.addTrack(track, stream);
     });
   }
+  set setNewTrack(track: MediaStreamTrack) {
+    let sender = this.#peerConnection.getSenders().forEach((s) => {
+      if (s.track?.kind === track.kind) {
+        s.replaceTrack(track);
+        console.log("Track replaced", track);
+      }
+    });
+  }
   async initiateCall(): Promise<RTCSessionDescriptionInit> {
     const offer = await this.#peerConnection.createOffer({
       offerToReceiveAudio: true,

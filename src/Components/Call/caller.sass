@@ -59,6 +59,8 @@
             height: inherit
             width: inherit
             object-fit: cover
+            &[data-camera='rear']
+                transform: unset
     &__top-menu
         position: absolute
         top: 0
@@ -123,8 +125,7 @@
             .option#end-call
                 path
                     fill: $textColor
-                // transform: translateY(-50%)
-                & > span:hover
+                & > span
                     background: rgb(179, 0, 0)
             input
                 all: unset
