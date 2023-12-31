@@ -1,18 +1,18 @@
 import { ArrowBottomLeftIcon, CameraIcon, CheckIcon, Cross2Icon, UpdateIcon } from "@radix-ui/react-icons";
 import "./caller.sass";
 import { MicrophoneIcon, VideoIcon } from "../../assets/icons";
-import { ChangeEvent, ChangeEventHandler, MouseEvent, ReactElement, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, ChangeEventHandler, MouseEvent, ReactElement, SyntheticEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { enableAudio, enableVideo, minimizeComponent, resetCallState, setCallStatus, setDuration } from "../../library/redux/reducers";
+import { enableAudio, enableVideo, minimizeComponent, resetCallState, setCallStatus } from "../../library/redux/reducers";
 import { getCallStatus, getCallUIDetails, getConnectedUser, getConnectedUserProfile, getDeviceDetails, getPeerData, getUserData, getUserStreamControl } from "../../library/redux/selectors";
 import { endCall, sendAnswer, sendCallInitiator, sendCallInitiatorResponse, sendCandidate, sendOffer, sendReconnectInitiator, sendReconnectInitiatorResponse } from "../../library/socket.io/socket";
-import { convertToDuration, useDebounce } from "../../utils";
 import React from "react";
 import { CALL_STATUS } from "../../utils/enums";
 import RTCElement from "../../Context/rtc_eventElement";
 import { RTCEndEvent, RTCIceReceived, RTCReconnectEvent, RTCRemoteDescription } from "../../utils/events";
 import { CircularLoader } from "hd-ui";
 import WebRTCConnection from "../../utils/webrtc";
+import { convertToDuration } from "../../utils";
 
 const UserStreamConstraints: MediaStreamConstraints = {
   video: {
@@ -231,6 +231,9 @@ const Caller = () => {
         track.enabled = mediaControls.audioEnabled;
       }
     });
+    if (mediaControls.videoEnabled) {
+      callType === "audio" && switchCallType("video");
+    }
   }, [mediaControls]);
 
   function keepUserStreamInSync() {
@@ -251,6 +254,11 @@ const Caller = () => {
         };
       }
     });
+  }
+  function handleRemoteStreamDuration(e) {
+    if (callStatusContainer.current && currentCallStatus === CALL_STATUS.CONNECTED) {
+      callStatusContainer.current.innerText = convertToDuration(Math.round(e.target?.currentTime || 0));
+    }
   }
 
   // Options handlers
@@ -404,7 +412,7 @@ const Caller = () => {
             </>
           )}
           <div className="chit-chat-call__stream-area">
-            <video ref={streamingArea} autoPlay muted={currentCallStatus !== CALL_STATUS.CONNECTED} />
+            <video ref={streamingArea} autoPlay muted={currentCallStatus !== CALL_STATUS.CONNECTED} onTimeUpdate={handleRemoteStreamDuration} />
           </div>
           <div className="chit-chat-call__option-area" data-visible={true}>
             {renderOptions()}

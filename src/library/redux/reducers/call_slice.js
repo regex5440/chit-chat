@@ -20,7 +20,6 @@ const initialState = {
   },
   callStatus: {
     state: CALL_STATUS.IDLE,
-    duration: 0,
   },
   connectedUser: {
     userId: null,
@@ -74,9 +73,6 @@ const callSlice = createSlice({
     minimizeComponent: (state, action) => {
       state.callUI.isMinimized = action.payload;
     },
-    setDuration: (state, action) => {
-      state.callStatus.duration = action.payload;
-    },
     enableAudio: (state, action) => {
       state.controls.audioEnabled = action.payload || false;
     },
@@ -100,6 +96,6 @@ const callSlice = createSlice({
   },
 });
 
-export const { resetCallState, enableAudio, enableVideo, showCallerComponent, setDuration, minimizeComponent, setCallStatus, setUser } = callSlice.actions;
+export const { resetCallState, enableAudio, enableVideo, showCallerComponent, minimizeComponent, setCallStatus, setUser } = callSlice.actions;
 
 export default callSlice.reducer;

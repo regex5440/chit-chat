@@ -117,7 +117,6 @@ const getCallUIDetails = (state) => state.call.callUI;
 const getPeerData = (state) => state.call.peer_data;
 const getUserStreamControl = (state) => state.call.controls;
 const getCallStatus = (state) => state.call.callStatus.state;
-const getCallDuration = (state) => state.call.callStatus.duration;
 const getConnectedUser = (state) => state.call.connectedUser;
 const getConnectedUserProfile = createSelector(
   getConnectedUser,
@@ -157,7 +156,6 @@ export {
   getPeerData,
   getUserStreamControl,
   getCallStatus,
-  getCallDuration,
   getConnectedUser,
   getConnectedUserProfile,
 };

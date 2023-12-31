@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import "./chat_window.sass";
 import MessagesArea from "./MessagesArea";
 import { useDispatch, useSelector } from "react-redux";
-import { getCallDuration, getCallStatus, getCallUIDetails, getDeviceDetails, getSelectedContact, getSelectedContactProfile, getUserStreamControl, isChatAccepted } from "../../../library/redux/selectors";
-import { CALL_STATUS, USER_STATUSES } from "../../../utils/enums";
-import { convertToDuration, dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../utils";
+import { getCallStatus, getCallUIDetails, getDeviceDetails, getSelectedContact, getSelectedContactProfile, getUserStreamControl, isChatAccepted } from "../../../library/redux/selectors";
+import { USER_STATUSES } from "../../../utils/enums";
+import { dateDifference, getFormattedDate, getFormattedTime, getImageUrl } from "../../../utils";
 import ThreeDot from "../../Common/ThreeDot";
 import { acceptRequestThunk, clearChatThunk, enableAudio, enableVideo, minimizeComponent, removeConnectionThunk, showCallerComponent, updateSelectedContact } from "../../../library/redux/reducers";
 import { LeftArrow as BackIcon, MicrophoneIcon, TelephoneIcon, VideoIcon } from "../../../assets/icons";
@@ -29,7 +29,6 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   const callUIDetails = useSelector(getCallUIDetails);
   const mediaController = useSelector(getUserStreamControl);
   const callStatus = useSelector(getCallStatus);
-  const duration = useSelector(getCallDuration);
   useEffect(() => {
     if (ContactProfile) {
       scrollTo("end");
@@ -135,7 +134,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
       {callUIDetails.isMinimized && (
         <div className="chat-area__caller-header" onClick={() => dispatch(minimizeComponent(false))}>
           <div className="call-details">
-            <span style={{ textTransform: "capitalize" }}>{callStatus === CALL_STATUS.CONNECTED ? convertToDuration(duration) : callStatus}</span>
+            <span style={{ textTransform: "capitalize" }}>{callStatus}</span>
           </div>
           <div className="call-controls" onClick={(e) => e.stopPropagation()}>
             <div className="option">
