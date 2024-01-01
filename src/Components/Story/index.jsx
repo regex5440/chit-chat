@@ -1,7 +1,13 @@
-import React from "react"
+import React from "react";
+import "./story.sass";
 
 const StoriesContainer = () => {
-    return <div>Stories here</div>
-}
+  //TODO: Create Stories section
+  return (
+    <div class="chit-chat-logo" style={{ display: "flex", alignItems: "center", height: "100%" }}>
+      <h1 style={{ margin: "0 30px" }}>Chit Chat</h1>
+    </div>
+  );
+};
 
-export default StoriesContainer
+export default StoriesContainer;
