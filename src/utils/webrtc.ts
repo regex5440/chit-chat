@@ -77,7 +77,7 @@ export default class WebRTCConnection {
     });
   }
   set setNewTrack(track: MediaStreamTrack) {
-    let sender = this.#peerConnection.getSenders().forEach((s) => {
+    this.#peerConnection.getSenders().forEach((s) => {
       if (s.track?.kind === track.kind) {
         s.replaceTrack(track);
         console.log("Track replaced", track);
