@@ -289,6 +289,7 @@ const ImageSelector = ({ currentImageSrc = "", blobHandler, style = {}, resoluti
               onClick={() => {
                 setProfilePicSrc("");
                 setImageStatus("");
+                blobHandler(null);
                 currentTranslate.current = { x: 0, y: 0 };
                 cursorPos.current = { x: 0, y: 0 };
                 translate.current = { x: 0, y: 0 };

@@ -99,6 +99,7 @@ const SignupContent = () => {
     email: "",
     password: "",
     about: "",
+    hasImage: false,
   });
   useEffect(() => {
     if (dataForSignup) {
@@ -203,7 +204,10 @@ const SignupContent = () => {
   };
 
   const imageBlobHandler = (blob) => {
-    imageBlob.current = blob;
+    setSignupForm((state) => ({ ...state, hasImage: blob ? true : false }));
+    if (blob) {
+      imageBlob.current = blob;
+    }
   };
 
   const allowVerification = (e) => {
@@ -242,19 +246,21 @@ const SignupContent = () => {
   const signupHandler = async () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
-      const response = await CCSignupPoint.post("/register", { ...signupFormState, hasImage: imageBlob.current ? true : false });
+      const response = await CCSignupPoint.post("/register", signupFormState);
       if (response.success) {
         setLoginStateToken(response.data.token);
-        await axios.put(response.data.signedURL, imageBlob.current, {
-          headers: {
-            "Content-Type": imageBlob.current.type,
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            imageProgressBar.current?.style.setProperty("max-width", `${percentCompleted.toFixed(2)}%`);
-            console.log(percentCompleted);
-          },
-        });
+        if (imageBlob.current && response.data.signedURL) {
+          await axios.put(response.data.signedURL, imageBlob.current, {
+            headers: {
+              "Content-Type": imageBlob.current.type,
+            },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              imageProgressBar.current?.style.setProperty("max-width", `${percentCompleted.toFixed(2)}%`);
+              console.log(percentCompleted);
+            },
+          });
+        }
         navigate("/app");
       } else {
         throw new Error(response.data || response.message);
