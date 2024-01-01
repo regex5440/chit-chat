@@ -9,6 +9,7 @@
     overflow: hidden
     font-family: var(--frame-font)
     background: #0e0e0e
+    user-select: none
     &__loading
         position: absolute
         top: 50%
@@ -45,7 +46,7 @@
         //  For desktop, width: 200px; for mobile, 100px
         position: absolute
         bottom: 100px
-        right: 40px
+        right: 20px
         border-radius: 5px
         width: 200px
         height: calc(200px * 9/16)
@@ -72,13 +73,16 @@
         padding: 20px 40px
         color: $textColor
         z-index: 999
-        // background:
+        transition: transform 0.4s ease
+        transform: translateY(-100%)
         .caller-info
             .caller-name
                 font-size: 20px
                 font-weight: bolder
         .call-minimize
             cursor: pointer
+        &[data-visible=true]
+            transform: unset
 
     &__option-area
         position: absolute
@@ -86,9 +90,9 @@
         left: 0
         width: inherit
         z-index: 999
+        transition: transform 0.4s ease
+        transform: translateY(110%)
         .option-container
-            transform: translateY(110%)
-            transition: transform 0.4s ease
             background: linear-gradient(to top, backgroundTrasparent,backgroundTrasparent, transparent)
             max-width: 30%
             margin: auto
@@ -131,8 +135,7 @@
                 all: unset
                 visibility: hidden
         &[data-visible="true"]
-            .option-container
-                transform: unset
+            transform: unset
 .call-controls
     input[type='checkbox']:not(:checked) + label
         filter: brightness(50%)
@@ -174,8 +177,8 @@
             .option-container
                 max-width: 90%
         &__user-video
-            width: 100px
-            height: calc(100px * 16/9)
+            width: 80px
+            height: calc(80px * 16/9)
         &__top-menu
             padding: 10px
             align-items: center

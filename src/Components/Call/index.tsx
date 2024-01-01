@@ -1,7 +1,7 @@
 import { ArrowBottomLeftIcon, CameraIcon, CheckIcon, Cross2Icon, SpeakerLoudIcon, UpdateIcon } from "@radix-ui/react-icons";
 import "./caller.sass";
 import { MicrophoneIcon, VideoIcon } from "../../assets/icons";
-import { ChangeEvent, ChangeEventHandler, MouseEvent, ReactElement, SyntheticEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEventHandler, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { enableAudio, enableVideo, minimizeComponent, resetCallState, setCallStatus } from "../../library/redux/reducers";
 import { getCallStatus, getCallUIDetails, getConnectedUser, getConnectedUserProfile, getDeviceDetails, getPeerData, getUserData, getUserStreamControl } from "../../library/redux/selectors";
@@ -12,7 +12,7 @@ import RTCElement from "../../Context/rtc_eventElement";
 import { RTCEndEvent, RTCIceReceived, RTCReconnectEvent, RTCRemoteDescription } from "../../utils/events";
 import { CircularLoader } from "hd-ui";
 import WebRTCConnection from "../../utils/webrtc";
-import { convertToDuration } from "../../utils";
+import { convertToDuration, debounce } from "../../utils";
 
 const UserStreamConstraints = {
   video: {
@@ -29,6 +29,7 @@ const Caller = () => {
   const userStream = useRef<MediaStream>(new MediaStream());
   const [loading, setLoading] = useState(false);
   const [errorForUI, setErrorForUI] = useState<string | ReactElement>("");
+  const [menuVisible, setMenuVisibility] = useState(true);
   const streamingArea = useRef<HTMLVideoElement>(null);
   const videoPreviewer = useRef<HTMLVideoElement>(null);
   const callStatusContainer = useRef<HTMLDivElement>(null);
@@ -49,6 +50,19 @@ const Caller = () => {
   const audioInputDevices = useRef<MediaDeviceInfo[]>([]);
   const audioOutputDevices = useRef<MediaDeviceInfo[]>([]);
   const reconnecting = useRef(false);
+  useEffect(() => {
+    let timeoutToHide;
+    if (menuVisible && currentCallStatus === CALL_STATUS.CONNECTED) {
+      timeoutToHide = setTimeout(() => {
+        setMenuVisibility(false);
+      }, 5000);
+    }
+    return () => {
+      if (timeoutToHide) {
+        clearTimeout(timeoutToHide);
+      }
+    };
+  }, [currentCallStatus, menuVisible]);
 
   async function reconnectConnection(e: Event | undefined = undefined) {
     //TODO: Trigger it from caller, switched networks.
@@ -451,8 +465,65 @@ const Caller = () => {
         return "";
     }
   };
+  function toggleMenu() {
+    if (currentCallStatus === CALL_STATUS.CONNECTED) {
+      setMenuVisibility((state) => !state);
+    }
+  }
+
+  const dragStart = useRef(false);
+  const startPointWithinElement = useRef({ x: 0, y: 0 });
+  const lastKnownTouchValues = useRef({ x: 0, y: 0 });
+  function dragStartHandler(e) {
+    dragStart.current = true;
+    const boxRect = videoPreviewer.current?.parentElement?.getBoundingClientRect();
+    let x = e.clientX || e.targetTouches[0].clientX,
+      y = e.clientY || e.targetTouches[0].clientY;
+    if (boxRect) {
+      startPointWithinElement.current.x = x - boxRect.left;
+      startPointWithinElement.current.y = y - boxRect.top;
+    }
+  }
+  function dragHandler(e) {
+    if (dragStart.current) {
+      let x = e.clientX || e.targetTouches?.[0].clientX,
+        y = e.clientY || e.targetTouches?.[0].clientY;
+      videoPreviewer.current?.parentElement?.style.setProperty("left", `${x - startPointWithinElement.current.x}px`);
+      videoPreviewer.current?.parentElement?.style.setProperty("top", `${y - startPointWithinElement.current.y}px`);
+      lastKnownTouchValues.current = { x, y };
+    }
+  }
+  function dragEndHandler(e) {
+    if (dragStart.current) {
+      let x = e.clientX || lastKnownTouchValues.current.x;
+      let y = e.clientY || lastKnownTouchValues.current.y;
+      const previewWidth = videoPreviewer.current?.offsetWidth || 0;
+      const previewHeight = videoPreviewer.current?.offsetHeight || 0;
+
+      if (x <= window.innerWidth / 2) {
+        x = 20;
+      } else {
+        x = window.innerWidth - previewWidth - 20;
+      }
+
+      if (y <= window.innerHeight / 2) {
+        y = 100;
+      } else {
+        y = window.innerHeight - previewHeight - 100;
+      }
+      if (videoPreviewer.current?.parentElement) {
+        videoPreviewer.current.parentElement.animate({ left: `${x}px`, top: `${y}px` }, { duration: 200 }).onfinish = (e) => {
+          videoPreviewer.current?.parentElement?.style.setProperty("left", `${x}px`);
+          videoPreviewer.current?.parentElement?.style.setProperty("top", `${y}px`);
+        };
+      }
+    }
+    dragStart.current = false;
+    startPointWithinElement.current = { x: 0, y: 0 };
+    lastKnownTouchValues.current = { x: 0, y: 0 };
+  }
   return (
-    <div className="chit-chat-call">
+    <div className="chit-chat-call" onPointerMove={userDevice.type !== "mobile" ? dragHandler : undefined} onTouchMove={dragHandler as any} onPointerCancel={userDevice.type !== "mobile" ? dragEndHandler : undefined} onPointerUp={userDevice.type !== "mobile" ? dragEndHandler : undefined} onTouchEnd={dragEndHandler} onTouchCancel={dragEndHandler}>
       {errorForUI ? (
         <div className="calling-error">{errorForUI}</div>
       ) : (
@@ -466,16 +537,16 @@ const Caller = () => {
               </div>
             </>
           )}
-          <div className="chit-chat-call__stream-area">
+          <div className="chit-chat-call__stream-area" onClick={toggleMenu} onMouseOver={() => setMenuVisibility(true)}>
             <video ref={streamingArea} autoPlay muted={currentCallStatus !== CALL_STATUS.CONNECTED} onTimeUpdate={handleRemoteStreamDuration} />
           </div>
-          <div className="chit-chat-call__option-area" data-visible={true}>
+          <div className="chit-chat-call__option-area" data-visible={menuVisible}>
             {renderOptions()}
           </div>
-          <div className="chit-chat-call__user-video" data-visible={currentCallStatus === CALL_STATUS.CONNECTED && callType === "video"}>
+          <div className="chit-chat-call__user-video" data-visible={currentCallStatus === CALL_STATUS.CONNECTED && callType === "video"} onPointerDown={userDevice.type !== "mobile" ? dragStartHandler : undefined} onPointerUp={userDevice.type !== "mobile" ? dragEndHandler : undefined} onPointerCancel={userDevice.type !== "mobile" ? dragEndHandler : undefined} onTouchStart={dragStartHandler} onTouchEnd={dragEndHandler} onTouchCancel={dragEndHandler} data-fullArea={!menuVisible}>
             <video ref={videoPreviewer} autoPlay muted data-camera={selectedVideoDevice === 0 ? "front" : "rear"} />
           </div>
-          <div className="chit-chat-call__top-menu">
+          <div className="chit-chat-call__top-menu" data-visible={menuVisible}>
             <div className="caller-info">
               <div className="caller-name">
                 {connectedUserProfile?.firstName} {connectedUserProfile?.lastName}
