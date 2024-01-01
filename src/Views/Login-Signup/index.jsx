@@ -249,7 +249,7 @@ const SignupContent = () => {
             await axios
               .put(response.data.signedURL, imageBlob.current, {
                 headers: {
-                  "Content-Type": "application/octet-stream",
+                  "Content-Type": imageBlob.current.type,
                 },
                 onUploadProgress: (progressEvent) => {
                   const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
