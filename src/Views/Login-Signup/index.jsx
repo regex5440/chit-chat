@@ -242,34 +242,37 @@ const SignupContent = () => {
   const signupHandler = () => {
     setProgress((state) => ({ ...state, signup: true }));
     try {
-      CCSignupPoint.post("/register", signupFormState)
-        .then(async (response) => {
-          if (response.success) {
-            setLoginStateToken(response.data);
-            if (imageBlob.current) {
-              await ChitChatServer.post("/imageUploader", imageBlob.current, {
+      CCSignupPoint.post("/register", signupFormState).then(async (response) => {
+        if (response.success) {
+          setLoginStateToken(response.data.token);
+          if (imageBlob.current) {
+            await axios
+              .put(response.data.signedURL, imageBlob.current, {
                 headers: {
                   "Content-Type": "application/octet-stream",
-                  Authorization: `Bearer ${response.data}`,
                 },
                 onUploadProgress: (progressEvent) => {
                   const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                   imageProgressBar.current?.style.setProperty("max-width", `${percentCompleted.toFixed(2)}%`);
                   console.log(percentCompleted);
                 },
+              })
+              .then(() => {
+                navigate("/app");
+              })
+              .catch(() => {
+                setProgress((state) => ({ ...state, signup: false }));
+                updateError({ showError: true, message: "Could not upload image." });
               });
-            }
-            navigate("/app");
-          } else {
-            throw new Error(response.data || response.message);
           }
-        })
-        .catch((err) => {
-          throw new Error("Something went wrong, please try again!");
-        });
+        } else {
+          throw new Error(response.data || response.message);
+        }
+      });
     } catch (e) {
       setProgress((state) => ({ ...state, signup: false }));
       updateError({ showError: true, message: e });
+      throw new Error("Something went wrong, please try again!");
     }
   };
 
