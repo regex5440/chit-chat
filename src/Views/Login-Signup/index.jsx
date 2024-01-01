@@ -249,7 +249,8 @@ const SignupContent = () => {
             if (imageBlob.current) {
               await ChitChatServer.post("/imageUploader", imageBlob.current, {
                 headers: {
-                  "Content-Type": imageBlob.current.type,
+                  "Content-Type": "application/octet-stream",
+                  Authorization: `Bearer ${response.data}`,
                 },
                 onUploadProgress: (progressEvent) => {
                   const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
