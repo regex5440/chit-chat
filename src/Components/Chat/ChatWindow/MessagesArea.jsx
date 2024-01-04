@@ -14,7 +14,7 @@ import { deleteMessageThunk, editMessageThunk } from "../../../library/redux/red
 import FilePreviewer from "../../Common/FilePreviewer";
 
 const emojiRegEx = /^[\p{Emoji}\s]+$/u;
-const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage }) => {
+const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage, withTime }) => {
   const dispatch = useDispatch();
   const messageContainer = useRef(null);
   const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
@@ -144,7 +144,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
     <>
       <ContextMenu.Root>
         <ContextMenu.Trigger asChild>
-          <div className="message message-box" data-mine={isMine} ref={messageContainer} data-emojionly={messageObject.type === "text" && messageObject.text.match(emojiRegEx)?.[0].match(/[^0-9]+/g)?.[0] ? true : false} data-type={messageObject.type}>
+          <div className="message message-box" data-mine={isMine} ref={messageContainer} data-emojionly={messageObject.type === "text" && messageObject.text.match(emojiRegEx)?.[0].match(/[^0-9]+/g)?.[0] ? true : false} data-type={messageObject.type} data-with_time={withTime}>
             {isMine && <span className="message-status">{messageStatus}</span>}
             {renderAttachments()}
             {messageObject.text && <span className="message-text">{messageObject.text}</span>}
@@ -156,7 +156,6 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage 
         </ContextMenu.Trigger>
         <ContextMenu.Portal>
           <ContextMenu.Content className="message-options-menu">
-            {/* <DropDownMenu.Arrow /> */}
             {messageObject.type === "text" && (
               <ContextMenu.Item className="option" onClick={copyHandler}>
                 <CopyIcon />
@@ -241,18 +240,18 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
     lastMessageDateDifference.current = null;
   }, [ContactId]);
 
-  const renderMessage = (message) => {
-    if (message.deletedFor?.includes(user.id)) return null;
+  const renderMessage = (currentMessage, nextMessage) => {
+    if (currentMessage.deletedFor?.includes(user.id)) return null;
     let timeStampMessage = "";
     let TimeStamp = "";
-    const daysDifference = dateDifference(new Date(), message.timestamp);
+    const daysDifference = dateDifference(new Date(), currentMessage.timestamp);
     if (daysDifference !== lastMessageDateDifference.current) {
       if (daysDifference > 7) {
         // Show Time Stamp
-        TimeStamp = getFormattedDate(message.timestamp, "www, dd-mmm-yy");
+        TimeStamp = getFormattedDate(currentMessage.timestamp, "www, dd-mmm-yy");
       } else if (daysDifference > 1 && daysDifference <= 7) {
         //Show Weekdays
-        TimeStamp = getFormattedDate(message.timestamp, "wwww");
+        TimeStamp = getFormattedDate(currentMessage.timestamp, "wwww");
       } else {
         //Show relative time: Today, Yesterday
         TimeStamp = capitalize(dateComparer.format(-1 * daysDifference, "day"));
@@ -260,11 +259,26 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
       timeStampMessage = <div className="message-stamp">{TimeStamp}</div>;
     }
     lastMessageDateDifference.current = daysDifference;
+
+    let showMessageTimeStamp = true;
+    if (nextMessage && nextMessage.sender_id === currentMessage.sender_id) {
+      const nextMessageTime = new Date(nextMessage.timestamp);
+      const currentMessageTime = new Date(currentMessage.timestamp);
+
+      const gap = (nextMessageTime - currentMessageTime) / 1000; //Seconds
+      const nextMessageMins = nextMessageTime.getMinutes();
+      const currentMessageMins = currentMessageTime.getMinutes();
+
+      if (gap < 60 && nextMessageMins === currentMessageMins) {
+        showMessageTimeStamp = false;
+      }
+    }
+
     return (
       <>
         {timeStampMessage}
         <Message
-          messageObject={message}
+          messageObject={currentMessage}
           ContactId={ContactId}
           ChatId={chat.chat_id}
           editMessage={(...args) => {
@@ -275,6 +289,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
             setDeleteAlertData(...args);
             setOldMessage(null);
           }}
+          withTime={showMessageTimeStamp}
         />
       </>
     );
@@ -293,7 +308,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
               </div>
             }
           />
-          {chat?.messages && chat.messages.map((message, index) => renderMessage(message))}
+          {chat?.messages && chat.messages.map((message, index) => renderMessage(message, chat.messages[index + 1]))}
           {contactIsTyping && (
             <div className="message message-loading">
               <BouncyBalls containerColor="transparent" />

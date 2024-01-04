@@ -41,7 +41,7 @@ const SearchChat = () => {
   const handleInputChange = (e) => {
     const inputText = e.target.value;
     setSearchText(inputText);
-    setSearchQueryInStore(inputText.trim());
+    setSearchQueryInStore(inputText.trim().toLowerCase());
   };
   const clearSearch = () => {
     setSearchText("");

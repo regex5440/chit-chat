@@ -118,7 +118,7 @@
             padding: $message-box-padding
             // min-width: 50px
             width: fit-content
-            max-width: min(500px,60%)
+            max-width: min(500px,80%)
             box-sizing: border-box
             scroll-snap-align: center
 
@@ -259,6 +259,18 @@
                     left: unset
                     right: $message-box-padding
                     flex-direction: row
+            &[data-with_time=false]
+                margin-bottom: 4px
+                span.message-time
+                    display: none
+                &[data-mine=true]
+                    border-bottom-right-radius: 2px
+                    &+.message-box
+                        border-top-right-radius: 2px
+                &[data-mine=false]
+                    border-bottom-left-radius: 2px
+                    &+.message-box
+                        border-top-left-radius: 2px
         .message-loading
 
 .attachment-previewer-overlay
