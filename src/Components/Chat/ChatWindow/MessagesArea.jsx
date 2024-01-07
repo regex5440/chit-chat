@@ -6,15 +6,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { contactsChat, getSelectedFiles, getUserData, unseenMsgCountSelectedContact } from "../../../library/redux/selectors";
 import ChatInput from "./ChatInput";
 import { DoubleTickIcon, ExclamationIcon, SentIcon } from "../../../assets/icons";
-import { sendMessageSeenThunk } from "../../../library/redux/reducers";
+import { addMoreMessagesToChat, sendMessageSeenThunk } from "../../../library/redux/reducers";
 import { ClockIcon, CopyIcon, Cross1Icon, Cross2Icon, DownloadIcon, FileIcon, FileTextIcon, OpenInNewWindowIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { deleteMessageThunk, editMessageThunk } from "../../../library/redux/reducers/user_appData";
 import FilePreviewer from "../../Common/FilePreviewer";
+import { requestMoreMessage } from "../../../library/socket.io/socket";
 
 const emojiRegEx = /^[\p{Emoji}\s]+$/u;
-const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage, withTime }) => {
+const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage, withTime, renderDateStamp }) => {
   const dispatch = useDispatch();
   const messageContainer = useRef(null);
   const unseenMessagesCount = useSelector(unseenMsgCountSelectedContact);
@@ -142,6 +143,7 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage,
   };
   return (
     <>
+      {renderDateStamp}
       <ContextMenu.Root>
         <ContextMenu.Trigger asChild>
           <div className="message message-box" data-mine={isMine} ref={messageContainer} data-emojionly={messageObject.type === "text" && messageObject.text.match(emojiRegEx)?.[0].match(/[^0-9]+/g)?.[0] ? true : false} data-type={messageObject.type} data-with_time={withTime}>
@@ -191,7 +193,9 @@ const Message = ({ messageObject, ContactId, ChatId, deleteMessage, editMessage,
   );
 };
 
-const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
+const INITIAL_MESSAGES_FETCHED = 20;
+const MESSAGE_FRAGMENT_SIZE = 50;
+const MessagesArea = ({ ContactId, RequestPopup }) => {
   const messageContainer = useRef(null);
   const { data: user } = useSelector(getUserData);
   const lastMessageDateDifference = useRef(null);
@@ -206,6 +210,8 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
     }
   }, []);
   const contactIsTyping = chat?.authors_typing?.includes(ContactId);
+  const [offset, setOffset] = useState(INITIAL_MESSAGES_FETCHED);
+  const [hasMoreMessages, setHasMoreMessages] = useState();
 
   const deleteHandler = (forAll = false) => {
     dispatch(deleteMessageThunk({ chatId: chat.chat_id, messageId: deleteAlertData.id, forAll, attachments: deleteAlertData.attachments?.map((attachment) => attachment.key) }));
@@ -229,7 +235,7 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [contactIsTyping, chat?.messages?.length || false]);
+  }, [contactIsTyping, chat?.messages.at(-1).id]);
 
   useEffect(() => {
     scrollToBottom();
@@ -237,10 +243,30 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
     // TODO: Have a look in use case of scrolling down
     setOldMessage(null);
     setDeleteAlertData(null);
+    setInitialHasMoreFlag();
     lastMessageDateDifference.current = null;
   }, [ContactId]);
 
-  const renderMessage = (currentMessage, nextMessage) => {
+  function setInitialHasMoreFlag() {
+    setHasMoreMessages(chat?.messages?.length >= INITIAL_MESSAGES_FETCHED);
+  }
+  const canShowTime = (currentMessage, nextMessage) => {
+    let showMessageTimeStamp = true;
+    if (nextMessage && nextMessage.sender_id === currentMessage.sender_id) {
+      const nextMessageTime = new Date(nextMessage.timestamp);
+      const currentMessageTime = new Date(currentMessage.timestamp);
+
+      const gap = (nextMessageTime - currentMessageTime) / 1000; //Seconds
+      const nextMessageMins = nextMessageTime.getMinutes();
+      const currentMessageMins = currentMessageTime.getMinutes();
+
+      if (gap < 60 && nextMessageMins === currentMessageMins) {
+        showMessageTimeStamp = false;
+      }
+    }
+    return showMessageTimeStamp;
+  };
+  const renderDateStamp = (currentMessage) => {
     if (currentMessage.deletedFor?.includes(user.id)) return null;
     let timeStampMessage = "";
     let TimeStamp = "";
@@ -260,55 +286,65 @@ const MessagesArea = ({ ContactId, endOfMessages, RequestPopup }) => {
     }
     lastMessageDateDifference.current = daysDifference;
 
-    let showMessageTimeStamp = true;
-    if (nextMessage && nextMessage.sender_id === currentMessage.sender_id) {
-      const nextMessageTime = new Date(nextMessage.timestamp);
-      const currentMessageTime = new Date(currentMessage.timestamp);
-
-      const gap = (nextMessageTime - currentMessageTime) / 1000; //Seconds
-      const nextMessageMins = nextMessageTime.getMinutes();
-      const currentMessageMins = currentMessageTime.getMinutes();
-
-      if (gap < 60 && nextMessageMins === currentMessageMins) {
-        showMessageTimeStamp = false;
-      }
-    }
-
-    return (
-      <>
-        {timeStampMessage}
-        <Message
-          messageObject={currentMessage}
-          ContactId={ContactId}
-          ChatId={chat.chat_id}
-          editMessage={(...args) => {
-            setOldMessage(...args);
-            setDeleteAlertData(null);
-          }}
-          deleteMessage={(...args) => {
-            setDeleteAlertData(...args);
-            setOldMessage(null);
-          }}
-          withTime={showMessageTimeStamp}
-        />
-      </>
-    );
+    return timeStampMessage;
   };
+
+  function loadMoreMessages() {
+    console.log("Called Load More. Has More Data:", hasMoreMessages);
+    if (hasMoreMessages) {
+      requestMoreMessage(chat.chat_id, offset, MESSAGE_FRAGMENT_SIZE)
+        .then((data) => {
+          if (data) {
+            dispatch(addMoreMessagesToChat({ messages: data.messages, chatId: chat.chat_id }));
+            if (data.hasMore) {
+              setHasMoreMessages(true);
+              setOffset(offset + MESSAGE_FRAGMENT_SIZE);
+            } else {
+              setHasMoreMessages(false);
+            }
+          } else {
+            throw new Error("no data received", data);
+          }
+        })
+        .catch((r) => {
+          alert("Unable to fetch messages");
+          console.log(r);
+        });
+    }
+  }
 
   return (
     <>
       <div className="message-area">
         <div className="messages-container" ref={messageContainer}>
           <LazyLoader
-            endOfData={endOfMessages}
-            onVisibleHandler={() => console.log("Hi")}
+            endOfData={!hasMoreMessages}
+            onVisibleHandler={loadMoreMessages}
             Loader={
               <div style={{ textAlign: "center", margin: "20px 0" }}>
                 <CircularLoader size={30} riderColor={"var(--icon-stroke)"} />
               </div>
             }
           />
-          {chat?.messages && chat.messages.map((message, index) => renderMessage(message, chat.messages[index + 1]))}
+          {chat?.messages &&
+            chat.messages.map((message, index) => (
+              <Message
+                messageObject={message}
+                ContactId={ContactId}
+                ChatId={chat.chat_id}
+                editMessage={(...args) => {
+                  setOldMessage(...args);
+                  setDeleteAlertData(null);
+                }}
+                deleteMessage={(...args) => {
+                  setDeleteAlertData(...args);
+                  setOldMessage(null);
+                }}
+                withTime={canShowTime(message, chat.messages[index + 1])}
+                key={message.id || index}
+                renderDateStamp={renderDateStamp(message)}
+              />
+            ))}
           {contactIsTyping && (
             <div className="message message-loading">
               <BouncyBalls containerColor="transparent" />

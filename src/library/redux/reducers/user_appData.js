@@ -22,7 +22,6 @@ const appDataInitialState = {
   selectedContact: {
     isAvailable: false,
     contactId: null,
-    fetchedAllMessages: true,
   },
   contacts: {
     loading: false,
@@ -178,6 +177,12 @@ const userAppDataSlice = createSlice({
         state.chats = chats.reduce((prevChatObj, chatObj) => ({ ...prevChatObj, [chatObj.chat_id]: chatObj }), {});
       }
       state.contacts.loading = false;
+    },
+    addMoreMessagesToChat: (state, action) => {
+      if (state.chats[action.payload.chatId]) {
+        const messages = state.chats[action.payload.chatId].messages;
+        state.chats[action.payload.chatId].messages = action.payload.messages.concat(messages);
+      }
     },
     clearChat: (state, { payload: { chatId, fromId } }) => {
       state.chats[chatId].messages = [];
@@ -436,6 +441,6 @@ const userAppDataSlice = createSlice({
   },
 });
 
-export const { addParticipants, clearChat, deleteContact, updateSelectedContact, addTypingAuthors, addInitialData, deleteMessage, updateMessage, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
+export const { addParticipants, addMoreMessagesToChat, clearChat, deleteContact, updateSelectedContact, addTypingAuthors, addInitialData, deleteMessage, updateMessage, updateChat, updateChatSeenStatus, updateUserStatus, updateSearchQuery, setTempConnection, removeTempConnection, addNewConnectionRequested, resetSocketData } = userAppDataSlice.actions;
 
 export default userAppDataSlice.reducer;

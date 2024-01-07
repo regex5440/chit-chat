@@ -183,7 +183,6 @@ const ChatWindow = () => {
           <ChatHeader ContactProfile={ContactProfile} removeContactHandler={deleteChat} allowOptions={chatAccepted.byUser && chatAccepted.byConnection} />
           <MessagesArea
             ContactId={selectedContact.contactId}
-            endOfMessages={selectedContact.fetchedAllMessages}
             RequestPopup={
               <>
                 {!chatAccepted.byUser && (

@@ -64,6 +64,16 @@ const deleteMessageSocket = ({ chatId, messageId, fromId, attachments }, forAll 
   socket.emit(SOCKET_HANDLERS.CHAT.MESSAGE.Delete, { chatId, messageId, fromId, attachments }, forAll);
 };
 
+const requestMoreMessage = (chatId, dataCount, size = 20) => {
+  socket.emit(SOCKET_HANDLERS.CHAT.LoadMore, chatId, { dataCount, size });
+  return new Promise((res, rej) => {
+    setTimeout(rej, 10000);
+    socket.on(SOCKET_HANDLERS.CHAT.MoreMessages, (chatId, data) => {
+      res(data);
+    });
+  });
+};
+
 export const SocketComponent = () => {
   const dispatch = useDispatch();
   const {
@@ -235,4 +245,4 @@ export const endCall = (chatId) => {
   socket.emit(SOCKET_HANDLERS.RTC_SIGNALING.End, chatId);
 };
 
-export { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, getSignedURL, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate };
+export { acceptRequest, clearChatSocket, deleteMessageSocket, editMessage, getSignedURL, sendMessage, updateTyping, sendMessageSeenUpdate, removeConnection, statusUpdate, requestMoreMessage };
