@@ -248,7 +248,7 @@ const SignupContent = () => {
     try {
       const response = await CCSignupPoint.post("/register", signupFormState);
       if (response.success) {
-        setLoginStateToken(response.data.token);
+        setLoginStateToken(response.data.token || response.data);
         if (imageBlob.current && response.data.signedURL) {
           await axios.put(response.data.signedURL, imageBlob.current, {
             headers: {

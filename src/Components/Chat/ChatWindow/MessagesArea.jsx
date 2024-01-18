@@ -235,7 +235,7 @@ const MessagesArea = ({ ContactId, RequestPopup }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [contactIsTyping, chat?.messages.at(-1).id]);
+  }, [contactIsTyping, chat?.messages?.at(-1).id || null]);
 
   useEffect(() => {
     scrollToBottom();

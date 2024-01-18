@@ -299,10 +299,12 @@ const userAppDataSlice = createSlice({
         if (payload?.accepted) {
           state.chats?.[payload.chat_id]?.participants.push(payload.id);
         }
-        const messages = state.chats[payload.chat_id].messages;
-        for (let i = messages.length - 1; i >= 0; i--) {
-          messages[i].tempId === meta.arg.tempId && (messages[i] = payload.messageObject);
-          break;
+        if (state.chats[payload.chat_id]) {
+          const messages = state.chats[payload.chat_id].messages;
+          for (let i = messages.length - 1; i >= 0; i--) {
+            messages[i].tempId === meta.arg.tempId && (messages[i] = payload.messageObject);
+            break;
+          }
         }
       })
       .addCase(addMessageThunk.rejected, (state, action) => {
