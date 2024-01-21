@@ -225,7 +225,7 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
                     }}
                     autoFocusSearch={true}
                     theme={theme.preferred === "dark" ? "dark" : "light"}
-                    previewConfig={{ showPreview: true }}
+                    previewConfig={{ showPreview: false }}
                   />
                   <PopOver.Arrow style={{ fill: "var(--window-background)" }} />
                 </PopOver.Content>
