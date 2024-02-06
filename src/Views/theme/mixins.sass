@@ -71,7 +71,7 @@
 @mixin primary-button()
     all: unset
     min-width: 180px
-    height: 45px
+    height: 40px
     display: grid
     place-items: center
     text-align: center
@@ -86,11 +86,16 @@
     box-sizing: border-box
     transition: all 0.2s ease
     overflow: hidden
-    &:hover:not([data-in_progress='true'])
+    &:hover:not([data-in_progress='true']):not([disabled])
         background-color: white
         color: $primary-button-color
     &[data-hidden='true']
         opacity: 0
+    &[disabled]
+        cursor: not-allowed
+        background-color: var(--input-background-color)
+        color: var(--text-secondary-color)
+        box-shadow: none
 
 @mixin options-modal()
     background: var(--modal-background-primary)
@@ -146,3 +151,32 @@
             color: red
         &:hover
             background: var(--option-hover-background)
+
+@mixin input()
+    $fontSizeInput: 16px
+    overflow-y: visible
+    border: none
+    font-size: $fontSizeInput
+    border-bottom: 1px solid rgb(0, 123, 255)
+    outline: rgb(0, 123, 255)
+    width: 100%
+    padding: 15px 10px 10px 3px
+    border-radius: 0 0 10px 0
+    font-style: italic
+    box-sizing: border-box
+    margin-bottom: 20px
+    position: relative
+    background: transparent
+    color: rgb(0, 125, 225)
+    &::placeholder
+        transition: transform 0.2s ease
+        transform-origin: left
+        overflow: visible
+        color: white
+    &:focus::placeholder
+        transform: translateY(-1 * ($fontSizeInput)) scale(0.6)
+    &[data-error='true']
+        border-color: $error-message-color
+        border-width: 2px
+        &::placeholder
+            color: $error-message-color

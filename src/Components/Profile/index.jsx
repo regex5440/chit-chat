@@ -67,7 +67,14 @@ const ProfileTab = () => {
         triggerElement={targetForModal}
         showBackdrop={false}
       >
-        <div className="option not-allowed">Update Profile</div>
+        <div
+          className="option"
+          onClick={() => {
+            setDialogOption(MenuOptionType.UPDATE_PROFILE);
+          }}
+        >
+          Update Profile
+        </div>
         <div
           className="option"
           onClick={() => {

@@ -2,15 +2,204 @@ import { useDispatch, useSelector } from "react-redux";
 import { MenuOptionType } from "../../utils/enums";
 import "./option_dialog.sass";
 import * as Dialog from "@radix-ui/react-dialog";
-import { getBlockedUsers } from "../../library/redux/selectors";
-import { useEffect, useState } from "react";
+import { getBlockedUsers, getUserData } from "../../library/redux/selectors";
+import { useCallback, useEffect, useState } from "react";
 import { CircularLoader } from "hd-ui";
 import * as Avatar from "@radix-ui/react-avatar";
-import { getImageUrl } from "../../utils";
-import { getBlockedUsersThunk, unBlockHandlerThunk } from "../../library/redux/reducers/user_appData";
+import { debounce, getImageUrl, useUniqueRequest } from "../../utils";
+import { getBlockedUsersThunk, getMyProfile, unBlockHandlerThunk } from "../../library/redux/reducers/user_appData";
 import FlipMove from "react-flip-move";
+import ChitChatServer from "../../client/api";
 
-const BlockedListData = () => {
+const ProfileOptionDialog = ({ dialogType, closeHandler }) => {
+  //TODO: Implement dialog content based on dialogType. FIRST IS BLOCKED LIST
+  const Component = {
+    [MenuOptionType.BLOCKED_LIST]: <BlockedListData />,
+    [MenuOptionType.UPDATE_PROFILE]: <UpdateProfile />,
+  };
+  return (
+    <Dialog.Root open={dialogType} onOpenChange={(open) => !open && closeHandler(null)}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="profile-menu-overlay" />
+        <Dialog.Content className="profile-menu-content">{Component[MenuOptionType[dialogType]]}</Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+};
+
+function UpdateForm({ userAccount }) {
+  const [isFormUpdated, setFormUpdated] = useState(false);
+  const [loading, setLoading] = useState({
+    updateRequest: false,
+    usernameRequest: false,
+  });
+  const [error, setError] = useState("");
+  const [isUsernameAvailable, setUsernameAvailability] = useState(true);
+  const dispatch = useDispatch();
+  const userNameCheckerRequest = useUniqueRequest(ChitChatServer);
+  const [userNameInput, setUserNameInput] = useState("");
+
+  const checkUserName = useCallback(
+    debounce(
+      async (usernameQuery) => {
+        if (usernameQuery.length > 3) {
+          setLoading((state) => ({ ...state, usernameRequest: true }));
+          try {
+            const response = await userNameCheckerRequest(`/username_checker?username=${usernameQuery}`);
+            if (response.success) {
+              setUsernameAvailability(response.data.available);
+              setLoading((state) => ({ ...state, usernameRequest: false }));
+            } else {
+              throw new Error(response.message);
+            }
+          } catch (err) {
+            if (err.message !== "canceled") {
+              setUsernameAvailability(false);
+              setError("Something went wrong. Please try again later.");
+              setLoading((state) => ({ ...state, usernameRequest: false }));
+            }
+            console.error("U", err);
+          }
+        } else {
+          setUsernameAvailability(false);
+          setLoading((state) => ({ ...state, usernameRequest: false }));
+        }
+      },
+      { duration: 1000 }
+    ),
+    []
+  );
+
+  const formOnInputHandler = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const firstName = formData.get("firstName");
+    const lastName = formData.get("lastName");
+    const about = formData.get("about");
+    const username = formData.get("username");
+    const email = formData.get("email");
+    if (firstName !== userAccount.firstName || lastName !== userAccount.lastName || about !== userAccount.about || username !== userAccount.username || email !== userAccount.email) {
+      console.log("FORM UPDATED");
+      !isFormUpdated && setFormUpdated(true);
+    } else {
+      console.log("FORM NOT UPDATED");
+      isFormUpdated && setFormUpdated(false);
+    }
+  };
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const firstName = formData.get("firstName").trim();
+    const lastName = formData.get("lastName").trim();
+    const about = formData.get("about").trim();
+    const username = formData.get("username").trim().toLowerCase();
+    const email = formData.get("email").trim().toLowerCase();
+    if (firstName && username) {
+      setFormUpdated(false);
+      setLoading((state) => ({ ...state, updateRequest: true }));
+      try {
+        const response = await ChitChatServer.post("/update_profile", { firstName, lastName, about, username, email });
+        console.log(response);
+        if (response.success) {
+          dispatch(getMyProfile());
+        } else {
+          setError(response.message);
+        }
+      } catch (err) {
+        setFormUpdated(true);
+      } finally {
+        setLoading((state) => ({ ...state, updateRequest: false }));
+      }
+    }
+  };
+  const handleUserName = (e) => {
+    const value = e.target.value;
+    if (value && value !== userAccount.username) {
+      setUsernameAvailability(false);
+      setUserNameInput(value);
+      checkUserName(value?.trim().toLowerCase());
+    } else {
+      setUserNameInput("");
+      setUsernameAvailability(true);
+    }
+  };
+
+  return (
+    <div className="profile-form">
+      <Dialog.Title>Update Profile</Dialog.Title>
+      <form className="profile-form__inputs" onSubmit={submitHandler} onInput={formOnInputHandler}>
+        <div className="row-1">
+          <input type="text" placeholder="First Name" defaultValue={userAccount.firstName} name="firstName" />
+          <input type="text" placeholder="Last Name" defaultValue={userAccount.lastName} name="lastName" />
+        </div>
+        <div className="row-2">
+          <textarea placeholder="Bio" defaultValue={userAccount.about} name="about" maxLength={150} />
+        </div>
+        <div className="row-3">
+          <div>
+            <input type="text" placeholder="Username" name="username" onChange={handleUserName} value={userNameInput || userAccount.username} />
+            {userNameInput && (loading.usernameRequest ? <CircularLoader size={20} riderColor={"var(--icon-stroke)"} /> : isUsernameAvailable ? <div className="available">Available</div> : <div className="unavailable">Unavailable</div>)}
+          </div>
+        </div>
+        <div className="row-4">
+          <input type="text" placeholder="Email" defaultValue={userAccount.email} name="email" />
+        </div>
+        <div className="row-5">
+          <div className="error">{error}</div>
+
+          <button type="submit" disabled={!isFormUpdated || !isUsernameAvailable} data-in_progress={loading.updateRequest}>
+            {loading.updateRequest ? <CircularLoader size={35} /> : "Update"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function UpdateProfile() {
+  const [renderedPage, setPage] = useState("profile");
+  const { data: userAccount, loading, hasData } = useSelector(getUserData);
+
+  const renderAccountDeletion = () => {
+    return (
+      <div className="account-deletion">
+        <Dialog.Title>Delete Account</Dialog.Title>
+      </div>
+    );
+  };
+  const renderConnectedServices = () => {
+    return (
+      <div className="connected-services">
+        <Dialog.Title>Connected Services</Dialog.Title>
+      </div>
+    );
+  };
+
+  const setActive = (e) => {
+    console.log(e.target.ariaLabel);
+    e.target.ariaLabel && setPage(e.target.ariaLabel);
+  };
+  return (
+    <div className="update-profile">
+      <div className="update-profile__header">
+        <ul onClick={setActive}>
+          <li aria-active={renderedPage === "profile"} aria-label="profile">
+            Profile
+          </li>
+          <li aria-active={renderedPage === "services"} aria-label="services">
+            Connected Services
+          </li>
+          <li aria-active={renderedPage === "delete"} aria-label="delete">
+            Delete Account
+          </li>
+        </ul>
+      </div>
+      <div className="update-profile__body">{{ profile: <UpdateForm userAccount={userAccount} />, services: renderConnectedServices(), delete: renderAccountDeletion() }[renderedPage] || "NOTHING TO SHOW"}</div>
+    </div>
+  );
+}
+
+function BlockedListData() {
   const dispatch = useDispatch();
   const blockedList = useSelector(getBlockedUsers);
   const [error, setState] = useState(null);
@@ -60,21 +249,6 @@ const BlockedListData = () => {
       </div>
     </>
   );
-};
-
-const ProfileOptionDialog = ({ dialogType, closeHandler }) => {
-  //TODO: Implement dialog content based on dialogType. FIRST IS BLOCKED LIST
-  const Component = {
-    [MenuOptionType.BLOCKED_LIST]: <BlockedListData />,
-  };
-  return (
-    <Dialog.Root open={dialogType} onOpenChange={(open) => !open && closeHandler(null)}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="profile-menu-overlay" />
-        <Dialog.Content className="profile-menu-content">{Component[MenuOptionType[dialogType]]}</Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-};
+}
 
 export default ProfileOptionDialog;
