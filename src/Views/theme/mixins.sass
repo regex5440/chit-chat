@@ -180,3 +180,9 @@
         border-width: 2px
         &::placeholder
             color: $error-message-color
+    &[disabled]
+        cursor: not-allowed
+        color: var(--text-secondary-color)
+        border-color: var(--text-secondary-color)
+        &::placeholder
+            color: var(--text-secondary-color)

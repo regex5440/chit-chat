@@ -38,6 +38,7 @@ function UpdateForm({ userAccount }) {
   const dispatch = useDispatch();
   const userNameCheckerRequest = useUniqueRequest(ChitChatServer);
   const [userNameInput, setUserNameInput] = useState("");
+  const [emailValidated, setEmailValidated] = useState(true);
 
   const checkUserName = useCallback(
     debounce(
@@ -79,11 +80,15 @@ function UpdateForm({ userAccount }) {
     const username = formData.get("username");
     const email = formData.get("email");
     if (firstName !== userAccount.firstName || lastName !== userAccount.lastName || about !== userAccount.about || username !== userAccount.username || email !== userAccount.email) {
-      console.log("FORM UPDATED");
       !isFormUpdated && setFormUpdated(true);
+      if (email !== userAccount.email) {
+        emailValidated && setEmailValidated(false);
+      }
     } else {
-      console.log("FORM NOT UPDATED");
       isFormUpdated && setFormUpdated(false);
+      if (email === userAccount.email) {
+        !emailValidated && setEmailValidated(true);
+      }
     }
   };
   const submitHandler = async (e) => {
@@ -142,7 +147,8 @@ function UpdateForm({ userAccount }) {
           </div>
         </div>
         <div className="row-4">
-          <input type="text" placeholder="Email" defaultValue={userAccount.email} name="email" />
+          <input type="text" placeholder="Email" defaultValue={userAccount.email} name="email" disabled />
+          {/* {!emailValidated && <button className="verifier">Validate</button>} */}
         </div>
         <div className="row-5">
           <div className="error">{error}</div>
