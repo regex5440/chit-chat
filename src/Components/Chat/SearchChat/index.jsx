@@ -59,7 +59,7 @@ const SearchChat = () => {
           <input type="text" value={searchText} placeholder="Search or start a new chat" onFocus={handleInputFocus} onBlur={handleInputBlur} onChange={handleInputChange} />
         </div>
       </div>
-      {inputFocused && query.length > 0 && (
+      {inputFocused && query.length > 2 && (
         <div className="search-container__results-container">
           {loading ? (
             <div className="loader-container">
@@ -94,7 +94,7 @@ const SearchChat = () => {
               )}
             </>
           ) : (
-            <div className="no-data-container">No result found</div>
+            <div className="no-data-container">No result found on Chit Chat</div>
           )}
         </div>
       )}
