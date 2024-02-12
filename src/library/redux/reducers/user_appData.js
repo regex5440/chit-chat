@@ -274,7 +274,7 @@ const userAppDataSlice = createSlice({
     builder
       .addCase(getMyProfile.pending, (state) => {
         state.user.loading = true;
-        state.contacts.loading = true;
+        if (!state.contacts.hasData) state.contacts.loading = true;
       })
       .addCase(getMyProfile.fulfilled, (state, action) => {
         state.user.loading = false;

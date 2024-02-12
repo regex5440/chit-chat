@@ -3,13 +3,15 @@ import { MenuOptionType } from "../../utils/enums";
 import "./option_dialog.sass";
 import * as Dialog from "@radix-ui/react-dialog";
 import { getBlockedUsers, getUserData } from "../../library/redux/selectors";
-import { useCallback, useEffect, useState } from "react";
-import { CircularLoader } from "hd-ui";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { BouncyBalls, CircularLoader } from "hd-ui";
 import * as Avatar from "@radix-ui/react-avatar";
 import { debounce, getImageUrl, useUniqueRequest } from "../../utils";
 import { getBlockedUsersThunk, getMyProfile, unBlockHandlerThunk } from "../../library/redux/reducers/user_appData";
 import FlipMove from "react-flip-move";
 import ChitChatServer from "../../client/api";
+import { GoogleNeutralRoundNAIcon } from "../../assets/icons";
+import { Cross1Icon } from "@radix-ui/react-icons";
 
 const ProfileOptionDialog = ({ dialogType, closeHandler }) => {
   //TODO: Implement dialog content based on dialogType. FIRST IS BLOCKED LIST
@@ -94,16 +96,21 @@ function UpdateForm({ userAccount }) {
   const submitHandler = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    let x = {};
+    formData.forEach((val, key) => {
+      x[key] = val;
+    });
+    console.log(x, e.currentTarget);
     const firstName = formData.get("firstName").trim();
     const lastName = formData.get("lastName").trim();
     const about = formData.get("about").trim();
     const username = formData.get("username").trim().toLowerCase();
-    const email = formData.get("email").trim().toLowerCase();
+    // const email = formData.get("email").trim().toLowerCase();
     if (firstName && username) {
       setFormUpdated(false);
       setLoading((state) => ({ ...state, updateRequest: true }));
       try {
-        const response = await ChitChatServer.post("/update_profile", { firstName, lastName, about, username, email });
+        const response = await ChitChatServer.post("/update_profile", { firstName, lastName, about, username, email: userAccount.email });
         console.log(response);
         if (response.success) {
           dispatch(getMyProfile());
@@ -162,6 +169,55 @@ function UpdateForm({ userAccount }) {
   );
 }
 
+function Services({ userAccount }) {
+  const gBtn = useRef();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  useEffect(() => {
+    google.accounts.id.initialize({
+      client_id: import.meta.env.CC_OAuthClientID,
+      callback: oAuthDataHandler,
+    });
+    //TODO: Create a custom Google button
+    google.accounts.id.renderButton(gBtn.current, { type: "icon", shape: "circle" });
+    return () => {
+      setLoading(false);
+      setError("");
+    };
+  }, []);
+
+  async function oAuthDataHandler(gData) {
+    setLoading(true);
+    try {
+      const response = await ChitChatServer.post("/connect_oauth", { service: "google", credential: gData.credential });
+      if (response.success) {
+        setError("");
+        dispatch(getMyProfile());
+      }
+    } catch (e) {
+      console.log(e);
+      setError("Something went wrong. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <div className="connected-services">
+      <Dialog.Title>Connected Services</Dialog.Title>
+      {error && <div className="error-message">{error}</div>}
+      <div className="services-view">
+        <div className="service">
+          <div className="service-name" ref={gBtn} data-disabled={userAccount.oauth?.google.enabled || false}>
+            <GoogleNeutralRoundNAIcon />
+          </div>
+          <div className="service-status">{loading ? <BouncyBalls ballColor={"var(--icon-stroke)"} /> : userAccount.oauth?.google.enabled ? "Connected" : "Not Connected"}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UpdateProfile() {
   const [renderedPage, setPage] = useState("profile");
   const { data: userAccount, loading, hasData } = useSelector(getUserData);
@@ -173,34 +229,29 @@ function UpdateProfile() {
       </div>
     );
   };
-  const renderConnectedServices = () => {
-    return (
-      <div className="connected-services">
-        <Dialog.Title>Connected Services</Dialog.Title>
-      </div>
-    );
-  };
 
   const setActive = (e) => {
-    console.log(e.target.ariaLabel);
-    e.target.ariaLabel && setPage(e.target.ariaLabel);
+    e.target.dataset.label && setPage(e.target.dataset.label);
   };
   return (
     <div className="update-profile">
       <div className="update-profile__header">
         <ul onClick={setActive}>
-          <li aria-active={renderedPage === "profile"} aria-label="profile">
+          <li aria-active={renderedPage === "profile"} data-label="profile">
             Profile
           </li>
-          <li aria-active={renderedPage === "services"} aria-label="services">
-            Connected Services
+          <li aria-active={renderedPage === "services"} data-label="services">
+            Services
           </li>
-          <li aria-active={renderedPage === "delete"} aria-label="delete">
+          <li aria-active={renderedPage === "delete"} data-label="delete">
             Delete Account
           </li>
         </ul>
+        <Dialog.Close className="closeBtn">
+          <Cross1Icon width={20} height={20} />
+        </Dialog.Close>
       </div>
-      <div className="update-profile__body">{{ profile: <UpdateForm userAccount={userAccount} />, services: renderConnectedServices(), delete: renderAccountDeletion() }[renderedPage] || "NOTHING TO SHOW"}</div>
+      <div className="update-profile__body">{{ profile: <UpdateForm userAccount={userAccount} />, services: <Services userAccount={userAccount} />, delete: renderAccountDeletion() }[renderedPage] || "NOTHING TO SHOW"}</div>
     </div>
   );
 }
