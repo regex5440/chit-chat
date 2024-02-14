@@ -12,6 +12,7 @@ import FlipMove from "react-flip-move";
 import ChitChatServer from "../../client/api";
 import { GoogleNeutralRoundNAIcon } from "../../assets/icons";
 import { Cross1Icon } from "@radix-ui/react-icons";
+import { useNavigate } from "react-router-dom";
 
 const ProfileOptionDialog = ({ dialogType, closeHandler }) => {
   //TODO: Implement dialog content based on dialogType. FIRST IS BLOCKED LIST
@@ -221,11 +222,50 @@ function Services({ userAccount }) {
 function UpdateProfile() {
   const [renderedPage, setPage] = useState("profile");
   const { data: userAccount, loading, hasData } = useSelector(getUserData);
+  const [deletionLoading, setDeletionLoading] = useState(false);
+  const navigate = useNavigate();
+
+  function deleteAccount() {
+    setDeletionLoading(true);
+    ChitChatServer.post("/delete_account")
+      .then((response) => {
+        navigate("/logout");
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Something went wrong. Please try again later.");
+        setDeletionLoading(false);
+      });
+  }
 
   const renderAccountDeletion = () => {
     return (
       <div className="account-deletion">
         <Dialog.Title>Delete Account</Dialog.Title>
+        <div className="delete-account">
+          <Dialog.Root>
+            <Dialog.Trigger asChild>
+              <button data-type={"danger"}>Delete Account</button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay className="delete-account__overlay" />
+              <Dialog.Content asChild>
+                <div className="delete-account__content">
+                  <Dialog.Title>Do you want to continue?</Dialog.Title>
+                  <Dialog.Description className="warning">This action is irreversible and will delete all your data.</Dialog.Description>
+                  <div className="delete-account__cta" data-no_cancel={deletionLoading}>
+                    <button data-type={"danger"} data-in_progress={deletionLoading} onClick={deleteAccount}>
+                      {deletionLoading ? <CircularLoader size={35} /> : "Confirm"}
+                    </button>
+                    <Dialog.Close asChild>
+                      <button data-type={"cancel"}>Cancel</button>
+                    </Dialog.Close>
+                  </div>
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+        </div>
       </div>
     );
   };

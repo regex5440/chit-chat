@@ -54,7 +54,7 @@
 @mixin secondary-button()
     all: unset
     cursor: pointer
-    border-radius: 4px
+    border-radius: 5px
     box-shadow: 0.5px 1px 3px $seconday-button-color
     padding: 10px 35px
     background: $seconday-button-color
@@ -75,7 +75,7 @@
     display: grid
     place-items: center
     text-align: center
-    border-radius: 10px
+    border-radius: 5px
     cursor: pointer
     background-color: $primary-button-color
     // border: 2px solid $primary-button-color
@@ -91,6 +91,11 @@
         color: $primary-button-color
     &[data-hidden='true']
         opacity: 0
+    &[data-type='danger']
+        background-color: var(--error-color) !important
+        color: var(--text-primary-color) !important
+        &:hover:not([data-in_progress='true']):not([disabled])
+            filter: opacity(0.8)
     &[disabled]
         cursor: not-allowed
         background-color: var(--input-background-color)
