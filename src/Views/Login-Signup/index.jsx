@@ -100,6 +100,7 @@ const SignupContent = () => {
     password: "",
     about: "",
     hasImage: false,
+    oAuth: false,
   });
   useEffect(() => {
     if (dataForSignup) {
@@ -108,6 +109,10 @@ const SignupContent = () => {
         firstName: dataForSignup.firstName,
         lastName: dataForSignup.lastName || "",
         email: dataForSignup.email,
+        oAuth: {
+          service: "google",
+          email: dataForSignup.email,
+        },
       }));
       step1Form.current.firstname.value = dataForSignup.firstName;
       step1Form.current.lastname.value = dataForSignup.lastName || "";
