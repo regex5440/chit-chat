@@ -68,6 +68,7 @@
         min-width: 45vw
         height: calc(100vh - 100px)
         position: relative
+        box-sizing: border-box
         &__header
             border-right: 1px solid var(--text-ternary-color)
             height: 100%
@@ -166,7 +167,7 @@
                 .delete-account
                     display: flex
                     align-items: baseline
-                    justify-content: space-between
+                    justify-content: center
                     button
                         @include primary-button()
 
@@ -186,6 +187,7 @@
     border-radius: 7px
     box-shadow: 1px 2px 10px var(--option-modal-shadow)
     width: 400px
+    max-width: 90vw
     .warning
         color: var(--error-message-color)
     .delete-account__cta
@@ -220,7 +222,7 @@
             height: 100vh
             width: 100vw
             box-sizing: border-box
-            padding: 0
+            padding: 20px 0
             &__header
                 border: none
                 margin-top: 30px
@@ -230,6 +232,9 @@
                     justify-content: space-between
                     gap: 20px
                     padding: 0
+                .closeBtn
+                    top: 20px !important
+                    right: 10px !important
             &__body
                 margin: 0
                 padding: 20px
