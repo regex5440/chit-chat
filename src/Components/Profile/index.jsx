@@ -49,9 +49,7 @@ const ProfileTab = () => {
   };
 
   const logOutHandler = () => {
-    ChitChatServer.get("/log_out");
-    setLoginStateToken("");
-    navigate("/");
+    navigate("/logout");
   };
 
   const renderProfileModal = () => {
