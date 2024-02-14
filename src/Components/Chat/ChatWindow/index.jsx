@@ -40,7 +40,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
 
   const renderProfileStatus = () => {
     if (!allowOptions) {
-      return ContactProfile.about;
+      return ContactProfile.about || "";
     }
 
     if (ContactProfile.status === USER_STATUSES.ONLINE.code) return "Online";
@@ -67,10 +67,10 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
       <div className="profile-overview-container">
         {device.type === "mobile" && <BackIcon width="25px" style={{ marginRight: "5px" }} stroke={"var(--icon-stroke)"} fill={"var(--icon-stroke)"} onClick={moveToMainWindow} />}
         <div className="profile-picture-container">
-          <img src={getImageUrl(ContactProfile.avatar)} alt={ContactProfile.firstName} className="profile-picture" />
+          <img src={getImageUrl(ContactProfile.avatar)} alt={ContactProfile.firstName} className="profile-picture" data-dull={ContactProfile.deleted} />
         </div>
         <div className="profile-details">
-          <div className="profile-name">{`${ContactProfile.firstName} ${ContactProfile.lastName}`}</div>
+          <div className="profile-name" data-no_data={ContactProfile.deleted}>{`${ContactProfile.firstName} ${ContactProfile.lastName}`}</div>
           <div className="profile-status">{renderProfileStatus()}</div>
         </div>
       </div>

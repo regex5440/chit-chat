@@ -49,9 +49,7 @@ const ProfileTab = () => {
   };
 
   const logOutHandler = () => {
-    ChitChatServer.get("/log_out");
-    setLoginStateToken("");
-    navigate("/");
+    navigate("/logout");
   };
 
   const renderProfileModal = () => {
@@ -67,7 +65,14 @@ const ProfileTab = () => {
         triggerElement={targetForModal}
         showBackdrop={false}
       >
-        <div className="option not-allowed">Update Profile</div>
+        <div
+          className="option"
+          onClick={() => {
+            setDialogOption(MenuOptionType.UPDATE_PROFILE);
+          }}
+        >
+          Update Profile
+        </div>
         <div
           className="option"
           onClick={() => {

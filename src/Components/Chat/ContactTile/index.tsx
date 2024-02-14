@@ -25,6 +25,7 @@ type CommonAccountProp = {
     url: string;
   };
   TYPE: UserTileType.CONNECTION | UserTileType.GROUP | UserTileType.USER;
+  deleted?: boolean;
 };
 type ConnectionSpecificProp = {
   unseen_messages_count: number;
@@ -44,6 +45,7 @@ type GroupSearchSpecificProp = {
     url: string;
   };
   TYPE: UserTileType.GROUP;
+  deleted?: boolean;
 };
 type UserTileGeneric = UserTileType.CONNECTION | UserTileType.USER | UserTileType.GROUP;
 
@@ -108,9 +110,9 @@ const ContactTile = <T extends UserTileGeneric>(prop: UserSpecificProp<T> & Rest
     <div className="contact-tile-container" data-type={prop.TYPE}>
       <div className="contact-tile-content" data-active={prop.TYPE !== UserTileType.CONNECTION ? true : isSelected || false} onClick={setSelectedContact}>
         <div className="contact-picture-container">
-          <img src={getImageUrl(prop.avatar)} alt={prop.TYPE === UserTileType.GROUP ? prop.name : prop.firstName} className="profile-picture" />
+          <img src={getImageUrl(prop.avatar)} alt={prop.TYPE === UserTileType.GROUP ? prop.name : prop.firstName} className="profile-picture" data-dull={prop.deleted || "false"} />
         </div>
-        <div className="contact-name" title={getProfileName()}>
+        <div className="contact-name" title={getProfileName()} data-no_data={prop.deleted}>
           {getProfileName()}
         </div>
         {prop.TYPE === UserTileType.USER && (

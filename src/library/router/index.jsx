@@ -1,7 +1,9 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, redirect } from "react-router-dom";
 import { LandingPage, LoginContent, SignupContent, landingPageLoader } from "../../Views/Login-Signup";
 import React from "react";
 import { appLoader } from "../../Views/Main";
+import { setLoginStateToken } from "../../utils";
+import ChitChatServer from "../../client/api";
 
 const App = React.lazy(() => import("../../Views/Main"));
 
@@ -27,6 +29,14 @@ const router = createBrowserRouter([
     loader: appLoader,
     element: <App />,
     index: true,
+  },
+  {
+    path: "/logout",
+    loader: () => {
+      ChitChatServer.get("/log_out");
+      setLoginStateToken("");
+      return redirect("/login");
+    },
   },
 ]);
 

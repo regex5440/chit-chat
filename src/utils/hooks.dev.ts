@@ -24,18 +24,19 @@ const useUniqueRequest = (axios_instance?: AxiosInstance): Function => {
       }
     }, []);
     return callback;
-  }
-  const callback = useCallback((url: string, config?: AxiosRequestConfig): Promise<Response> => {
-    if (controller.current) {
-      controller.current.abort();
-    }
-    controller.current = new AbortController();
-    const signal = controller.current.signal;
-    const options = { ...config, signal };
+  } else {
+    const callback = useCallback((url: string, config?: AxiosRequestConfig): Promise<Response> => {
+      if (controller.current) {
+        controller.current.abort();
+      }
+      controller.current = new AbortController();
+      const signal = controller.current.signal;
+      const options = { ...config, signal };
 
-    return axios.get(url, options);
-  }, []);
-  return callback;
+      return axios.get(url, options);
+    }, []);
+    return callback;
+  }
 };
 
 const useDebounce = (function_to_debounce: Function, delay: number): Function => {

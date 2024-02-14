@@ -6,6 +6,9 @@
     line-height: 22px
     letter-spacing: 0.02em
     color: var(--text-primary-color)
+    &[data-no_data='true']
+        font-style: italic !important
+        color: var(--text-ternary-color)
 @mixin chat-profile-picture()
     height: 55.31px
     width: 55.31px
@@ -18,6 +21,8 @@
         height: 100%
         width: 100%
         cursor: pointer
+        &[data-dull='true']
+            filter: grayscale(100%)
     & > span
         display: grid
         place-items: center
@@ -54,7 +59,7 @@
 @mixin secondary-button()
     all: unset
     cursor: pointer
-    border-radius: 4px
+    border-radius: 5px
     box-shadow: 0.5px 1px 3px $seconday-button-color
     padding: 10px 35px
     background: $seconday-button-color
@@ -71,11 +76,11 @@
 @mixin primary-button()
     all: unset
     min-width: 180px
-    height: 45px
+    height: 40px
     display: grid
     place-items: center
     text-align: center
-    border-radius: 10px
+    border-radius: 5px
     cursor: pointer
     background-color: $primary-button-color
     // border: 2px solid $primary-button-color
@@ -86,11 +91,21 @@
     box-sizing: border-box
     transition: all 0.2s ease
     overflow: hidden
-    &:hover:not([data-in_progress='true'])
+    &:hover:not([data-in_progress='true']):not([disabled])
         background-color: white
         color: $primary-button-color
     &[data-hidden='true']
         opacity: 0
+    &[data-type='danger']
+        background-color: var(--error-color) !important
+        color: var(--text-primary-color) !important
+        &:hover:not([data-in_progress='true']):not([disabled])
+            filter: opacity(0.8)
+    &[disabled]
+        cursor: not-allowed
+        background-color: var(--input-background-color)
+        color: var(--text-secondary-color)
+        box-shadow: none
 
 @mixin options-modal()
     background: var(--modal-background-primary)
@@ -146,3 +161,38 @@
             color: red
         &:hover
             background: var(--option-hover-background)
+
+@mixin input()
+    $fontSizeInput: 16px
+    overflow-y: visible
+    border: none
+    font-size: $fontSizeInput
+    border-bottom: 1px solid rgb(0, 123, 255)
+    outline: rgb(0, 123, 255)
+    width: 100%
+    padding: 15px 10px 10px 3px
+    border-radius: 0 0 10px 0
+    font-style: italic
+    box-sizing: border-box
+    margin-bottom: 20px
+    position: relative
+    background: transparent
+    color: rgb(0, 125, 225)
+    &::placeholder
+        transition: transform 0.2s ease
+        transform-origin: left
+        overflow: visible
+        color: white
+    &:focus::placeholder
+        transform: translateY(-1 * ($fontSizeInput)) scale(0.6)
+    &[data-error='true']
+        border-color: $error-message-color
+        border-width: 2px
+        &::placeholder
+            color: $error-message-color
+    &[disabled], &[data-disabled=true]
+        cursor: not-allowed
+        color: var(--text-secondary-color)
+        border-color: var(--text-secondary-color)
+        &::placeholder
+            color: var(--text-secondary-color)

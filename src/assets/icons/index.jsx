@@ -17,5 +17,6 @@ import SendIcon from "./send.svg";
 import ClockIcon from "./clock.svg";
 import VideoIcon from "./video.svg";
 import TelephoneIcon from "./telephone.svg";
+import GoogleNeutralRoundNAIcon from "./google_neutral_rd_na.svg";
 
-export { ClockIcon, ExclamationIcon, MagnifyIcon, GearIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow, SendIcon, VideoIcon, TelephoneIcon };
+export { ClockIcon, ExclamationIcon, MagnifyIcon, GearIcon, GoogleNeutralRoundNAIcon, PlusIcon, SmileyEmoji, PaperClipIcon, MicrophoneIcon, MagnifyPlus, MagnifyMinus, Chevron, TickIcon, ReloadIcon, SentIcon, DoubleTickIcon, LeftArrow, SendIcon, VideoIcon, TelephoneIcon };
