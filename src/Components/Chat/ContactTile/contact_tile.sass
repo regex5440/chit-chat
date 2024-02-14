@@ -31,6 +31,9 @@
             white-space: nowrap
             text-overflow: ellipsis
             @include profile-name-style-chat-only
+            &[data-no_data='true']
+                font-style: italic
+                color: var(--text-ternary-color)
         .contact-username
             font-style: italic
             color: var(--text-ternary-color)

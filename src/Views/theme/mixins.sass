@@ -6,6 +6,9 @@
     line-height: 22px
     letter-spacing: 0.02em
     color: var(--text-primary-color)
+    &[data-no_data='true']
+        font-style: italic !important
+        color: var(--text-ternary-color)
 @mixin chat-profile-picture()
     height: 55.31px
     width: 55.31px
@@ -18,6 +21,8 @@
         height: 100%
         width: 100%
         cursor: pointer
+        &[data-dull='true']
+            filter: grayscale(100%)
     & > span
         display: grid
         place-items: center
