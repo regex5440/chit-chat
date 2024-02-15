@@ -209,10 +209,10 @@ function Services({ userAccount }) {
       {error && <div className="error-message">{error}</div>}
       <div className="services-view">
         <div className="service">
-          <div className="service-name" ref={gBtn} data-disabled={userAccount.oauth?.google.enabled || false}>
+          <div className="service-name" ref={gBtn} data-disabled={userAccount.oAuth?.google.enabled || false}>
             <GoogleNeutralRoundNAIcon />
           </div>
-          <div className="service-status">{loading ? <BouncyBalls ballColor={"var(--icon-stroke)"} /> : userAccount.oauth?.google.enabled ? "Connected" : "Not Connected"}</div>
+          <div className="service-status">{loading ? <BouncyBalls ballColor={"var(--icon-stroke)"} /> : userAccount.oAuth?.google.enabled ? "Connected" : "Not Connected"}</div>
         </div>
       </div>
     </div>
@@ -277,13 +277,13 @@ function UpdateProfile() {
     <div className="update-profile">
       <div className="update-profile__header">
         <ul onClick={setActive}>
-          <li aria-active={renderedPage === "profile"} data-label="profile">
+          <li data-active={renderedPage === "profile"} data-label="profile">
             Profile
           </li>
-          <li aria-active={renderedPage === "services"} data-label="services">
+          <li data-active={renderedPage === "services"} data-label="services">
             Services
           </li>
-          <li aria-active={renderedPage === "delete"} data-label="delete">
+          <li data-active={renderedPage === "delete"} data-label="delete">
             Delete Account
           </li>
         </ul>
