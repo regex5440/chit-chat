@@ -13,7 +13,7 @@ const getContactsListSorted = (state) => {
   const searchQuery = state.appData.search.query;
   if (searchQuery) {
     const filteredConnections = Object.values(contacts.data).filter((contact) => {
-      return contact.firstName.toLowerCase().includes(searchQuery) || contact.lastName.toLowerCase().includes(searchQuery) || contact.username.toLowerCase().includes(searchQuery);
+      return !contact.deleted && (contact.firstName.toLowerCase().includes(searchQuery) || contact.lastName.toLowerCase().includes(searchQuery) || contact.username.toLowerCase().includes(searchQuery));
     });
     return {
       searchResults: true,
