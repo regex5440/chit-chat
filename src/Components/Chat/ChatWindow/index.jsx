@@ -39,7 +39,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
   }, [ContactProfile]);
 
   const renderProfileStatus = () => {
-    if (!allowOptions) {
+    if (!allowOptions || !ContactProfile.last_active) {
       return ContactProfile.about || "";
     }
 
@@ -108,7 +108,7 @@ const ChatHeader = ({ ContactProfile, removeContactHandler, allowOptions }) => {
       <div className="chat-area__header-content">
         {renderProfileDetails()}
         <div className="contact-options">
-          {allowOptions && renderCallingOption()}
+          {allowOptions && !ContactProfile.deleted && renderCallingOption()}
           <Popover.Root open={menuOpen} onOpenChange={setMenuOpen}>
             <Popover.Trigger asChild>
               <ThreeDot title={"Chat Options"} />

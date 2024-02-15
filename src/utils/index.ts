@@ -217,8 +217,8 @@ function getLoginStateToken() {
 
 function getImageUrl(avatarObject: { key: string; url: string }) {
   return (
-    avatarObject.url ||
-    (avatarObject.key
+    avatarObject?.url ||
+    (avatarObject?.key
       ? //@ts-ignore
         `${import.meta.env.CC_IMAGE_BUCKET_URL}/${avatarObject.key}`
       : dummyProfileUrl)
