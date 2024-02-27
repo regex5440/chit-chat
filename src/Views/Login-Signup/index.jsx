@@ -1,4 +1,4 @@
-import { Link, Outlet, redirect, useLocation, useNavigate, useNavigation, useOutletContext } from "react-router-dom";
+import { Link, Outlet, redirect, useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import "./login_signup.sass";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
@@ -6,7 +6,7 @@ import { CircularLoader } from "hd-ui";
 import { getLoginStateToken, setLoginStateToken, useDebounce, useUniqueRequest } from "../../utils";
 import ImageSelector from "../../Components/Common/ImageSelector";
 import CCSignupPoint, { setSignupAuthToken } from "../../client/signup_api";
-import ChitChatServer from "../../client/api";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
 const maxSignupSteps = 3;
 const emailRegEx = /^[\w.!#$%&'*+/=?^_`{|}~-]+@[\w-]+(\.[\w-]+)+$/;
@@ -286,6 +286,9 @@ const SignupContent = () => {
       </div>
       <div style={{ transition: "transform 0.4s ease", height: "100%", width: "100%", transform: `translateX(-${signupFlags.step * 100}%)` }}>
         <dialog className="email-verification-modal" ref={emailModal} aria-modal={true}>
+          <button className="email-verification-modal__close" onClick={closeDialog}>
+            <Cross2Icon height={30} width={30} />
+          </button>
           <div className="email-verification-modal__container">
             {progressIn.emailVerification ? (
               <CircularLoader size={40} />

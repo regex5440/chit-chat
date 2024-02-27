@@ -233,8 +233,16 @@
     border-radius: 10px
     width: 40%
     min-width: 350px
+    position: relative
     &[open]
         animation: open-modal 0.3s ease-out forwards
+    &__close
+        all: unset
+        position: absolute
+        top: 10px
+        right: 10px
+        cursor: pointer
+        z-index: 1
     &__container
         width: 100%
         display: grid
