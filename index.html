@@ -10,6 +10,10 @@
 
 <body>
   <style>
+    :root {
+      --startup-loading-background: rgba(225, 225, 225, 1);
+    }
+
     .chit-chat-logo {
       background-image: linear-gradient(-30deg, #00287f, #00bdff);
       -webkit-background-clip: text;
@@ -64,7 +68,6 @@
   <script>
     const observer = new MutationObserver(function (mutations) {
       if (mutations.length > 0) {
-        console.log('loaded');
         document.getElementById('loader-logo').style.opacity = '0';
         setTimeout(() => {
           document.getElementById('loader-logo').remove();
