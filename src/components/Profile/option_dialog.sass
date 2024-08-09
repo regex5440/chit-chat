@@ -1,0 +1,265 @@
+@import '@theme-variables'
+.profile-menu-overlay
+    position: fixed
+    inset: 0
+    background-color: var(--overlay-color)
+    animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1)
+.profile-menu-content
+    position: fixed
+    left: 50%
+    top: 30%
+    transform: translate(-50%, -30%)
+    background-color: var(--modal-background-primary)
+    border-radius: 7px
+    font-family: $frame-font
+    padding: 0 20px 20px
+    animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1)
+    max-height: 100vh
+    .error-message
+        color: var(--error-message-color)
+        font-size: 14px
+        margin: 10px 0 0
+        text-align: center
+    .blocked-list-container
+        display: flex
+        flex-direction: column
+        align-items: flex-start
+        overflow: auto
+        max-height: 100%
+        width: 320px
+        margin-top: 20px
+        .no-blocked-users
+            margin: 20px auto
+            font-size: 14px
+            color: var(--text-secondary-color)
+        .blocked-user
+            display: flex
+            align-items: center
+            gap: 10px
+            width: 100%
+            .user-avatar
+                display: inline-flex
+                align-items: center
+                justify-content: center
+                vertical-align: middle
+                overflow: hidden
+                user-select: none
+                width: 45px
+                height: 45px
+                border-radius: 100%
+                .avatar-image
+                    height: 100%
+                    width: 100%
+                    object-fit: cover
+            .user-name-id
+                .user-id
+                    font-size: 12px
+                    font-style: italic
+                    color: var(--text-ternary-color)
+            .unblock-user
+                @include secondary-button()
+                padding: 7px 0px
+                width: 70px
+                margin: 0 0 0 auto
+    .update-profile
+        display: grid
+        grid-template-columns: auto 1fr
+        padding: 20px
+        min-width: 45vw
+        height: calc(100vh - 100px)
+        position: relative
+        box-sizing: border-box
+        &__header
+            border-right: 1px solid var(--text-ternary-color)
+            height: 100%
+            ul
+                padding: 0
+                margin: 0
+                list-style: none
+                padding-inline-end: 20px
+                li
+                    padding: 8px 0
+                    width: fit-content
+                    cursor: pointer
+                    &[data-active='true']
+                        // font-weight: bold
+                        color: var(--primary-color)
+                        position: relative
+                        &::before
+                            position: absolute
+                            bottom: 0
+                            content: ''
+                            display: block
+                            width: 100%
+                            height: 1px
+                            background-color: var(--primary-color)
+                            border-radius: 50%
+                            transform-origin: left
+                            animation: slide-underline 500ms cubic-bezier(0.16, 1, 0.3, 1)
+            .closeBtn
+                all: unset
+                position: absolute
+                top: 10px
+                right: 10px
+                cursor: pointer
+                path
+                    stroke: var(--text-secondary-color)
+        &__body
+            margin-left: 20px
+            h2
+                margin-top: 0
+            .profile-form
+                form
+                    display: flex
+                    flex-direction: column
+                    gap: 20px
+                    div[class^='row']
+                        display: flex
+                        gap: 20px
+                    input
+                        @include input()
+                    textarea
+                        @include input()
+                    .row-3
+                        &>div
+                            display: flex
+                            align-items: center
+                            width: 100%
+                            .available
+                                color: var(--success-color)
+                            .unavailable
+                                color: var(--error-color)
+                            input
+                                padding-right: 40px
+                    .row-5
+                        .error
+                            margin-right: auto
+                            color: var(--error-message-color)
+                        button
+                            @include primary-button()
+            .connected-services
+                .error-message
+                    text-align: right
+                .services-view
+                    .service
+                        display: grid
+                        grid-template-columns: 1fr 1fr
+                        grid-template-rows: repeat(auto-fill, 50px)
+                        align-items: center
+                        padding-inline: 50px
+                        .service-name
+                            height: 40px
+                            width: 40px
+                            box-sizing: border-box
+                            border-radius: 50%
+                            overflow: hidden
+                            &[data-disabled='true']
+                                filter: grayscale(100%) opacity(0.5)
+                                pointer-events: none
+                        .service-status
+                            border-left: 1px solid var(--text-ternary-color)
+                            height: 100%
+                            width: 100%
+                            display: flex
+                            align-items: center
+                            justify-content: flex-end
+            .account-deletion
+                .delete-account
+                    display: flex
+                    align-items: baseline
+                    justify-content: center
+                    button
+                        @include primary-button()
+
+.delete-account__overlay
+    position: fixed
+    inset: 0
+    background-color: var(--overlay-color)
+    animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1)
+.delete-account__content
+    position: fixed
+    left: 50%
+    top: 50%
+    transform: translate(-50%, -50%)
+    font-family: $frame-font
+    padding: 20px
+    background-color: var(--modal-background-primary)
+    border-radius: 7px
+    box-shadow: 1px 2px 10px var(--option-modal-shadow)
+    width: 400px
+    max-width: 90vw
+    .warning
+        color: var(--error-message-color)
+    .delete-account__cta
+        display: flex
+        justify-content: space-between
+        button:first-child
+            @include primary-button()
+            width: 100%
+            max-width: 180px
+            transition: max-width 0.3s ease
+        button:last-child
+            @include secondary-button()
+        button
+            margin: 0 !important
+        &[data-no_cancel='true']
+            button:first-child
+                max-width: 100%
+            button:last-child
+                display: none
+
+@media screen and (min-width: 768px) and (max-width: 1186px)
+    .profile-menu-content
+        .update-profile
+            width: calc(100vw - 200px)
+
+@media screen and (max-width: 768px)
+    .profile-menu-content
+        .update-profile
+            grid-template-columns: 1fr
+            grid-template-rows: auto 1fr
+            gap: 20px
+            height: 100vh
+            width: 100vw
+            box-sizing: border-box
+            padding: 20px 0
+            &__header
+                border: none
+                margin-top: 30px
+                padding-inline: 10px
+                ul
+                    display: flex
+                    justify-content: space-between
+                    gap: 20px
+                    padding: 0
+                .closeBtn
+                    top: 20px !important
+                    right: 10px !important
+            &__body
+                margin: 0
+                padding: 20px
+                h2
+                    display: none
+
+@keyframes slide-underline
+    from
+        transform: scaleX(0)
+
+    to
+        transform: scaleX(1)
+
+@keyframes overlayShow
+    from
+        opacity: 0
+
+    to
+        opacity: 1
+
+@keyframes contentShow
+    from
+        opacity: 0
+        transform: translate(-50%, -48%) scale(0.96)
+
+    to
+        opacity: 1
+        transform: translate(-50%, -30%) scale(1)

@@ -1,0 +1,334 @@
+@import '@theme-variables'
+.message-area
+    // height: 100%
+    width: 100%
+    box-sizing: border-box
+    display: grid
+    overflow: hidden
+    grid-template-rows: 1fr auto
+    align-items: end
+    margin-top: auto
+    &__alert,&__edit
+        max-height: 0
+        height: fit-content
+        overflow: hidden
+        animation: slideUpAlert 800ms ease forwards
+        background: var(--window-background)
+        padding: 10px 0 12px 0
+        border-radius: 20px 20px 0 0
+        &__container
+            max-width: 40%
+            margin: auto
+            .alert-title
+                font-family: $frame-font
+                font-style: normal
+                font-weight: 500
+                font-size: 22px
+                line-height: 19px
+                letter-spacing: 0.02em
+                color: var(--text-primary-color)
+                margin-bottom: 10px
+            .alert-description
+                font-family: $frame-font
+                font-style: normal
+                font-weight: 400
+                font-size: 15px
+                line-height: 17px
+                letter-spacing: 0.02em
+                color: var(--text-secondary-color)
+                margin-bottom: 10px
+            .alert-actions-container
+                display: flex
+                align-items: center
+                gap: 20px
+                margin: auto
+                .action
+                    @include primary-button()
+                    background: var(--error-color)
+                .cancel
+                    @include secondary-button()
+                .btn
+                    min-width: unset
+                    height: unset
+                    padding: 5px 10px
+                    font-size: 15px
+                    border-radius: 5px
+                    &:not(.cancel):hover
+                        color: var(--error-color)
+    &__edit__container
+        max-width: 80%
+        .title
+            font-family: $frame-font
+            font-style: normal
+            font-weight: 500
+            font-size: 18px
+            line-height: 19px
+            letter-spacing: 0.02em
+            color: var(--text-primary-color)
+            margin-bottom: 10px
+            svg
+                margin-right: 10px
+            svg.close
+                float: right
+                cursor: pointer
+        .message-description
+            background: var(--input-background-color)
+            padding: 5px 5px 5px 10px
+            border-radius: 5px
+            overflow: hidden
+            text-overflow: ellipsis
+
+    .messages-container
+        padding-left: 14px
+        padding-right: 34px
+        overflow-x: hidden
+        overflow-y: auto
+        max-height: 100%
+        height: 100%
+        width: 100%
+        box-sizing: border-box
+        scroll-snap-type: y mandatory
+        &::-webkit-scrollbar
+            // display: none
+        //Message Container
+        .message
+            // PopUp animation and margin between messages
+            transform: scale(0.2)
+            transform-origin: left
+            animation: scaleUp 500ms ease forwards
+            margin-bottom: 15px
+        .message-stamp
+            // Supposed to be the timeStamp between different day's messages
+            width: fit-content
+            margin-left: auto
+            margin-right: auto
+            padding: 3px 10px
+            background: linear-gradient(29deg, $my-chat-message-color, rgb(122 0 188 / 60%), $my-chat-message-color)
+            color: transparent
+            -webkit-background-clip: text
+            border-radius: 5px
+            margin-bottom: 15px
+            font-size: $message-date-stamp-font-size
+            box-shadow: 1px 1px 3px rgba(125,125,125,0.5)
+        .message-box
+            // Message container box
+            $message-box-padding: 10px
+            position: relative
+            border-radius: 15.4279px
+            padding: $message-box-padding
+            // min-width: 50px
+            width: fit-content
+            max-width: min(500px,80%)
+            box-sizing: border-box
+            scroll-snap-align: center
+
+            @include message-box-others()
+            &[data-emojionly=true]
+                font-size: 30px !important
+                backdrop-filter: greyscale(1px) !important
+            & > .message-attachments-container
+                max-width: 100%
+                &[data-has_text=true]
+                    margin-bottom: 5px
+                div.image
+                    display: flex
+                    width: auto
+                    height: 150px
+                    box-sizing: border-box
+                    aspect-ratio: 1/1
+                    border-radius: 10px
+                    cursor: pointer
+                    filter: brightness(70%)
+                    transition: filter 0.2s ease
+                    line-height: 0
+                    overflow: hidden
+                    position: relative
+                    img
+                        height: 100%
+                        width: 100%
+                        object-fit: cover
+                    .image-count
+                        position: absolute
+                        height: 100%
+                        width: 100%
+                        display: flex
+                        align-items: center
+                        justify-content: center
+                        margin: auto
+                        font-size: 30px
+                        color: white
+                        font-weight: 500
+                        background: rgba(0,0,0,0.85)
+                    &:hover
+                        filter: unset
+                &[data-image_count='1']
+                    div.image
+                        width: 250px
+                        height: 250px
+                .file
+                    display: flex
+                    flex-direction: column
+                    align-items: center
+                    justify-content: space-between
+                    cursor: pointer
+                    background: var(--background-hover)
+                    border-radius: 10px
+                    min-height: 200px
+                    min-width: 150px
+                    // aspect-ratio: 3/2
+                    width: fit-content
+                    width: 100%
+                    max-width: 350px
+                    box-sizing: border-box
+                    padding: 0 10px 10px 10px
+                    margin-bottom: 5px
+                    flex-grow: 1
+                    .file-info
+                        margin-top: auto
+                        text-align: center
+                        display: flex
+                        flex-direction: column
+                        align-items: center
+                        gap: 5px
+                        width: 100%
+                        padding: 20px 0
+                        .icon
+                            line-height: 0
+                            path
+                                fill: var(--icon-stroke)
+                        .file-name
+                            max-width: 150px
+                            width: 100%
+                            word-wrap: break-word
+                            overflow: hidden
+                            text-overflow: ellipsis
+                        .file-size
+                            // font-size: 1px
+                            font-weight: bolder
+                    .file-actions
+                        margin-top: auto
+                        width: 100%
+                        display: flex
+                        gap: 5px
+                        justify-content: space-between
+                        .btn
+                            @include secondary-button()
+                            display: flex
+                            height: 35px
+                            width: 100%
+                            padding: 0 20px
+                            justify-content: center
+                            margin-bottom: 0
+                            &:hover
+                                background: var(--option-hover-background)
+                            svg
+                                margin-right: 4px
+            &[data-type='image']> .message-attachments-container:not([data-image_count='1'])
+                display: flex
+                flex-wrap: wrap
+                justify-content: space-evenly
+                gap: 7px
+                & > div.image
+                    flex-grow: 1
+
+            & > span.message-text
+                display: inline-block
+                word-break: break-word
+            & > span.message-status
+                position: absolute
+                right: -25px
+                bottom: 2px
+            & > span.message-time
+                position: absolute
+                left: $message-box-padding
+                bottom: -15px
+                color: var(--text-ternary-color)
+                font-weight: 400
+                font-size: $message-time-stamp-font-size
+                line-height: 15px
+                letter-spacing: 0.05em
+                white-space: nowrap
+                display: flex
+                gap: 6px
+                flex-direction: row-reverse
+            &[data-mine=true]
+                @include message-box-mine()
+                transform-origin: right
+                text-align: right
+                span.message-time
+                    left: unset
+                    right: $message-box-padding
+                    flex-direction: row
+            &[data-with_time=false]
+                margin-bottom: 4px
+                span.message-time
+                    display: none
+                &[data-mine=true]
+                    border-bottom-right-radius: 2px
+                    &+.message-box
+                        border-top-right-radius: 2px
+                &[data-mine=false]
+                    border-bottom-left-radius: 2px
+                    &+.message-box
+                        border-top-left-radius: 2px
+        .message-loading
+
+.attachment-previewer-overlay
+    position: fixed
+    inset: 0
+    background: var(--overlay-color)
+    animation: fadeIn 300ms ease forwards
+.attachment-previewer
+    position: fixed
+    inset: 0
+    font-family: var(--frame-font)
+    .preview-header
+        display: flex
+        justify-content: space-between
+        align-items: center
+        padding: 5px 10px
+        .file-actions
+            display: flex
+            gap: 20px
+            .btn
+                cursor: pointer
+                path
+                    fill: var(--icon-stroke)
+
+.message-options-menu
+    min-width: 100px
+    @include menu-option()
+    .option > svg
+        margin-right: 10px
+
+@keyframes fadeIn
+    0%
+        opacity: 0
+    100%
+        opacity: 1
+
+@keyframes slideUpAlert
+    100%
+        max-height: 100%
+@keyframes scaleUp
+    100%
+        transform: scale(1)
+
+@media screen and (max-width: 768px)
+    .message-area__alert
+        &__container
+            max-width: 90%
+            .alert-actions-container
+                gap: 30px
+                justify-content: center
+                &[data-options='three']
+                    gap: 10px
+                    justify-content: space-between
+                .btn
+                    padding: 5px
+                    height: 100%
+@media screen and (max-width: 1024px)
+    .message-attachments-container[data-image_count="1"] div.image
+        width: 150px !important
+    .message-attachments-container .file-actions
+        flex-wrap: wrap

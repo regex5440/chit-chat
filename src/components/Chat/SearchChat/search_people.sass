@@ -1,0 +1,138 @@
+@import '@theme-variables'
+.search-container
+    padding: 12.23px 21.41px 12px 22.43px
+    &__input-container
+        background: var(--input-background-color)
+        border-radius: 25.4871px
+        height: 40px
+        box-sizing: border-box
+        padding: 8px 0 8px 15.29px
+        display: flex
+        input
+            border: none
+            outline: none
+            background: transparent
+            height: 100%
+            width: 100%
+            border-top-right-radius: 25.48px
+            border-bottom-right-radius: 25.48px
+            margin-left: 21.95px
+            margin-right: 3px
+            padding: 0
+            &::placeholder
+                @include placeholder()
+        .input-icon-container
+            display: inline-grid
+            place-items: center
+            position: relative
+            height: 25px
+            width: 25px
+            opacity: 0.5
+            user-select: none
+            cursor: pointer
+            &>svg
+                position: absolute
+                transition: transform 0.2s ease, opacity 0.3s ease
+                &>path
+                    stroke: var(--icon-stroke)
+                &.plus-icon[data-type='clear-cta']
+                    transform-origin: center
+                    transform: scale(2.3) rotateZ(225deg)
+                &.magnify-icon[aria-hidden='true']
+                    opacity: 0
+    &__results-container
+        position: absolute
+        z-index: 2
+        left: 0
+        bottom: 0
+        background: linear-gradient(to bottom, transparent,var(--window-background) 90%)
+        box-sizing: border-box
+        width: 100%
+        height: 100%
+        padding: 10px
+        grid-area: 2/3/2/span 5
+        display: flex
+        .loader-container, .no-data-container
+            display: flex
+            justify-content: center
+            align-items: center
+            height: 100%
+            width: 100%
+            svg
+                height: 50px
+                width: 50px
+                path
+                    stroke: var(--text-secondary-color)
+        &::before
+            content: ''
+            height: 100%
+            width: 100%
+            backdrop-filter: blur(15px)
+            position: absolute
+            z-index: -1
+            bottom: 0
+            left: 0
+        .groups::before
+            content: ''
+            display: block
+            margin-right: 10px
+            width: 3px
+            max-height: 80%
+            background: lightgrey
+            border-radius: 10px
+            align-self: stretch
+        .connections,.users,.groups
+            min-width: 33%
+            max-height: 100%
+            display: flex
+            .content
+                display: flex
+                flex-direction: column
+                height: 100%
+                width: 100%
+                h3
+                    margin: 0 0 0 15px
+                    display: inline-block
+                    width: fit-content
+                    color: var(--text-primary-color)
+                    &::after
+                        content: ''
+                        display: block
+                        width: 150%
+                        height: 1px
+                        background: var(--text-primary-color)
+                .list
+                    width: 100%
+                    max-height: 100%
+                    overflow-y: auto
+                    display: flex
+                    flex-wrap: wrap
+                    padding: 15px 10px
+                    box-sizing: border-box
+                    // grid-template-columns: repeat(auto-fit, minmax(230px, 1fr))
+                    gap: 10px
+                    &::-webkit-scrollbar
+                        width: 5px
+                        height: 100%
+                        background: transparent
+                    &::-webkit-scrollbar-thumb
+                        background: grey
+                        border-radius: 10px
+
+@media screen and (max-width: 768px)
+    .search-container
+        padding: 12.23px 4px 12px 4px
+        &__input-container
+            border-radius: 10px
+        &__results-container
+            position: static
+            grid-area: unset
+            order: 1
+            padding: 0
+            flex-direction: column
+            h2
+                margin: 0 0 0 15px
+            &::before
+                display: none
+            .connections,.users,.groups
+                width: 100%

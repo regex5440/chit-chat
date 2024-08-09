@@ -1,0 +1,188 @@
+.chit-chat-call
+    $background: #0e0e0e
+    $textColor: white
+    $shadow: rgba(0,0,0,0.4)
+    $backgroundTrasparent: #000000ee
+    height: 100%
+    width: 100%
+    position: relative
+    overflow: hidden
+    font-family: var(--frame-font)
+    background: #0e0e0e
+    user-select: none
+    &__loading
+        position: absolute
+        top: 50%
+        left: 50%
+        transform: translate(-50%,-50%)
+        z-index: 998
+        p
+            margin-left: 5px
+    &__overlay
+        position: absolute
+        height: 100%
+        width: 100%
+        inset: 0
+        background: var(--overlay-color)
+        display: flex
+        z-index: 997
+    .calling-error
+        font-size: 22px
+        height: 100%
+        display: flex
+        flex-direction: column
+        align-items: center
+        justify-content: center
+    &__stream-area
+        height: inherit
+        width: inherit
+        video
+            height: inherit
+            width: inherit
+            object-fit: cover
+            // transform: scaleX(-1)
+    &__user-video
+        //TODO: this preview should change aspect ratio based on device
+        //  For desktop, width: 200px; for mobile, 100px
+        position: absolute
+        bottom: 100px
+        right: 20px
+        border-radius: 5px
+        width: 200px
+        height: calc(200px * 9/16)
+        box-shadow: 0 0 7px 1px $shadow
+        cursor: pointer
+        display: none
+        &[data-visible=true]
+            display: block
+        video
+            transform: scaleX(-1)
+            height: inherit
+            width: inherit
+            object-fit: cover
+            &[data-camera='rear']
+                transform: unset
+    &__top-menu
+        position: absolute
+        top: 0
+        left: 0
+        width: 100%
+        box-sizing: border-box
+        display: flex
+        justify-content: space-between
+        padding: 20px 40px
+        color: $textColor
+        z-index: 999
+        transition: transform 0.4s ease
+        transform: translateY(-100%)
+        .caller-info
+            .caller-name
+                font-size: 20px
+                font-weight: bolder
+        .call-minimize
+            cursor: pointer
+        &[data-visible=true]
+            transform: unset
+
+    &__option-area
+        position: absolute
+        bottom: 0
+        left: 0
+        width: inherit
+        z-index: 999
+        transition: transform 0.4s ease
+        transform: translateY(110%)
+        .option-container
+            background: linear-gradient(to top, backgroundTrasparent,backgroundTrasparent, transparent)
+            max-width: 30%
+            margin: auto
+            display: flex
+            justify-content: space-between
+            padding: 10px 0
+            // border-radius: 30%
+            border-top-left-radius: 20%
+            border-top-right-radius: 20%
+            .option
+                label, span
+                    margin: 5px
+                    user-select: none
+                    width: 70px
+                    aspect-ratio: 1/1
+                    line-height: 0
+                    display: grid
+                    place-content: center
+                    border-radius: 50%
+                    box-shadow: 0 0 8px 7px $shadow
+                    position: relative
+                    cursor: pointer
+                    transition: background 0.2s ease
+                    // background: var(--window-background)
+                    position: relative
+                    overflow: hidden
+                    backdrop-filter: invert(10%)
+                    &[for='camera-control'] path
+                        stroke: $textColor
+                    &[for="microphone-control"] path
+                        stroke: $textColor
+                    &:hover
+                        background: rgba(150,150,150,0.4)
+            .option#end-call
+                path
+                    fill: $textColor
+                & > span
+                    background: rgb(179, 0, 0)
+            input
+                all: unset
+                visibility: hidden
+        &[data-visible="true"]
+            transform: unset
+.call-controls
+    input[type='checkbox']:not(:checked) + label
+        filter: brightness(50%)
+        &::after
+            content: ''
+            position: absolute
+            top: 0
+            right: 50%
+            background: white
+            display: block
+            width: 5px
+            transform: rotateZ(30deg) scaleY(0)
+            height: 100%
+            animation: growHeight 0.3s ease forwards
+.caller-handler
+    transform-origin: bottom
+    transition: transform 0.3s ease, opacity 0.2s ease 0.1s
+    &[data-size='min']
+        transform: scale(0.4)
+        opacity: 0
+        animation: displayNone 0s ease 0.5s forwards
+@keyframes growHeight
+    100%
+        transform: rotateZ(30deg) scaleY(1)
+
+@keyframes displayNone
+    100%
+        display: none
+
+@media screen and (max-width: 1024px) and (min-width: 768px)
+    .chit-chat-call
+        &__option-area
+            .option-container
+                max-width: 70%
+
+@media screen and (max-width: 768px)
+    .chit-chat-call
+        &__option-area
+            .option-container
+                max-width: 90%
+        &__user-video
+            width: 80px
+            height: calc(80px * 16/9)
+        &__top-menu
+            padding: 10px
+            align-items: center
+        &__option-area
+            .option
+                label,span
+                    width: 50px !important

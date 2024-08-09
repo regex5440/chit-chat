@@ -1,0 +1,141 @@
+$progress-size: 10px
+
+.image-selector
+    user-select: none
+    height: 300px
+    width: 300px
+    label.upload-action
+        display: flex
+        cursor: pointer
+        position: relative
+        border: 3px dashed grey
+        img
+            opacity: 0.3
+            pointer-events: none
+        div.drop-marker
+            position: absolute
+            height: 100%
+            width: 100%
+            left: 0
+            top: 0
+            font-size: 26px
+            color: white
+            background: rgba(0,0,0,0.3)
+            display: grid
+            place-items: center
+            text-decoration: underline
+            pointer-events: none
+        div.instruction
+            position: absolute
+            display: block
+            height: fit-content
+            inset: 0
+            margin: auto
+            font-size: 20px
+            font-weight: bold
+            color: white
+            pointer-events: none
+            text-align: center
+            line-height: 40px
+    label.upload-action, div.image-preview
+        margin: auto
+        width: 100%
+        aspect-ratio: 1/1
+        background-size: cover
+        position: relative
+        overflow: hidden
+        box-sizing: border-box
+        border-radius: 15px
+    div.image-preview
+        cursor: move
+        user-select: none
+        border-bottom-right-radius: 0
+        border-bottom-left-radius: 0
+        &__progress
+            display: none
+        [data-type='profile-pic']
+            display: block
+            margin: auto
+            background-repeat: no-repeat
+            background-position: 0% 0%
+            background-size: 100% 100%
+            border-radius: 10px
+        &::after
+            content: ''
+            display: block
+            border-radius: 10px 10px 0 0
+            position: absolute
+            inset: 0
+            margin: auto
+            height: 100%
+            width: 100%
+            background: radial-gradient( transparent 55%, black 1px, rgba(0,0,0,0.6) 1px)
+            z-index: 1
+        .crop-instruction
+            position: absolute
+            inset: 0
+            height: 100%
+            width: 100%
+            z-index: 2
+            display: flex
+            align-items: center
+            justify-content: center
+            flex-flow: column
+            background: hsla(0deg, 0%, 0%, 0.8)
+            &,& *
+                pointer-events: none
+            img
+                width: 150px
+                animation: show-gesture 4s infinite
+            button
+                margin-top: 50px
+                padding: 10px 15px
+        &.selected
+            pointer-events: none
+            background: currentColor
+            .preview-controls
+                opacity: 0
+
+        //This portion does not has link to DOM
+        &.finished
+            pointer-events: none
+            &::after
+                background: rgba(0,0,0,0.7)
+            .preview-controls
+                opacity: 0
+
+    div.preview-controls
+        $control-box-height: 50px
+        // border-top: 1px solid rgba(0,0,0,0.6)
+        width: 100%
+        height: $control-box-height
+        box-sizing: border-box
+        display: flex
+        justify-content: center
+        align-items: center
+        background: radial-gradient(black, transparent)
+        z-index: 2
+        opacity: 1
+        transition: opacity 0.2s ease
+        border-radius: 0 0 10px 10px
+        &>div
+            display: flex
+            cursor: pointer
+            width: 100%
+            height: 100%
+            align-items: center
+            justify-content: center
+            margin: auto
+@keyframes tick-mark
+    0%
+        stroke-dashoffset: 20
+    100%
+        stroke-dashoffset: 0
+
+@keyframes show-gesture
+    25%
+        transform: translateY(40px)
+    50%
+        transform: translateX(-40px)
+    70%
+        transform: translateX(40px)

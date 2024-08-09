@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1" />
+  <title>Chit Chat - Messaging app</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Moirai+One&display=swap" />
+</head>
+
+<body>
+  <style>
+    :root {
+      --startup-loading-background: rgba(225, 225, 225, 1);
+    }
+
+    .chit-chat-logo {
+      background-image: linear-gradient(-30deg, #00287f, #00bdff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: xx-large;
+    }
+
+    .chit-chat-logo h1 {
+      font-family: 'Moirai One', cursive;
+      text-wrap: nowrap;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --startup-loading-background: rgba(12, 12, 12, 1);
+      }
+    }
+
+    #loader-logo {
+      background-color: var(--startup-loading-background);
+    }
+
+    #loader-logo .chit-chat-logo {
+      animation: heartbeat 4s ease-in-out infinite;
+      filter: drop-shadow(5px -5px 133px #00bdff);
+    }
+
+    @keyframes heartbeat {
+
+      0%,
+      100% {
+        filter: drop-shadow(5px -5px 70px #00bdff)
+      }
+
+      50% {
+        filter: drop-shadow(5px -5px 13px #00bdff) drop-shadow(-10px 0px 74px #00287f) drop-shadow(5px -10px 100px #00bdff)
+      }
+    }
+  </style>
+  <div id="root"></div>
+  <div
+    style="position: fixed; display: grid;left:0; top: 0; height: 100%; width: 100%; place-content: center; margin: auto; z-index: 999999999; transition: all 0.8s ease 0.5s;"
+    id="loader-logo">
+    <div class="chit-chat-logo">
+      <h1>Chit Chat</h1>
+    </div>
+    <sub
+      style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 24px; color: #00287f; text-align: right;">by
+      <a href="https://github.com/regex5440" style="color: #00bdff">Harsh
+        Dagar</a></sub>
+  </div>
+  <script>
+    const observer = new MutationObserver(function (mutations) {
+      if (mutations.length > 0) {
+        document.getElementById('loader-logo').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('loader-logo').remove();
+        }, 1500);
+        this.disconnect();
+      }
+
+    }).observe(document.getElementById('root'), { childList: true, subtree: true });
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

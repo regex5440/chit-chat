@@ -1,0 +1,194 @@
+@import './variables.sass'
+@mixin profile-name-style-chat-only()
+    font-style: normal
+    font-weight: 600
+    font-size: $name-font-size-chat-only
+    line-height: 22px
+    letter-spacing: 0.02em
+    color: var(--text-primary-color)
+    &[data-no_data='true']
+        font-style: italic !important
+        color: var(--text-ternary-color)
+@mixin chat-profile-picture()
+    height: 55.31px
+    width: 55.31px
+    border-radius: 50%
+    .profile-picture
+        height: 100%
+        border-radius: inherit
+        cursor: pointer
+        &[data-dull='true']
+            filter: grayscale(100%)
+    & > span
+        display: grid
+        place-items: center
+        font-weight: bold
+        font-size: 24px
+@mixin message-box-others()
+    background-color: $others-chat-message-color
+    font-family: $content-font
+    font-style: normal
+    font-weight: 400
+    font-size: 16.3117px
+    line-height: 110.66%
+    color: #000000
+
+@mixin message-box-mine()
+    background-color: $my-chat-message-color
+    font-family: $content-font
+    font-style: normal
+    font-weight: 400
+    font-size: 16.3117px
+    line-height: 110.66%
+    color: #FFFFFF
+    margin-left: auto
+
+@mixin placeholder()
+    font-family: $frame-font
+    font-weight: 500
+    font-size: 14.2728px
+    line-height: 1px
+    letter-spacing: 0.02em
+    color: var(--text-secondary-color)
+    opacity: 0.8
+
+@mixin secondary-button()
+    all: unset
+    cursor: pointer
+    border-radius: 5px
+    box-shadow: 0.5px 1px 3px $seconday-button-color
+    padding: 10px 35px
+    background: $seconday-button-color
+    backdrop-filter: blur(1px)
+    color: white
+    display: grid
+    place-items: center
+    text-align: center
+    margin-bottom: 5px
+    &:disabled
+        cursor: auto
+        background: transparent
+
+@mixin primary-button()
+    all: unset
+    min-width: 180px
+    height: 40px
+    display: grid
+    place-items: center
+    text-align: center
+    border-radius: 5px
+    cursor: pointer
+    background-color: $primary-button-color
+    // border: 2px solid $primary-button-color
+    color: white
+    font-family: $login-page-font
+    font-size: 18px
+    margin-bottom: 5px
+    box-sizing: border-box
+    transition: all 0.2s ease
+    overflow: hidden
+    &:hover:not([data-in_progress='true']):not([disabled])
+        background-color: white
+        color: $primary-button-color
+    &[data-hidden='true']
+        opacity: 0
+    &[data-type='danger']
+        background-color: var(--error-color) !important
+        color: var(--text-primary-color) !important
+        &:hover:not([data-in_progress='true']):not([disabled])
+            filter: opacity(0.8)
+    &[disabled]
+        cursor: not-allowed !important
+        background-color: var(--input-background-color) !important
+        color: var(--text-secondary-color) !important
+        box-shadow: none !important
+
+@mixin options-modal()
+    background: var(--modal-background-primary)
+    color: var(--text-secondary-color)
+    box-shadow: 1px 2px 10px var(--option-modal-shadow)
+    border-radius: 8px
+    font-family: $frame-font
+    overflow: hidden
+    .option
+        all: unset
+        display: flex
+        width: 100%
+        box-sizing: border-box
+        padding: 6px 18px 6px
+        transition: background 100ms ease
+        cursor: pointer
+        justify-content: space-between
+        position: relative
+        & > span.text
+            margin-left: auto
+        & > span[data-state="checked"]
+            position: absolute
+            top: 50%
+            left: 2px
+            transform: translateY(-50%)
+        &:not(:last-child)
+            box-shadow: 0 0.5px 0 0 rgba(150,150,150,0.2)
+        &.red
+            color: red
+        &[data-highlighted]
+            background: var(--option-hover-background)
+
+@mixin menu-option()
+    background: var(--modal-background-primary)
+    color: var(--text-secondary-color)
+    box-shadow: 1px 2px 10px var(--option-modal-shadow)
+    border-radius: 8px
+    font-family: $frame-font
+    overflow: hidden
+    .option
+        all: unset
+        display: block
+        width: 100%
+        box-sizing: border-box
+        padding: 10px
+        transition: background 100ms ease
+        cursor: pointer
+        display: flex
+        align-items: center
+        &:not(:last-child)
+            box-shadow: 0 0.5px 0 0 rgba(150,150,150,0.2)
+        &.red
+            color: red
+        &:hover
+            background: var(--option-hover-background)
+
+@mixin input()
+    $fontSizeInput: 16px
+    overflow-y: visible
+    border: none
+    font-size: $fontSizeInput
+    border-bottom: 1px solid rgb(0, 123, 255)
+    outline: rgb(0, 123, 255)
+    width: 100%
+    padding: 15px 10px 10px 3px
+    border-radius: 0 0 10px 0
+    font-style: italic
+    box-sizing: border-box
+    margin-bottom: 20px
+    position: relative
+    background: transparent
+    color: rgb(0, 125, 225)
+    &::placeholder
+        transition: transform 0.2s ease
+        transform-origin: left
+        overflow: visible
+        color: white
+    &:focus::placeholder
+        transform: translateY(-1 * ($fontSizeInput)) scale(0.6)
+    &[data-error='true']
+        border-color: $error-message-color
+        border-width: 2px
+        &::placeholder
+            color: $error-message-color
+    &[disabled], &[data-disabled=true]
+        cursor: not-allowed
+        color: var(--text-secondary-color)
+        border-color: var(--text-secondary-color)
+        &::placeholder
+            color: var(--text-secondary-color)

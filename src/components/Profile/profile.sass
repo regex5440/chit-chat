@@ -1,0 +1,121 @@
+@import '@theme-variables'
+
+.profile-section
+    height: 100%
+    .profile-section-container
+        display: flex
+        align-items: center
+        padding: 30px 17.21px
+        .profile-picture-container
+            --status-border-color: transparent
+            --status-color: transparent
+            position: relative
+            width: 81.56px
+            height: 81.56px
+            img
+                display: inline-block
+                width: 100%
+                aspect-ratio: 1
+                border-radius: 50%
+                transition: border-color 500ms ease
+                border: 2px solid var(--status-border-color)
+            span.user-online-status
+                position: absolute
+                width: 18.35px
+                aspect-ratio: 1 / 1
+                border-radius: 50%
+                background-color: var(--status-color)
+                transition: background-color 500ms ease
+                border: 3px solid #fff
+                right: 0
+                bottom: 0
+        .profile-name-container
+            margin-left: 11.24px
+            align-self: flex-end
+            span.name-data
+                display: inline-block
+                max-width: 150px
+                font-family: $frame-font
+                font-style: normal
+                font-weight: 700
+                font-size: $profile-name-font-size
+                line-height: 24px
+                letter-spacing: 0.02em
+                color: var(--text-primary-color)
+                overflow: hidden
+                text-overflow: ellipsis
+                white-space: break-spaces
+            #status-select
+                border: none
+                font-family: $frame-font
+                color: var(--text-secondary-color)
+                text-transform: capitalize
+                cursor: pointer
+
+            div.status-option-container
+                display: flex
+                align-items: center
+                gap: 7px
+                pointer-events: none
+                .status-icon
+                    display: none
+                    height: 10px
+                    width: 10px
+                    border-radius: 50%
+        .profile-options-container
+            margin-left: auto
+            .app-settings
+                position: absolute
+                right: 18.92px
+                top: 15.92px
+            .modal-child-container
+                width: fit-content
+                min-width: 200px
+                height: auto
+                margin-top: 50px
+                @include menu-option()
+
+    .profile-section_loading
+        display: grid
+        place-items: center
+        height: 100%
+
+.status-option-dropdown
+    @include options-modal()
+
+@media screen and (max-width: 768px)
+    .profile-section
+        // overflow: hidden
+        padding: 0 5px
+        .profile-section-container
+            display: grid
+            row-gap: 5px
+            align-items: center
+            grid-template-areas: 'profile-picture-container profile-options-container' 'profile-name-container profile-options-container'
+            padding: 0
+            .profile-picture-container
+                grid-area: profile-picture-container
+                width: 61.56px
+                height: 61.56px
+                margin-left: 7px
+                img
+                    border-width: 1px
+                span.user-online-status
+                    width: 11.35px
+            .profile-name-container
+                margin-left: 0
+                grid-area: profile-name-container
+                &>span.name-data
+                    display: none
+                #status-select
+                    box-shadow: 1px 1px 6px var(--shadow-color)
+                    background: var(--window-background)
+                    border-radius: 5px
+                    text-align: center
+                    padding: 2px 0
+                    .dropdown-button
+                        justify-content: center !important
+
+            .profile-options-container
+                grid-area: profile-options-container
+                align-self: flex-start

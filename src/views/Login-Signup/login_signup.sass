@@ -1,0 +1,328 @@
+@import '@theme-variables'
+.chit-chat-login-signup
+    background: url('/src/assets/LoginPageAbstract.svg') no-repeat 0% 40%
+    background-size: cover
+    width: 100%
+    height: 100%
+    min-height: 400px
+    .signin_cta
+        width: fit-content
+        margin: auto
+        &[aria-hidden="true"]
+            display: none
+    dialog
+    .login-form-container
+        font-family: $frame-font
+        max-width: 33.5%
+        width: 100%
+        height: 100%
+        overflow-y: auto
+        float: right
+        backdrop-filter: blur(40px) invert(1)
+        background-color: rgba(255,255,255, 0.13)
+        box-shadow: -10px 0 15px rgba(64, 78, 93, 0.5)
+        color: #fff
+        transition: max-width 0.3s ease
+        &.full-width
+            max-width: 100%
+        h2
+            text-align: center
+            color: white
+        .user-form
+            $formSidePadding: 30px
+            border-radius: 20px
+            max-width: 420px + $formSidePadding
+            max-height: 90%
+            padding: $formSidePadding
+            box-sizing: border-box
+            inset: 0
+            margin: auto
+            text-align: center
+            display: flex
+            flex-direction: column
+            justify-content: space-between
+            align-items: center
+            &[data-forpage="signup"]
+                padding-bottom: 0
+                overflow-x: hidden
+
+            .signup-steps-container
+                height: 30px
+                width: 100%
+                display: flex
+                align-items: center
+                justify-content: center
+                padding: 5px
+                .signup-step
+                    $margin-right: 30px
+                    border-radius: 50%
+                    background-color: rgb(0, 123, 255)
+                    outline-offset: 3px
+                    width: 15px
+                    height: 15px
+                    aspect-ratio: 1 / 1
+                    box-sizing: border-box
+                    font-size: 13px
+                    line-height: 13px
+                    color: black
+                    font-weight: bold
+                    position: relative
+                    &:not(:last-child)
+                        margin-right: $margin-right
+                        &::after
+                            position: absolute
+                            display: block
+                            content: ''
+                            height: 1px
+                            width: $margin-right
+                            background: grey
+                            right: -1 * $margin-right
+                            top: 0
+                            bottom: 0
+                            margin-top: auto
+                            margin-bottom: auto
+                            pointer-events: none
+                            z-index: -1
+                    &[data-active='true']
+                        outline: 2px solid rgb(0, 123, 255)
+
+            .login-form
+                margin-top: auto
+                padding-top: 30px
+            .error-message
+                font-size: 12px
+                font-style: italic
+                letter-spacing: 1px
+                color: $error-message-color
+                text-align: right
+            .forgot-password-cta
+                text-align: right
+                font-size: 12px
+                color: rgb(0, 123, 255)
+                transition: color 0.1s ease
+                &:hover
+                    color: white
+                    text-decoration: underline
+            input:not(.cta)
+                // Login credential inputs
+                @include input()
+            // Signup content style
+            .signup-input
+                display: flex
+                align-items: flex-start
+                height: 90%
+                box-sizing: border-box
+                padding-top: 50px
+                &>form
+                    min-width: 100%
+                    padding: 0 5px
+                    box-sizing: border-box
+                    height: 100%
+                    opacity: 0
+                    visibility: hidden
+                    transition: opacity 0.2s ease-in 0.2s
+                    &:not(.username-input)
+                        display: flex
+                        flex-direction: column
+                    &.active
+                        // This can be removed 
+                        visibility: visible
+                        opacity: 1
+                        margin-right: $formSidePadding
+                .user-credentials-input
+                    //Username and password
+                    &>div.username-container
+                        position: relative
+                        input[data-valid='available']
+                            border-color: green
+                        input[data-valid='unavailable']
+                            border-color: $error-message-color
+                        span
+                            position: absolute
+                            right: 2px
+                            top: 0
+                            bottom: 0
+                            margin: auto 0
+                            height: fit-content
+                    div.availability
+                        text-align: left
+                        height: 21px
+                        &.available
+                            color: rgb(48 255 46)
+                        &.unavailable
+                            color: $error-message-color
+
+                .user-info-input
+                    &>div:first-child
+                        display: flex
+                        align-items: center
+                    .email-verifier
+                        //VERIFY BTN
+                        all: unset
+                        cursor: pointer
+                        text-decoration: underline
+                        color: $error-message-color
+                        font-size: 13px
+                        white-space: nowrap
+                        user-select: none
+                        &.notify
+                            color: green
+                            pointer-events: none
+                    .verification-status
+                        text-align: right
+                        font-size: small
+                        color: $error-message-color
+                    &>div.name-container
+                        display: flex
+                        justify-content: space-between
+                        column-gap: 15px
+
+                .user-picture
+                    .route-ctas
+                        margin-top: 50px
+            .route-ctas
+                width: 100%
+                display: flex
+                margin-top: auto
+                justify-content: space-between
+                user-select: none
+                .travel-button
+                    @include secondary-button()
+
+        .action-buttons
+            display: flex
+            flex-direction: column
+            margin-top: 5rem
+            margin-left: auto
+            margin-right: auto
+            width: 100%
+            max-width: 300px
+            &[data-page='signup']
+                flex-direction: column-reverse
+            .cta
+                // Button
+                @include primary-button()
+                position: relative
+                .progress_bar
+                    width: 100%
+                    max-width: 0%
+                    position: absolute
+                    height: 100%
+                    left: 0
+                    top: 0
+                    transition: max-width 0.2s ease
+                    background: rgba(0,0,0,0.5)
+                .hdui-circular-loader.loader-container
+                    display: flex
+.chit-chat-info
+    float: left
+    position: absolute
+    height: fit-content
+    width: 40%
+    inset: 0
+    margin-top: auto
+    margin-bottom: auto
+    padding-left: 40px
+    &.mobile
+        display: none
+    p
+        font-family: $frame-font
+        font-size: x-large
+
+.email-verification-modal
+    border-radius: 10px
+    width: 40%
+    min-width: 350px
+    position: relative
+    &[open]
+        animation: open-modal 0.3s ease-out forwards
+    &__close
+        all: unset
+        position: absolute
+        top: 10px
+        right: 10px
+        cursor: pointer
+        z-index: 1
+    &__container
+        width: 100%
+        display: grid
+        place-items: center
+        padding: 20px
+        box-sizing: border-box
+        position: relative
+        .modal-heading
+            font-size: 28px
+            font-weight: 400
+            text-align: left
+        hr
+            width: 35%
+            height: 3px
+            background: black
+            border-radius: 3px
+            margin: 0 auto 0 0
+        .verification__error
+            color: $error-message-color
+            font-weight: bold
+            text-align: right
+            text-transform: capitalize
+        input[data-error="true"]
+            border-color: $error-message-color
+        .action-button
+            display: flex
+            justify-content: space-between
+            align-items: center
+            margin-top: 20px
+            button[type="submit"]
+                @include secondary-button()
+                font-family: $frame-font
+                font-weight: 500
+                box-sizing: border-box
+                width: 121px
+                height: 44px
+            button.resend-otp
+                all: unset
+                cursor: pointer
+                &:hover
+                    text-decoration: underline
+
+@keyframes open-modal
+    0%
+        opacity: 0
+        transform: translate3d(0,-100px, -100px) scaleY(0.7)
+    100%
+        opacity: 1
+        transform: translate3d(0, 0, 0) scaleY(1)
+@media screen and (max-width: 1024px)
+    .chit-chat-login-signup
+        .chit-chat-info
+        .login-form-container
+            max-width: 50%
+
+@media screen and (max-width: 768px)
+    .chit-chat-login-signup
+        min-width: unset
+        background-size: 200% 500%
+        background-position: 10%
+        .chit-chat-info
+            display: none
+            float: unset
+            position: static
+        .chit-chat-info.mobile
+            width: 100%
+            padding: 0
+            display: flex
+            h1
+                margin: 0 auto
+
+        .login-form-container
+            max-width: 100%
+            float: unset
+            background: none
+            box-shadow: unset !important
+            padding: 30px 0
+            overflow-x: hidden
+            .user-form
+                max-width: 350px
+                max-height: 100%
+                &[data-forpage='signup']
+                    padding: 10px
