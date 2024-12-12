@@ -178,18 +178,18 @@ const ChatInput = ({ scrollToBottom, editableMessage, editHandler, chatId }) => 
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        // const fileSize = convertBytes(file.size, "MB");
-        // if (fileSize > 25) {
-        //   alert("File size should be less than 25 MB");
-        //   allFilesUnderSize = false;
-        //   break;
-        // }
-        // cumulativeSize += fileSize;
-        // if (cumulativeSize > 100) {
-        //   alert("Total size of files should be less than 100 MB");
-        //   allFilesUnderSize = false;
-        //   break;
-        // }
+        const fileSize = convertBytes(file.size, "MB");
+        if (fileSize > 25) {
+          alert("File size should be less than 25 MB");
+          allFilesUnderSize = false;
+          break;
+        }
+        cumulativeSize += fileSize;
+        if (cumulativeSize > 100) {
+          alert("Total size of files should be less than 100 MB");
+          allFilesUnderSize = false;
+          break;
+        }
         serializedFiles.push({ url: URL.createObjectURL(file), name: file.name, type, size: file.size });
       }
 
