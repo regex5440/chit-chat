@@ -1,6 +1,7 @@
 # Chit-Chat
 
 > Chit-Chat is a full-fledge messaging and media sharing application with features like:
+>
 > - Search people and groups
 > - Create group to chat with multiple people at the same time.
 > - Send, edit, delete messages with seen status of every message.
@@ -17,11 +18,11 @@
 
 ## BackEnd Stack
 
-> Refer to chit-chat backend repo: https://github.com/regex5440/chit-chat-server
+> Refer to chit-chat backend repo: <https://github.com/regex5440/chit-chat-server>
 
 ## Node version
 
-> `>= v18.14.0`
+> `>= v24.13.1`
 
 ## Environment
 
